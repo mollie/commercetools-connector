@@ -1,0 +1,75 @@
+{
+  "name": "shopmacher-mollie-processor",
+  "description": "Integration between commercetools and mollie payment service provider",
+  "version": "0.0.1",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "start": "node build/index.js",
+    "gcp-build": "tsc",
+    "start:dev": "concurrently -k \"tsc --watch\" \"nodemon -q build/index.js\"",
+    "build": "rimraf ./build && tsc",
+    "watch": "nodemon -q --ignore '**/*.spec.ts' src/index.ts",
+    "lint": "eslint . --ext .ts",
+    "prettier": "prettier --write '**/*.{js,ts}'",
+    "prettier:check": "prettier --check '**/*.{js,ts}'",
+    "test": "jest --detectOpenHandles --clearMocks --colors --config jest.config.cjs",
+    "test:watch": "jest --watch --clearMocks --detectOpenHandles --colors --config jest.config.cjs",
+    "preinstall": "npx npm-force-resolutions",
+    "connector:post-deploy": "node build/connector/post-deploy.js",
+    "connector:pre-undeploy": "node build/connector/pre-undeploy.js"
+  },
+  "author": "Shopmacher GmbH",
+  "license": "MIT",
+  "keywords": [
+    "commercetools",
+    "mollie",
+    "shopmacher",
+    "payment",
+    "payment integration",
+    "payment provider"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "resolutions": {
+    "axios": "1.6.8"
+  },
+  "devDependencies": {
+    "@tsconfig/recommended": "^1.0.7",
+    "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^18.19.39",
+    "@types/validator": "^13.12.0",
+    "@typescript-eslint/eslint-plugin": "7.13.1",
+    "@typescript-eslint/parser": "7.13.1",
+    "concurrently": "^8.2.2",
+    "eslint": "8.57.0",
+    "eslint-config-prettier": "9.1.0",
+    "eslint-plugin-import": "2.29.1",
+    "eslint-plugin-jest": "28.6.0",
+    "eslint-plugin-prettier": "5.1.3",
+    "eslint-plugin-unused-imports": "3.2.0",
+    "jest": "^29.7.0",
+    "ngrok": "^5.0.0-beta.2",
+    "nodemon": "^3.1.4",
+    "npm-force-resolutions": "^0.0.10",
+    "prettier": "^3.3.2",
+    "rimraf": "^5.0.8",
+    "ts-jest": "^29.1.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.3"
+  },
+  "dependencies": {
+    "@commercetools-backend/loggers": "^21.25.2",
+    "@commercetools/platform-sdk": "^4.11.0",
+    "@commercetools/sdk-client-v2": "^2.5.0",
+    "@mollie/api-client": "^3.7.0",
+    "@types/uuid": "^10.0.0",
+    "body-parser": "^1.20.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "proxy-from-env": "^1.1.0",
+    "validator": "^13.12.0"
+  }
+}
