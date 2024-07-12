@@ -3,6 +3,7 @@ import { PaymentMethod as MolliePaymentMethods } from '@mollie/api-client';
 import SkipError from '../errors/skip.error';
 import CustomError from '../errors/custom.error';
 import { logger } from '../utils/logger.utils';
+import { CustomFields } from '../utils/constant.utils';
 
 /**
  * Checks if the given action is either 'Create' or 'Update'.
@@ -70,6 +71,26 @@ export const checkPaymentMethodInput = (ctPayment: CTPayment): true | CustomErro
   if (!hasValidPaymentMethod(ctPayment.paymentMethodInfo?.method)) {
     logger.error(`SCTM - PAYMENT PROCESSING - Invalid paymentMethodInfo.method "${method}".`);
     throw new CustomError(400, `SCTM - PAYMENT PROCESSING - Invalid paymentMethodInfo.method "${method}".`);
+  }
+
+  if (!checkPaymentMethodSpecificParameters(ctPayment, method)) {
+    throw new CustomError(400, `SCTM - PAYMENT PROCESSING - Payment method "${method}" requires a card token.`);
+  }
+
+  return true;
+};
+
+export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, method: string): boolean => {
+  if (
+    method == MolliePaymentMethods.creditcard &&
+    (!ctPayment.custom?.fields?.[CustomFields.createPayment.request]?.cardToken ||
+      ctPayment.custom?.fields?.[CustomFields.createPayment.request].cardToken == '')
+  ) {
+    const paymentCustomFields = ctPayment.custom?.fields?.[CustomFields.createPayment.request]
+      ? JSON.parse(ctPayment.custom?.fields?.[CustomFields.createPayment.request])
+      : {};
+
+    return !(!paymentCustomFields.cardToken || paymentCustomFields.cardToken == '');
   }
 
   return true;

@@ -4,13 +4,6 @@ import { Payment, CustomFields } from '@commercetools/platform-sdk';
 import { determinePaymentAction } from '../../src/utils/paymentAction.utils';
 import { logger } from '../../src/utils/logger.utils';
 
-jest.mock('../../src/utils/logger.utils', () => ({
-  logger: {
-    error: jest.fn(),
-    debug: jest.fn(),
-  },
-}));
-
 describe('Test controller.utils.ts', () => {
   test('call determinePaymentAction without object reference', async () => {
     const response = determinePaymentAction();
