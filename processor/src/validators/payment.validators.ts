@@ -80,17 +80,106 @@ export const checkPaymentMethodInput = (ctPayment: CTPayment): true | CustomErro
   return true;
 };
 
+/**
+ * Checks whether the payment method specific parameters are present in the payment object
+ * Currently, only perform the check with two payment methods: applepay and creditcard
+ * For applepay: applePayPaymentToken must be exist
+ * For creditcard: cardToken must be exist
+ *
+ * @param {CTPayment} CTPayment - The Commercetools Payment object to check.
+ * @return {true | CustomError} An object containing the validation result.
+ * The `isInvalid` property indicates if the payment method input is invalid.
+ * The `errorMessage` property contains the error message if the input is invalid.
+ */
 export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, method: string): boolean => {
-  if (
-    method == MolliePaymentMethods.creditcard &&
-    (!ctPayment.custom?.fields?.[CustomFields.createPayment.request]?.cardToken ||
-      ctPayment.custom?.fields?.[CustomFields.createPayment.request].cardToken == '')
-  ) {
-    const paymentCustomFields = ctPayment.custom?.fields?.[CustomFields.createPayment.request]
-      ? JSON.parse(ctPayment.custom?.fields?.[CustomFields.createPayment.request])
-      : {};
+  const paymentCustomFields = ctPayment.custom?.fields?.[CustomFields.createPayment.request]
+    ? JSON.parse(ctPayment.custom?.fields?.[CustomFields.createPayment.request])
+    : {};
 
-    return !(!paymentCustomFields.cardToken || paymentCustomFields.cardToken == '');
+  switch (method) {
+    case MolliePaymentMethods.applepay:
+      if (!paymentCustomFields?.applePayPaymentToken) {
+        logger.error('SCTM - PAYMENT PROCESSING - applePayPaymentToken is required for payment method applepay');
+
+        return false;
+      }
+
+      if (
+        typeof paymentCustomFields?.applePayPaymentToken !== 'string' ||
+        paymentCustomFields?.applePayPaymentToken.trim() === ''
+      ) {
+        logger.error(
+          'SCTM - PAYMENT PROCESSING - applePayPaymentToken must be a string and not empty for payment method applepay',
+        );
+
+        return false;
+      }
+
+      break;
+    case MolliePaymentMethods.paypal:
+      if (!paymentCustomFields?.sessionId) {
+        logger.error('SCTM - PAYMENT PROCESSING - sessionId is required for payment method paypal');
+
+        return false;
+      }
+
+      if (typeof paymentCustomFields?.sessionId !== 'string' || paymentCustomFields?.sessionId.trim() === '') {
+        logger.error('SCTM - PAYMENT PROCESSING - sessionId must be a string and not empty for payment method paypal');
+
+        return false;
+      }
+
+      if (!paymentCustomFields?.digitalGoods && typeof paymentCustomFields?.digitalGoods !== 'boolean') {
+        logger.error(
+          'SCTM - PAYMENT PROCESSING - digitalGoods is required for payment method paypal paypal and must be a boolean',
+        );
+
+        return false;
+      }
+
+      break;
+    case MolliePaymentMethods.giftcard:
+      if (!paymentCustomFields?.voucherNumber) {
+        logger.error('SCTM - PAYMENT PROCESSING - voucherNumber is required for payment method giftcard');
+
+        return false;
+      }
+
+      if (typeof paymentCustomFields?.voucherNumber !== 'string' || paymentCustomFields?.voucherNumber.trim() === '') {
+        logger.error(
+          'SCTM - PAYMENT PROCESSING - voucherNumber must be a string and not empty for payment method giftcard',
+        );
+
+        return false;
+      }
+
+      if (!paymentCustomFields?.voucherPin && typeof paymentCustomFields?.voucherPin !== 'string') {
+        logger.error('SCTM - PAYMENT PROCESSING - voucherPin is required for payment method giftcard');
+
+        return false;
+      }
+
+      if (typeof paymentCustomFields?.voucherPin !== 'string' || paymentCustomFields?.voucherPin.trim() === '') {
+        logger.error(
+          'SCTM - PAYMENT PROCESSING - voucherPin must be a string and not empty for payment method giftcard',
+        );
+
+        return false;
+      }
+
+      break;
+    case MolliePaymentMethods.creditcard:
+      if (
+        !paymentCustomFields?.[CustomFields.createPayment.request]?.cardToken ||
+        paymentCustomFields?.[CustomFields.createPayment.request].cardToken == ''
+      ) {
+        return !(!paymentCustomFields.cardToken || paymentCustomFields.cardToken == '');
+      }
+
+      return false;
+
+    default:
+      break;
   }
 
   return true;

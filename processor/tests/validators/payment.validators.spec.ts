@@ -9,13 +9,15 @@ import {
 import { describe, it, expect, jest, afterEach } from '@jest/globals';
 import CustomError from '../../src/errors/custom.error';
 import SkipError from '../../src/errors/skip.error';
+import { logger } from '../../src/utils/logger.utils';
 
 jest.mock('@mollie/api-client', () => ({
   PaymentMethod: {
-    applePay: 'applePay',
+    applepay: 'applepay',
     paypal: 'paypal',
     dummy: 'dummy',
     creditcard: 'creditcard',
+    giftcard: 'giftcard',
   },
 }));
 
@@ -133,7 +135,7 @@ describe('hasValidPaymentMethod', () => {
   });
 
   it('should return true if the payment method is defined and is supported by Mollie', () => {
-    expect(hasValidPaymentMethod('applePay')).toBe(true);
+    expect(hasValidPaymentMethod('applepay')).toBe(true);
     expect(hasValidPaymentMethod('paypal')).toBe(true);
     expect(hasValidPaymentMethod('dummy')).toBe(true);
   });
@@ -318,5 +320,267 @@ describe('checkPaymentMethodSpecificParameters', () => {
     };
 
     expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(true);
+  });
+
+  it('should return false if the payment method is applepay and applePayPaymentToken is not defined in the Payment custom fields', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'applepay',
+      },
+    };
+
+    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(false);
+    expect(logger.error).toBeCalledTimes(1);
+  });
+
+  it('should return false if the payment method is applepay and applePayPaymentToken is an empty string in the Payment custom fields', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'applepay',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request:
+            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/","applePayPaymentToken":""}',
+        },
+      },
+    };
+
+    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(false);
+    expect(logger.error).toBeCalledTimes(1);
+  });
+
+  it('should return true if the payment method is applepay and applePayPaymentToken is provided in the Payment custom fields', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'applepay',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request:
+            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/","applePayPaymentToken":"apple_pay_token"}',
+        },
+      },
+    };
+
+    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(true);
+    expect(logger.error).toBeCalledTimes(0);
+  });
+
+  it('should return false if the payment method is paypal and sessionId or digitalGoods are missing in the Payment custom fields', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'paypal',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request:
+            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/","sessionId":"12345"}',
+        },
+      },
+    };
+
+    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(false);
+    expect(logger.error).toBeCalledTimes(1);
+  });
+
+  it('should return true if the payment method is paypal and sessionId, digitalGoods are provided in the Payment custom fields', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'paypal',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request:
+            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/","sessionId":"12345", "digitalGoods": true}',
+        },
+      },
+    };
+
+    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(true);
+    expect(logger.error).toBeCalledTimes(0);
+  });
+
+  it('should return false if the payment method is giftcard and the value of voucherNumber is not a string', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'giftcard',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request:
+            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/","voucherNumber":true, "voucherPin":"12345"}',
+        },
+      },
+    };
+
+    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(false);
+    expect(logger.error).toBeCalledTimes(1);
+  });
+
+  it('should return false if the payment method is giftcard and the value of voucherPin is not a string', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'giftcard',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request:
+            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/","voucherNumber":"12345", "voucherPin":true}',
+        },
+      },
+    };
+
+    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(false);
+    expect(logger.error).toBeCalledTimes(1);
+  });
+
+  it('should return true if the payment method is giftcard and voucherNumber and voucherPin are strings', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'giftcard',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request:
+            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/","voucherNumber":"12345", "voucherPin":"9999"}',
+        },
+      },
+    };
+
+    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(true);
+    expect(logger.error).toBeCalledTimes(0);
   });
 });
