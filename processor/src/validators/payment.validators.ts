@@ -81,16 +81,28 @@ export const checkPaymentMethodInput = (ctPayment: CTPayment): true | CustomErro
 };
 
 export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, method: string): boolean => {
+  const paymentCustomFields = ctPayment.custom?.fields?.[CustomFields.createPayment.request]
+    ? JSON.parse(ctPayment.custom?.fields?.[CustomFields.createPayment.request])
+    : {};
+
   if (
     method == MolliePaymentMethods.creditcard &&
     (!ctPayment.custom?.fields?.[CustomFields.createPayment.request]?.cardToken ||
       ctPayment.custom?.fields?.[CustomFields.createPayment.request].cardToken == '')
   ) {
-    const paymentCustomFields = ctPayment.custom?.fields?.[CustomFields.createPayment.request]
-      ? JSON.parse(ctPayment.custom?.fields?.[CustomFields.createPayment.request])
-      : {};
+    if (!paymentCustomFields.cardToken) {
+      logger.error('SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard.');
 
-    return !(!paymentCustomFields.cardToken || paymentCustomFields.cardToken == '');
+      return false;
+    }
+
+    if (typeof paymentCustomFields.cardToken !== 'string' || paymentCustomFields.cardToken.trim() === '') {
+      logger.error(
+        'SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard.',
+      );
+
+      return false;
+    }
   }
 
   return true;
