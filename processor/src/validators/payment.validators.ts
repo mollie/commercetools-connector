@@ -81,15 +81,18 @@ export const checkPaymentMethodInput = (ctPayment: CTPayment): true | CustomErro
 };
 
 export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, method: string): boolean => {
-  const paymentCustomFields = ctPayment.custom?.fields?.[CustomFields.createPayment.request]
-    ? JSON.parse(ctPayment.custom?.fields?.[CustomFields.createPayment.request])
-    : {};
+  let paymentCustomFields;
 
-  if (
-    method == MolliePaymentMethods.creditcard &&
-    (!ctPayment.custom?.fields?.[CustomFields.createPayment.request]?.cardToken ||
-      ctPayment.custom?.fields?.[CustomFields.createPayment.request].cardToken == '')
-  ) {
+  try {
+    paymentCustomFields = ctPayment.custom?.fields?.[CustomFields.createPayment.request]
+      ? JSON.parse(ctPayment.custom?.fields?.[CustomFields.createPayment.request])
+      : {};
+  } catch (error: unknown) {
+    logger.error(`SCTM - PAYMENT PROCESSING - Failed to parse the JSON string from the custom field sctm_create_payment_request.`);
+    throw new CustomError(400, `SCTM - PAYMENT PROCESSING - Failed to parse the JSON string from the custom field sctm_create_payment_request.`);
+  }
+
+  if (method === MolliePaymentMethods.creditcard) {
     if (!paymentCustomFields.cardToken) {
       logger.error('SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard.');
 

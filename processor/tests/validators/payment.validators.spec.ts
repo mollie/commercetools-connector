@@ -9,6 +9,7 @@ import {
 import { describe, it, expect, jest, afterEach } from '@jest/globals';
 import CustomError from '../../src/errors/custom.error';
 import SkipError from '../../src/errors/skip.error';
+import { logger } from '../../src/utils/logger.utils';
 
 jest.mock('@mollie/api-client', () => ({
   PaymentMethod: {
@@ -285,6 +286,46 @@ describe('checkPaymentMethodSpecificParameters', () => {
     };
 
     expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(false);
+  });
+
+  it('should throw CustomError if the payment method is creditcard and the custom field sctm_create_payment_request is not a JSON string', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'creditcard',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request: 'dummy string',
+        },
+      },
+    };
+
+    try {
+      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toHaveBeenCalledWith(
+        'SCTM - PAYMENT PROCESSING - Failed to parse the JSON string from the custom field sctm_create_payment_request.',
+      );
+    }
   });
 
   it('should return true if the payment method is creditcard and cardToken is defined and not an empty string in the Payment custom fields', () => {
