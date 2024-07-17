@@ -43,6 +43,18 @@ export async function createCustomPaymentType(): Promise<void> {
         resourceTypeIds: ['payment'],
         fieldDefinitions: [
           {
+            name: CustomFields.payment.profileId,
+            label: {
+              en: 'Profile ID',
+              de: 'Profil-ID',
+            },
+            required: false,
+            type: {
+              name: 'String',
+            },
+            inputHint: 'MultiLine',
+          },
+          {
             name: CustomFields.payment.request,
             label: {
               en: 'The request object for listing payment methods',
