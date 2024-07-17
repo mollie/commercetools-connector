@@ -28,6 +28,10 @@ export const paymentController = async (
       return await handleListPaymentMethodsByPayment(ctPayment);
     case ConnectorActions.CreatePayment:
       return await handleCreatePayment(ctPayment);
+    case ConnectorActions.NoAction:
+      return {
+        statusCode: 200,
+      };
     default:
       throw new CustomError(400, controllerAction.errorMessage ?? '');
   }

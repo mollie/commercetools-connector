@@ -24,6 +24,7 @@ export type ConnectorEnvVars = {
   };
   mollie: {
     apiKey: string;
+    profileId: string;
     debug?: string;
   };
 };
