@@ -15,6 +15,9 @@ deployAs:
         - key: MOLLIE_API_KEY
           description: Mollie PSP API key
           required: true
+        - key: MOLLIE_PROFILE_ID
+          description: Mollie PSP profile ID
+          required: true
         - key: CTP_PROJECT_KEY
           description: commercetools Composable Commerce project key
           required: true

@@ -10,6 +10,7 @@ export const CustomFields = {
     error: 'sctm_payment_methods_error',
     request: 'sctm_payment_methods_request',
     response: 'sctm_payment_methods_response',
+    profileId: 'sctm_mollie_profile_id',
   },
   createPayment: {
     request: 'sctm_create_payment_request',
