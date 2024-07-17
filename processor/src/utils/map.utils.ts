@@ -71,9 +71,6 @@ export const mapCommercetoolsPaymentCustomFieldsToMollieListParams = async (
  */
 export const createMollieCreatePaymentParams = (payment: Payment): PaymentCreateParams => {
   const { amountPlanned, paymentMethodInfo, custom } = payment;
-  const { centAmount, currencyCode, fractionDigits } = amountPlanned;
-
-  const amountValue = centAmount / Math.pow(10, fractionDigits ?? 0);
 
   const requestCustomField = custom?.fields?.[CustomFields.createPayment.request];
 
@@ -82,10 +79,7 @@ export const createMollieCreatePaymentParams = (payment: Payment): PaymentCreate
   const molliePaymentParams: PaymentCreateParams = {
     ...paymentRequest,
     method: paymentMethodInfo.method,
-    amount: {
-      currency: currencyCode,
-      value: amountValue.toFixed(fractionDigits),
-    },
+    amount: makeMollieAmount(amountPlanned),
   };
 
   return molliePaymentParams;

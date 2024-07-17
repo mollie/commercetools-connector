@@ -4,19 +4,9 @@ jest.mock('../../src/service/payment.service', () => ({
   handlePaymentWebhook: jest.fn(),
 }));
 
-const loggerWarn = jest.fn();
-const loggerInfo = jest.fn();
-
-jest.mock('../../src/utils/logger.utils', () => ({
-  logger: {
-    warn: loggerWarn,
-    error: jest.fn(),
-    info: loggerInfo,
-  },
-}));
-
 import { post } from '../../src/controllers/webhook.controller';
 import { NextFunction, Request, Response } from 'express';
+import { logger } from '../../src/utils/logger.utils';
 
 describe('Test webhook.controller.ts', () => {
   let req: Partial<Request>;
@@ -41,7 +31,7 @@ describe('Test webhook.controller.ts', () => {
 
     await post(req as Request, res as Response, next);
 
-    expect(loggerWarn).toHaveBeenCalledWith('Webhook with id xxx_123 is not a payment event.');
+    expect(logger.warn).toHaveBeenCalledWith('Webhook with id xxx_123 is not a payment event.');
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.send).toHaveBeenCalled();
   });
@@ -53,7 +43,7 @@ describe('Test webhook.controller.ts', () => {
 
     await post(req as Request, res as Response, next);
 
-    expect(loggerInfo).toHaveBeenCalledWith('Webhook with id tr_123 is handled successfully.');
+    expect(logger.info).toHaveBeenCalledWith('Webhook with id tr_123 is handled successfully.');
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.send).toHaveBeenCalled();
   });
