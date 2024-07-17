@@ -3,17 +3,20 @@ import {
   checkExtensionAction,
   checkPaymentInterface,
   checkPaymentMethodInput,
+  checkPaymentMethodSpecificParameters,
   hasValidPaymentMethod,
 } from './../../src/validators/payment.validators';
 import { describe, it, expect, jest, afterEach } from '@jest/globals';
 import CustomError from '../../src/errors/custom.error';
 import SkipError from '../../src/errors/skip.error';
+import { logger } from '../../src/utils/logger.utils';
 
 jest.mock('@mollie/api-client', () => ({
   PaymentMethod: {
     applePay: 'applePay',
     paypal: 'paypal',
     dummy: 'dummy',
+    creditcard: 'creditcard',
   },
 }));
 
@@ -225,5 +228,136 @@ describe('checkPaymentMethodInput', () => {
     };
 
     expect(checkPaymentMethodInput(CTPayment)).toBe(true);
+  });
+});
+
+describe('checkPaymentMethodSpecificParameters', () => {
+  it('should return false if the payment method is creditcard and cardToken is not defined in Custom Field', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'creditcard',
+      },
+    };
+
+    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(false);
+  });
+
+  it('should return false if the payment method is creditcard and cardToken is an empty string', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'creditcard',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request:
+            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/","cardToken":""}',
+        },
+      },
+    };
+
+    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(false);
+  });
+
+  it('should throw CustomError if the payment method is creditcard and the custom field sctm_create_payment_request is not a JSON string', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'creditcard',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request: 'dummy string',
+        },
+      },
+    };
+
+    try {
+      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toHaveBeenCalledWith(
+        'SCTM - PAYMENT PROCESSING - Failed to parse the JSON string from the custom field sctm_create_payment_request.',
+      );
+    }
+  });
+
+  it('should return true if the payment method is creditcard and cardToken is defined and not an empty string in the Payment custom fields', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'creditcard',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request:
+            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/","cardToken":"ct_123456"}',
+        },
+      },
+    };
+
+    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(true);
   });
 });
