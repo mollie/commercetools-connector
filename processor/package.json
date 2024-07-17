@@ -1,14 +1,14 @@
 {
   "name": "shopmacher-mollie-processor",
   "description": "Integration between commercetools and mollie payment service provider",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "index.js",
   "private": true,
   "scripts": {
     "start": "node dist/index.js",
     "gcp-build": "tsc",
-    "start:dev": "concurrently -k \"tsc --watch\" \"nodemon -q build/index.js\"",
-    "build": "rimraf ./build && tsc",
+    "start:dev": "concurrently -k \"tsc --watch\" \"nodemon -q dist/index.js\"",
+    "build": "rimraf ./dist && tsc",
     "watch": "nodemon -q --ignore '**/*.spec.ts' src/index.ts",
     "lint": "eslint . --ext .ts",
     "prettier": "prettier --write '**/*.{js,ts}'",
@@ -16,8 +16,8 @@
     "test": "jest --detectOpenHandles --clearMocks --colors --config jest.config.cjs",
     "test:watch": "jest --watch --clearMocks --detectOpenHandles --colors --config jest.config.cjs",
     "preinstall": "npx npm-force-resolutions",
-    "connector:post-deploy": "node build/connector/post-deploy.js",
-    "connector:pre-undeploy": "node build/connector/pre-undeploy.js"
+    "connector:post-deploy": "node dist/connector/post-deploy.js",
+    "connector:pre-undeploy": "node dist/connector/pre-undeploy.js"
   },
   "author": "Shopmacher GmbH",
   "license": "MIT",
