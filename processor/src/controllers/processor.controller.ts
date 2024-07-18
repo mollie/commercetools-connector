@@ -7,6 +7,7 @@ import { paymentController } from './payment.controller';
 import CustomError from '../errors/custom.error';
 import SkipError from '../errors/skip.error';
 import { apiError } from '../api/error.api';
+import { formatErrorResponse } from '../errors/mollie.error';
 
 /**
  * Exposed service endpoint.
@@ -44,8 +45,8 @@ export const post = async (request: Request, response: Response, next: NextFunct
     }
     if (error instanceof CustomError) {
       return apiError(response, error.errors);
-    } else {
-      next(error);
     }
+
+    return apiError(response, formatErrorResponse(error).errors);
   }
 };

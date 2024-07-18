@@ -53,6 +53,11 @@ describe('Test payment.controller.ts', () => {
       } as unknown as Payment,
     } as PaymentReference;
 
+    (determinePaymentAction as jest.Mock).mockReturnValue({
+      action: ConnectorActions.GetPaymentMethods,
+      errorMessage: '',
+    });
+
     (validateCommerceToolsPaymentPayload as jest.Mock).mockImplementationOnce(() => {
       throw new CustomError(400, 'dummy message');
     });
@@ -61,7 +66,8 @@ describe('Test payment.controller.ts', () => {
       expect(error).toBeInstanceOf(CustomError);
       expect(error.statusCode).toBe(400);
       expect(error.message).toBe('dummy message');
-      expect(determinePaymentAction).toBeCalledTimes(0);
+      expect(determinePaymentAction).toBeCalledTimes(1);
+      expect(validateCommerceToolsPaymentPayload).toBeCalledTimes(1);
       expect(handleListPaymentMethodsByPayment).toBeCalledTimes(0);
       expect(handleCreatePayment).toBeCalledTimes(0);
     });
