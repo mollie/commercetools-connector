@@ -1,12 +1,4 @@
 import { describe, test, jest, expect, beforeEach } from '@jest/globals';
-
-jest.mock('../../src/utils/logger.utils', () => ({
-  logger: {
-    error: jest.fn(),
-    debug: jest.fn(),
-  },
-}));
-
 import { NextFunction, Request, Response } from 'express';
 import { post } from '../../src/controllers/processor.controller';
 
