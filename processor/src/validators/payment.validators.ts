@@ -51,10 +51,10 @@ export const hasValidPaymentMethod: (method: string | undefined) => boolean = (m
 /**
  * Checks the payment method input of a Commercetools Payment object.
  *
- * @param {CTPayment} CTPayment - The Commercetools Payment object to check.
  * @return {true | CustomError} An object containing the validation result.
  * The `isInvalid` property indicates if the payment method input is invalid.
  * The `errorMessage` property contains the error message if the input is invalid.
+ * @param ctPayment
  */
 export const checkPaymentMethodInput = (ctPayment: CTPayment): true | CustomError => {
   const CTPaymentMethod = ctPayment.paymentMethodInfo?.method ?? '';
@@ -137,7 +137,7 @@ export const validateCommerceToolsPaymentPayload = (action: string, ctPayment: C
 
   checkPaymentInterface(ctPayment);
 
-  checkPaymentMethodInput(ctPayment);
+  // checkPaymentMethodInput(ctPayment);
 
   checkAmountPlanned(ctPayment);
 };

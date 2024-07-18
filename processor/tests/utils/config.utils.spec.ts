@@ -15,7 +15,7 @@ describe('Test src/utils/config.utils.ts', () => {
       },
       mollie: {
         apiKey: process.env.MOLLIE_API_KEY,
-        debug: process.env.MOLLIE_DEBUG,
+        debug: process.env.DEBUG,
         profileId: process.env.MOLLIE_PROFILE_ID,
       },
     });
@@ -51,8 +51,8 @@ describe('Test src/utils/config.utils.ts', () => {
     expect(() => readConfiguration()).toThrow(CustomError);
   });
 
-  test('should throw an error when MOLLIE_DEBUG is not defined', () => {
-    delete process.env.MOLLIE_DEBUG;
+  test('should throw an error when DEBUG is not defined', () => {
+    delete process.env.DEBUG;
     expect(() => readConfiguration()).toThrow(CustomError);
   });
 });
