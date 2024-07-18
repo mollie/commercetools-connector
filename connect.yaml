@@ -8,9 +8,13 @@ deployAs:
     configuration:
       standardConfiguration:
         - key: CTP_REGION
-          description: commercetools Composable Commerce API region
+          description: Commercetools Composable Commerce API region
           required: true
           default: "europe-west1.gcp"
+        - key: MOLLIE_DEBUG
+          description: Mollie PSP debug mode
+          required: false
+          default: "0"
       securedConfiguration:
         - key: MOLLIE_API_KEY
           description: Mollie PSP API key
@@ -19,14 +23,14 @@ deployAs:
           description: Mollie PSP profile ID
           required: true
         - key: CTP_PROJECT_KEY
-          description: commercetools Composable Commerce project key
+          description: Commercetools Composable Commerce project key
           required: true
         - key: CTP_CLIENT_ID
-          description: commercetools Composable Commerce client ID
+          description: Commercetools Composable Commerce client ID
           required: true
         - key: CTP_CLIENT_SECRET
-          description: commercetools Composable Commerce client secret
+          description: Commercetools Composable Commerce client secret
           required: true
         - key: CTP_SCOPE
-          description: commercetools Composable Commerce client scope
+          description: Commercetools Composable Commerce client scope
           required: true
