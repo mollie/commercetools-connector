@@ -16,6 +16,7 @@ describe('Test src/utils/config.utils.ts', () => {
       mollie: {
         apiKey: process.env.MOLLIE_API_KEY,
         debug: process.env.MOLLIE_DEBUG,
+        profileId: process.env.MOLLIE_PROFILE_ID,
       },
     });
   });

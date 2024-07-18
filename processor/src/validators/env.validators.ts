@@ -62,7 +62,7 @@ const envValidators = [
     ['mollie', 'debug'],
     {
       code: 'InvalidDebug',
-      message: 'Mollie debug should be a valid string',
+      message: 'Mollie debug should be a valid string.',
       referencedBy: 'environmentVariables',
     },
     {
