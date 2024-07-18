@@ -79,10 +79,22 @@ describe('Test env.validators.ts', () => {
       index1: 6,
       index2: 0,
       field1: 'mollie',
+      field2: 'profileId',
+      error: {
+        code: 'InvalidMollieProfileId',
+        message: 'Mollie profile id should be a valid string.',
+        referencedBy: 'environmentVariables',
+      },
+      condition: undefined,
+    },
+    {
+      index1: 7,
+      index2: 0,
+      field1: 'mollie',
       field2: 'debug',
       error: {
         code: 'InvalidDebug',
-        message: 'Mollie debug should be a valid string',
+        message: 'Mollie debug should be a valid string.',
         referencedBy: 'environmentVariables',
       },
       condition: { min: 1, max: undefined },

@@ -88,8 +88,13 @@ export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, metho
       ? JSON.parse(ctPayment.custom?.fields?.[CustomFields.createPayment.request])
       : {};
   } catch (error: unknown) {
-    logger.error(`SCTM - PAYMENT PROCESSING - Failed to parse the JSON string from the custom field sctm_create_payment_request.`);
-    throw new CustomError(400, `SCTM - PAYMENT PROCESSING - Failed to parse the JSON string from the custom field sctm_create_payment_request.`);
+    logger.error(
+      'SCTM - PAYMENT PROCESSING - Failed to parse the JSON string from the custom field sctm_create_payment_request.',
+    );
+    throw new CustomError(
+      400,
+      `SCTM - PAYMENT PROCESSING - Failed to parse the JSON string from the custom field sctm_create_payment_request.`,
+    );
   }
 
   if (method === MolliePaymentMethods.creditcard) {
