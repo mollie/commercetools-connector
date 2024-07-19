@@ -99,7 +99,7 @@ describe('createMollieCreatePaymentParams', () => {
       shippingAddress: {},
       testmode: null,
       cardToken: '',
-      include: ''
+      include: '',
     });
   });
 
