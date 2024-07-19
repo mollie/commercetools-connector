@@ -42,7 +42,6 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
   try {
     const mollieOptions = await mapCommercetoolsPaymentCustomFieldsToMollieListParams(ctPayment);
     const methods: List<Method> = await listPaymentMethods(mollieOptions);
-
     const availableMethods = JSON.stringify({
       count: methods.length,
       methods: methods.length ? methods : [],
@@ -50,7 +49,7 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
 
     const ctUpdateActions: UpdateAction[] = [setCustomFields(CustomFields.payment.response, availableMethods)];
 
-    const hasCardPayment = methods.findIndex((method: Method) => method.id === PaymentMethod.creditcard);
+    const hasCardPayment = methods.find((method: Method) => method.id === PaymentMethod.creditcard);
 
     if (hasCardPayment) {
       ctUpdateActions.push(setCustomFields(CustomFields.payment.profileId, readConfiguration().mollie.profileId));
