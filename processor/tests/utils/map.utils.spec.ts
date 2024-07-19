@@ -139,6 +139,9 @@ describe('createMollieCreatePaymentParams', () => {
     };
 
     const mollieCreatePaymentParams = createMollieCreatePaymentParams(CTPayment);
+    // Always use our default webhook endpoint
+    const defaultWebhookEndpoint = new URL(process.env.CONNECT_SERVICE_URL ?? '').origin + '/webhook';
+
     expect(mollieCreatePaymentParams).toEqual({
       method: 'creditcard',
       amount: {
@@ -147,7 +150,7 @@ describe('createMollieCreatePaymentParams', () => {
       },
       locale: customFieldObject.locale,
       redirectUrl: customFieldObject.redirectUrl,
-      webhookUrl: customFieldObject.webhookUrl,
+      webhookUrl: defaultWebhookEndpoint,
       description: customFieldObject.description,
       applicationFee: {},
       billingAddress: {},

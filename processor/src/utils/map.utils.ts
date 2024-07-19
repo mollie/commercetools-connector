@@ -95,7 +95,7 @@ export const createMollieCreatePaymentParams = (payment: Payment): PaymentCreate
     description: paymentRequest.description ?? '',
     amount: makeMollieAmount(amountPlanned),
     redirectUrl: paymentRequest.redirectUrl ?? null,
-    webhookUrl: paymentRequest.webhookUrl ?? defaultWebhookEndpoint,
+    webhookUrl: defaultWebhookEndpoint,
     billingAddress: paymentRequest.billingAddress ?? {},
     shippingAddress: paymentRequest.shippingAddress ?? {},
     locale: paymentRequest.locale ?? null,
