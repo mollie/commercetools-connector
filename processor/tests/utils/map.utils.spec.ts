@@ -5,6 +5,7 @@ import {
 } from '../../src/utils/map.utils';
 import { Payment } from '@commercetools/platform-sdk';
 import { MethodsListParams } from '@mollie/api-client';
+import { makeMollieAmount } from '../../src/utils/mollie.utils';
 
 describe('Test map.utils.ts', () => {
   let mockCtPayment: Payment;
@@ -74,12 +75,28 @@ describe('createMollieCreatePaymentParams', () => {
     };
 
     const mollieCreatePaymentParams = createMollieCreatePaymentParams(CTPayment);
+    const defaultWebhookEndpoint = new URL(process.env.CONNECT_SERVICE_URL ?? '').origin + '/webhook';
+    const mollieAmount = makeMollieAmount(CTPayment.amountPlanned);
+
     expect(mollieCreatePaymentParams).toEqual({
-      method: 'creditcard',
+      method: CTPayment.paymentMethodInfo.method,
       amount: {
-        currency: 'EUR',
-        value: '10.00',
+        currency: mollieAmount.currency,
+        value: mollieAmount.value,
       },
+      locale: null,
+      redirectUrl: null,
+      webhookUrl: defaultWebhookEndpoint,
+      description: '',
+      applicationFee: {},
+      billingAddress: {},
+      issuer: '',
+      metadata: null,
+      profileId: null,
+      restrictPaymentMethodsToCountry: null,
+      shippingAddress: {},
+      testmode: null,
+      cardToken: '',
     });
   });
 
@@ -90,6 +107,7 @@ describe('createMollieCreatePaymentParams', () => {
       redirectUrl: 'https://example.com/success',
       webhookUrl: 'https://example.com/webhook',
       cancelUrl: 'https://example.com/cancel',
+      cardToken: 'card_token_12345',
     };
 
     const CTPayment: Payment = {
@@ -121,6 +139,9 @@ describe('createMollieCreatePaymentParams', () => {
     };
 
     const mollieCreatePaymentParams = createMollieCreatePaymentParams(CTPayment);
+    // Always use our default webhook endpoint
+    const defaultWebhookEndpoint = new URL(process.env.CONNECT_SERVICE_URL ?? '').origin + '/webhook';
+
     expect(mollieCreatePaymentParams).toEqual({
       method: 'creditcard',
       amount: {
@@ -129,9 +150,17 @@ describe('createMollieCreatePaymentParams', () => {
       },
       locale: customFieldObject.locale,
       redirectUrl: customFieldObject.redirectUrl,
-      webhookUrl: customFieldObject.webhookUrl,
-      cancelUrl: customFieldObject.cancelUrl,
+      webhookUrl: defaultWebhookEndpoint,
       description: customFieldObject.description,
+      applicationFee: {},
+      billingAddress: {},
+      issuer: '',
+      metadata: null,
+      profileId: null,
+      restrictPaymentMethodsToCountry: null,
+      shippingAddress: {},
+      testmode: null,
+      cardToken: customFieldObject.cardToken,
     });
   });
 });
