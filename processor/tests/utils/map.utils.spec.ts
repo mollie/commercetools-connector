@@ -96,6 +96,7 @@ describe('createMollieCreatePaymentParams', () => {
       restrictPaymentMethodsToCountry: null,
       shippingAddress: {},
       testmode: null,
+      cardToken: '',
     });
   });
 
@@ -106,6 +107,7 @@ describe('createMollieCreatePaymentParams', () => {
       redirectUrl: 'https://example.com/success',
       webhookUrl: 'https://example.com/webhook',
       cancelUrl: 'https://example.com/cancel',
+      cardToken: 'card_token_12345',
     };
 
     const CTPayment: Payment = {
@@ -155,6 +157,7 @@ describe('createMollieCreatePaymentParams', () => {
       restrictPaymentMethodsToCountry: null,
       shippingAddress: {},
       testmode: null,
+      cardToken: customFieldObject.cardToken,
     });
   });
 });

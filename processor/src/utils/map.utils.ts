@@ -80,6 +80,17 @@ export const createMollieCreatePaymentParams = (payment: Payment): PaymentCreate
 
   const defaultWebhookEndpoint = new URL(process.env.CONNECT_SERVICE_URL ?? '').origin + '/webhook';
 
+  let specificParam;
+  switch (method) {
+    case PaymentMethod.creditcard:
+      specificParam = {
+        cardToken: paymentRequest.cardToken ?? '',
+      };
+      break;
+    default:
+      break;
+  }
+
   const molliePaymentParams: PaymentCreateParams = {
     description: paymentRequest.description ?? '',
     amount: makeMollieAmount(amountPlanned),
@@ -97,6 +108,7 @@ export const createMollieCreatePaymentParams = (payment: Payment): PaymentCreate
     applicationFee: paymentRequest.applicationFee ?? {},
     profileId: paymentRequest.profileId ?? null,
     testmode: paymentRequest.testmode ?? null,
+    ...specificParam,
   };
 
   return molliePaymentParams;
