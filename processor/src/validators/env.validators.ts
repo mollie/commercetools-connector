@@ -52,11 +52,17 @@ const envValidators = [
     referencedBy: 'environmentVariables',
   }),
 
+  standardKey(['mollie', 'profileId'], {
+    code: 'InvalidMollieProfileId',
+    message: 'Mollie profile id should be a valid string.',
+    referencedBy: 'environmentVariables',
+  }),
+
   optional(standardString)(
     ['mollie', 'debug'],
     {
       code: 'InvalidDebug',
-      message: 'Mollie debug should be a valid string',
+      message: 'Mollie debug should be a valid string.',
       referencedBy: 'environmentVariables',
     },
     {

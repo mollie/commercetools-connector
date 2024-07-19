@@ -30,7 +30,7 @@ export const determinePaymentAction = (ctPayment?: Payment): DeterminePaymentAct
     };
   }
 
-  const { key, transactions } = ctPayment;
+  const { id, key, transactions } = ctPayment;
 
   const initialChargeTransactions: CTTransaction[] = [];
   const pendingChargeTransactions: CTTransaction[] = [];
@@ -70,7 +70,7 @@ export const determinePaymentAction = (ctPayment?: Payment): DeterminePaymentAct
       break;
 
     // Create Payment
-    case !!key &&
+    case (!!key || !!id) &&
       initialChargeTransactions.length === 1 &&
       !successChargeTransactions.length &&
       !pendingChargeTransactions.length:
@@ -78,7 +78,7 @@ export const determinePaymentAction = (ctPayment?: Payment): DeterminePaymentAct
       break;
     default:
       action = ConnectorActions.NoAction;
-      errorMessage = 'SCTM - No payment actions matched';
+      logger.warn('SCTM - No payment actions matched');
   }
 
   return {

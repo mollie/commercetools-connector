@@ -5,6 +5,7 @@ import { PaymentReference, Payment } from '@commercetools/platform-sdk';
 import { ConnectorActions } from '../utils/constant.utils';
 import { validateCommerceToolsPaymentPayload } from '../validators/payment.validators';
 import CustomError from '../errors/custom.error';
+import SkipError from '../errors/skip.error';
 
 /**
  * Handle the cart controller according to the action
@@ -19,9 +20,17 @@ export const paymentController = async (
 ): Promise<ControllerResponseType> => {
   const ctPayment: Payment = JSON.parse(JSON.stringify(resource)).obj;
 
-  validateCommerceToolsPaymentPayload(action, ctPayment);
-
   const controllerAction = determinePaymentAction(ctPayment);
+
+  if (controllerAction.errorMessage !== '') {
+    throw new CustomError(400, controllerAction.errorMessage as string);
+  }
+
+  if (controllerAction.action === ConnectorActions.NoAction) {
+    throw new SkipError('SCTM - No payment actions matched');
+  }
+
+  validateCommerceToolsPaymentPayload(action, controllerAction.action, ctPayment);
 
   switch (controllerAction.action) {
     case ConnectorActions.GetPaymentMethods:
@@ -29,6 +38,10 @@ export const paymentController = async (
     case ConnectorActions.CreatePayment:
       return await handleCreatePayment(ctPayment);
     default:
-      throw new CustomError(400, controllerAction.errorMessage ?? '');
+      if (controllerAction.errorMessage === '') {
+        throw new SkipError('SCTM - No payment actions matched');
+      }
+
+      throw new CustomError(400, controllerAction.errorMessage as string);
   }
 };

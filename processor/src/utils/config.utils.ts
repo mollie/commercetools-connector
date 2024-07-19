@@ -19,7 +19,8 @@ export const readConfiguration = () => {
     },
     mollie: {
       apiKey: process.env.MOLLIE_API_KEY as string,
-      debug: process.env.MOLLIE_DEBUG as string,
+      debug: process.env.DEBUG as string,
+      profileId: process.env.MOLLIE_PROFILE_ID as string,
     },
   };
 

@@ -234,7 +234,8 @@ describe('Test helpers.validators.ts', () => {
       },
       mollie: {
         apiKey: process.env.MOLLIE_API_KEY as string,
-        debug: (process.env.MOLLIE_DEBUG ?? '0') as string,
+        debug: (process.env.DEBUG ?? '0') as string,
+        profileId: process.env.MOLLIE_PROFILE_ID as string,
       },
     };
     const error = getValidateMessages(envValidators, vars);
@@ -253,7 +254,8 @@ describe('Test helpers.validators.ts', () => {
       },
       mollie: {
         apiKey: process.env.MOLLIE_API_KEY as string,
-        debug: (process.env.MOLLIE_DEBUG ?? '0') as string,
+        debug: (process.env.DEBUG ?? '0') as string,
+        profileId: process.env.MOLLIE_PROFILE_ID as string,
       },
     };
     const error = getValidateMessages(envValidators, vars);

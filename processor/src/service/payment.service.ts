@@ -29,6 +29,7 @@ import {
   changeTransactionTimestamp,
   setCustomFields,
 } from '../commercetools/action.commercetools';
+import { readConfiguration } from '../utils/config.utils';
 
 /**
  * Handles listing payment methods by payment.
@@ -41,13 +42,18 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
   try {
     const mollieOptions = await mapCommercetoolsPaymentCustomFieldsToMollieListParams(ctPayment);
     const methods: List<Method> = await listPaymentMethods(mollieOptions);
-
     const availableMethods = JSON.stringify({
       count: methods.length,
       methods: methods.length ? methods : [],
     });
 
     const ctUpdateActions: UpdateAction[] = [setCustomFields(CustomFields.payment.response, availableMethods)];
+
+    const hasCardPayment = methods.find((method: Method) => method.id === PaymentMethod.creditcard);
+
+    if (hasCardPayment) {
+      ctUpdateActions.push(setCustomFields(CustomFields.payment.profileId, readConfiguration().mollie.profileId));
+    }
 
     return {
       statusCode: 200,
