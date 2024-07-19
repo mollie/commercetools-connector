@@ -92,9 +92,21 @@ export const checkPaymentMethodInput = (connectorAction: string, ctPayment: CTPa
  * The `errorMessage` property contains the error message if the input is invalid.
  */
 export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, method: string): boolean => {
-  const paymentCustomFields = ctPayment.custom?.fields?.[CustomFields.createPayment.request]
-    ? JSON.parse(ctPayment.custom?.fields?.[CustomFields.createPayment.request])
-    : {};
+  let paymentCustomFields;
+
+  try {
+    paymentCustomFields = ctPayment.custom?.fields?.[CustomFields.createPayment.request]
+      ? JSON.parse(ctPayment.custom?.fields?.[CustomFields.createPayment.request])
+      : {};
+  } catch (error: unknown) {
+    logger.error(
+      'SCTM - PAYMENT PROCESSING - Failed to parse the JSON string from the custom field sctm_create_payment_request.',
+    );
+    throw new CustomError(
+      400,
+      `SCTM - PAYMENT PROCESSING - Failed to parse the JSON string from the custom field sctm_create_payment_request.`,
+    );
+  }
 
   switch (method) {
     case MolliePaymentMethods.applepay:
@@ -153,7 +165,7 @@ export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, metho
         return false;
       }
 
-      if (!paymentCustomFields?.voucherPin && typeof paymentCustomFields?.voucherPin !== 'string') {
+      if (!paymentCustomFields?.voucherPin) {
         logger.error('SCTM - PAYMENT PROCESSING - voucherPin is required for payment method giftcard');
 
         return false;
@@ -169,15 +181,21 @@ export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, metho
 
       break;
     case MolliePaymentMethods.creditcard:
-      if (
-        !paymentCustomFields?.[CustomFields.createPayment.request]?.cardToken ||
-        paymentCustomFields?.[CustomFields.createPayment.request].cardToken == ''
-      ) {
-        return !(!paymentCustomFields.cardToken || paymentCustomFields.cardToken == '');
+      if (!paymentCustomFields?.cardToken || paymentCustomFields.cardToken == '') {
+        logger.error('SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard');
+
+        return false;
       }
 
-      return false;
+      if (typeof paymentCustomFields?.cardToken !== 'string' || paymentCustomFields?.cardToken.trim() === '') {
+        logger.error(
+          'SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard',
+        );
 
+        return false;
+      }
+
+      break;
     default:
       break;
   }

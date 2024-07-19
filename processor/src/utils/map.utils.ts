@@ -82,16 +82,52 @@ export const createMollieCreatePaymentParams = (payment: Payment): PaymentCreate
 
   let specificParam;
   switch (method) {
+    case PaymentMethod.applepay:
+      specificParam = {
+        applePayPaymentToken: paymentRequest.applePayPaymentToken ?? '',
+      };
+
+      break;
+    case PaymentMethod.banktransfer:
+      specificParam = {
+        dueDate: paymentRequest.dueDate ?? '',
+        billingEmail: paymentRequest.billingEmail ?? '',
+      };
+
+      break;
+    case PaymentMethod.przelewy24:
+      specificParam = {
+        billingEmail: paymentRequest.billingEmail ?? '',
+      };
+
+      break;
+
+    case PaymentMethod.paypal:
+      specificParam = {
+        sessionId: paymentRequest.sessionId ?? '',
+        digitalGoods: paymentRequest.digitalGoods ?? '',
+      };
+
+      break;
+    case PaymentMethod.giftcard:
+      specificParam = {
+        voucherNumber: paymentRequest.voucherNumber ?? '',
+        voucherPin: paymentRequest.voucherPin ?? '',
+      };
+
+      break;
     case PaymentMethod.creditcard:
       specificParam = {
         cardToken: paymentRequest.cardToken ?? '',
       };
+
       break;
     default:
       break;
   }
 
   const molliePaymentParams: PaymentCreateParams = {
+    include: paymentRequest.include ?? '',
     description: paymentRequest.description ?? '',
     amount: makeMollieAmount(amountPlanned),
     redirectUrl: paymentRequest.redirectUrl ?? null,

@@ -7,6 +7,8 @@ import { Payment } from '@commercetools/platform-sdk';
 import { MethodsListParams, PaymentCreateParams, PaymentMethod } from '@mollie/api-client';
 import { makeMollieAmount } from '../../src/utils/mollie.utils';
 
+const defaultWebhookEndpoint = new URL(process.env.CONNECT_SERVICE_URL ?? '').origin + '/webhook';
+
 describe('Test map.utils.ts', () => {
   let mockCtPayment: Payment;
   let mockMolObject: MethodsListParams;
@@ -97,6 +99,7 @@ describe('createMollieCreatePaymentParams', () => {
       shippingAddress: {},
       testmode: null,
       cardToken: '',
+      include: ''
     });
   });
 
@@ -106,7 +109,6 @@ describe('createMollieCreatePaymentParams', () => {
       locale: 'en_GB',
       redirectUrl: 'https://example.com/success',
       webhookUrl: 'https://example.com/webhook',
-      cancelUrl: 'https://example.com/cancel',
       cardToken: 'card_token_12345',
     };
 
@@ -139,8 +141,6 @@ describe('createMollieCreatePaymentParams', () => {
     };
 
     const mollieCreatePaymentParams = createMollieCreatePaymentParams(CTPayment);
-    // Always use our default webhook endpoint
-    const defaultWebhookEndpoint = new URL(process.env.CONNECT_SERVICE_URL ?? '').origin + '/webhook';
 
     expect(mollieCreatePaymentParams).toEqual({
       method: 'creditcard',
@@ -150,7 +150,7 @@ describe('createMollieCreatePaymentParams', () => {
       },
       locale: customFieldObject.locale,
       redirectUrl: customFieldObject.redirectUrl,
-      webhookUrl: defaultWebhookEndpoint,
+      webhookUrl: defaultWebhookEndpoint, // Always use our default webhook endpoint
       description: customFieldObject.description,
       applicationFee: {},
       billingAddress: {},
@@ -161,6 +161,7 @@ describe('createMollieCreatePaymentParams', () => {
       shippingAddress: {},
       testmode: null,
       cardToken: customFieldObject.cardToken,
+      include: '',
     });
   });
 
@@ -169,9 +170,6 @@ describe('createMollieCreatePaymentParams', () => {
       description: 'Test payment',
       locale: 'en_GB',
       redirectUrl: 'https://example.com/success',
-      webhookUrl: 'https://example.com/webhook',
-      cancelUrl: 'https://example.com/cancel',
-      issuer: 'ideal_TEST',
       include: {
         'details.qrCode': {
           width: 100,
@@ -196,7 +194,7 @@ describe('createMollieCreatePaymentParams', () => {
       transactions: [],
       interfaceInteractions: [],
       paymentMethodInfo: {
-        method: PaymentMethod.ideal,
+        method: PaymentMethod.ideal + ',ideal_TEST',
       },
       custom: {
         type: {
@@ -218,11 +216,17 @@ describe('createMollieCreatePaymentParams', () => {
       },
       locale: customFieldObject.locale,
       redirectUrl: customFieldObject.redirectUrl,
-      webhookUrl: customFieldObject.webhookUrl,
-      cancelUrl: customFieldObject.cancelUrl,
+      webhookUrl: defaultWebhookEndpoint,
       description: customFieldObject.description,
-      issuer: customFieldObject.issuer,
+      issuer: 'ideal_TEST',
       include: customFieldObject.include,
+      applicationFee: {},
+      billingAddress: {},
+      metadata: null,
+      profileId: null,
+      restrictPaymentMethodsToCountry: null,
+      shippingAddress: {},
+      testmode: null,
     });
   });
 
@@ -232,7 +236,6 @@ describe('createMollieCreatePaymentParams', () => {
       locale: 'en_GB',
       redirectUrl: 'https://example.com/success',
       webhookUrl: 'https://example.com/webhook',
-      cancelUrl: 'https://example.com/cancel',
       include: {
         'details.qrCode': {
           width: 100,
@@ -279,10 +282,17 @@ describe('createMollieCreatePaymentParams', () => {
       },
       locale: customFieldObject.locale,
       redirectUrl: customFieldObject.redirectUrl,
-      webhookUrl: customFieldObject.webhookUrl,
-      cancelUrl: customFieldObject.cancelUrl,
+      webhookUrl: defaultWebhookEndpoint,
       description: customFieldObject.description,
       include: customFieldObject.include,
+      issuer: '',
+      applicationFee: {},
+      billingAddress: {},
+      metadata: null,
+      profileId: null,
+      restrictPaymentMethodsToCountry: null,
+      shippingAddress: {},
+      testmode: null,
     });
   });
 
@@ -292,7 +302,6 @@ describe('createMollieCreatePaymentParams', () => {
       locale: 'en_GB',
       redirectUrl: 'https://example.com/success',
       webhookUrl: 'https://example.com/webhook',
-      cancelUrl: 'https://example.com/cancel',
       dueDate: '2024-01-01',
       billingEmail: 'test@mollie.com',
     };
@@ -334,11 +343,19 @@ describe('createMollieCreatePaymentParams', () => {
       },
       locale: customFieldObject.locale,
       redirectUrl: customFieldObject.redirectUrl,
-      webhookUrl: customFieldObject.webhookUrl,
-      cancelUrl: customFieldObject.cancelUrl,
+      webhookUrl: defaultWebhookEndpoint,
       description: customFieldObject.description,
       dueDate: customFieldObject.dueDate,
       billingEmail: customFieldObject.billingEmail,
+      include: '',
+      issuer: '',
+      applicationFee: {},
+      billingAddress: {},
+      metadata: null,
+      profileId: null,
+      restrictPaymentMethodsToCountry: null,
+      shippingAddress: {},
+      testmode: null,
     });
   });
 
@@ -348,7 +365,6 @@ describe('createMollieCreatePaymentParams', () => {
       locale: 'en_GB',
       redirectUrl: 'https://example.com/success',
       webhookUrl: 'https://example.com/webhook',
-      cancelUrl: 'https://example.com/cancel',
       billingEmail: 'test@mollie.com',
     };
 
@@ -389,10 +405,18 @@ describe('createMollieCreatePaymentParams', () => {
       },
       locale: customFieldObject.locale,
       redirectUrl: customFieldObject.redirectUrl,
-      webhookUrl: customFieldObject.webhookUrl,
-      cancelUrl: customFieldObject.cancelUrl,
+      webhookUrl: defaultWebhookEndpoint,
       description: customFieldObject.description,
       billingEmail: customFieldObject.billingEmail,
+      include: '',
+      issuer: '',
+      applicationFee: {},
+      billingAddress: {},
+      metadata: null,
+      profileId: null,
+      restrictPaymentMethodsToCountry: null,
+      shippingAddress: {},
+      testmode: null,
     });
   });
 
@@ -402,7 +426,6 @@ describe('createMollieCreatePaymentParams', () => {
       locale: 'en_GB',
       redirectUrl: 'https://example.com/success',
       webhookUrl: 'https://example.com/webhook',
-      cancelUrl: 'https://example.com/cancel',
     };
 
     const CTPayment: Payment = {
@@ -442,9 +465,17 @@ describe('createMollieCreatePaymentParams', () => {
       },
       locale: customFieldObject.locale,
       redirectUrl: customFieldObject.redirectUrl,
-      webhookUrl: customFieldObject.webhookUrl,
-      cancelUrl: customFieldObject.cancelUrl,
+      webhookUrl: defaultWebhookEndpoint,
       description: customFieldObject.description,
+      include: '',
+      issuer: '',
+      applicationFee: {},
+      billingAddress: {},
+      metadata: null,
+      profileId: null,
+      restrictPaymentMethodsToCountry: null,
+      shippingAddress: {},
+      testmode: null,
     });
   });
 
@@ -454,7 +485,6 @@ describe('createMollieCreatePaymentParams', () => {
   //     locale: 'en_GB',
   //     redirectUrl: 'https://example.com/success',
   //     webhookUrl: 'https://example.com/webhook',
-  //     cancelUrl: 'https://example.com/cancel',
   //   };
 
   //   const CTPayment: Payment = {
@@ -495,7 +525,6 @@ describe('createMollieCreatePaymentParams', () => {
   //     locale: customFieldObject.locale,
   //     redirectUrl: customFieldObject.redirectUrl,
   //     webhookUrl: customFieldObject.webhookUrl,
-  //     cancelUrl: customFieldObject.cancelUrl,
   //     description: customFieldObject.description,
   //   });
   // });
@@ -506,7 +535,6 @@ describe('createMollieCreatePaymentParams', () => {
       locale: 'en_GB',
       redirectUrl: 'https://example.com/success',
       webhookUrl: 'https://example.com/webhook',
-      cancelUrl: 'https://example.com/cancel',
       applePayPaymentToken: '{"paymentData": {"version": "EC_v1", "data": "vK3BbrCbI/...."}}',
     };
 
@@ -547,10 +575,18 @@ describe('createMollieCreatePaymentParams', () => {
       },
       locale: customFieldObject.locale,
       redirectUrl: customFieldObject.redirectUrl,
-      webhookUrl: customFieldObject.webhookUrl,
-      cancelUrl: customFieldObject.cancelUrl,
+      webhookUrl: defaultWebhookEndpoint,
       description: customFieldObject.description,
       applePayPaymentToken: customFieldObject.applePayPaymentToken,
+      include: '',
+      issuer: '',
+      applicationFee: {},
+      billingAddress: {},
+      metadata: null,
+      profileId: null,
+      restrictPaymentMethodsToCountry: null,
+      shippingAddress: {},
+      testmode: null,
     });
   });
 
@@ -560,7 +596,6 @@ describe('createMollieCreatePaymentParams', () => {
       locale: 'en_GB',
       redirectUrl: 'https://example.com/success',
       webhookUrl: 'https://example.com/webhook',
-      cancelUrl: 'https://example.com/cancel',
       sessionId: '12345',
       digitalGoods: true,
     };
@@ -602,11 +637,19 @@ describe('createMollieCreatePaymentParams', () => {
       },
       locale: customFieldObject.locale,
       redirectUrl: customFieldObject.redirectUrl,
-      webhookUrl: customFieldObject.webhookUrl,
-      cancelUrl: customFieldObject.cancelUrl,
+      webhookUrl: defaultWebhookEndpoint,
       description: customFieldObject.description,
       sessionId: customFieldObject.sessionId,
       digitalGoods: customFieldObject.digitalGoods,
+      include: '',
+      issuer: '',
+      applicationFee: {},
+      billingAddress: {},
+      metadata: null,
+      profileId: null,
+      restrictPaymentMethodsToCountry: null,
+      shippingAddress: {},
+      testmode: null,
     });
   });
 
@@ -616,7 +659,6 @@ describe('createMollieCreatePaymentParams', () => {
       locale: 'en_GB',
       redirectUrl: 'https://example.com/success',
       webhookUrl: 'https://example.com/webhook',
-      cancelUrl: 'https://example.com/cancel',
       voucherNumber: '12345',
       voucherPin: '9999',
     };
@@ -658,11 +700,19 @@ describe('createMollieCreatePaymentParams', () => {
       },
       locale: customFieldObject.locale,
       redirectUrl: customFieldObject.redirectUrl,
-      webhookUrl: customFieldObject.webhookUrl,
-      cancelUrl: customFieldObject.cancelUrl,
+      webhookUrl: defaultWebhookEndpoint,
       description: customFieldObject.description,
       voucherNumber: customFieldObject.voucherNumber,
       voucherPin: customFieldObject.voucherPin,
+      include: '',
+      issuer: '',
+      applicationFee: {},
+      billingAddress: {},
+      metadata: null,
+      profileId: null,
+      restrictPaymentMethodsToCountry: null,
+      shippingAddress: {},
+      testmode: null,
     });
   });
 });
