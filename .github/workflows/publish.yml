@@ -43,6 +43,8 @@ jobs:
           CONNECTOR_DETAILS=$(curl --silent --show-error --location "https://connect.$CTP_REGION.commercetools.com/connectors/drafts/key=$CTP_CONNECTOR_KEY" \
               --header 'Content-Type: application/json' \
               --header "Authorization: Bearer $ACCESS_TOKEN")
+
+          echo $CONNECTOR_DETAILS
           
           VERSION=$(echo $CONNECTOR_DETAILS | jq -r '.version')
 
