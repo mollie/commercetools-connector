@@ -15,7 +15,11 @@ This calls Mollie's [create payment](https://docs.mollie.com/reference/create-pa
 
 ## Conditions
 
-Adding a new transaction to an existing order with status `Initial` triggers create order payment. The transaction type should align with the payment method. 
+Adding a new transaction to an existing order with type Charge and state Initial triggers create order payment.
+
+There should be only one transaction with type Charge and state Initial in your CommerceTools Payment object. 
+
+And also, the targeted Payment object should not have any transactions with type Charge and state is Pending or Success.
 
 
 <br />
@@ -28,10 +32,10 @@ Adding a new transaction to an existing order with status `Initial` triggers cre
 | `amountPlanned.currencyCode: "EUR"`                                                                       | `amount.currency: EUR`                       | YES      |
 | `amountPlanned.centAmount: "1000"` and `amountPlanned.fractionDigits: "2"`                                | `amount.value: "10.00"`                      | YES      |
 | `custom.fields.sctm_create_payment_request.redirectUrl: "https://webshop.example.org/order/12345/"`       | `redirectUrl: "https://webshop.example.org/order/12345/"`                      | YES      |
-| `custom.fields.sctm_create_payment_request.webhookUrl: "https://webshop.example.org/payments/webhook/"`   | `redirectUrl: "https://webshop.example.org/payments/webhook/"`                      | NO      |
+| `custom.fields.sctm_create_payment_request.description: "Testing creating Mollie Payment"`       | `description: "Testing creating Mollie Payment"`                      | YES      |
 
 The others params which listed [here](https://docs.mollie.com/reference/create-payment) can be passed through the custom field of the Payment object name **sctm_create_payment_request** with exactly
-the same format like those 2 fields ``redirectUrl`` and ``webhookUrl`` above
+the same format like the field ``redirectUrl`` above
 
 <br />
 
@@ -84,14 +88,9 @@ When create order payment is successfully added on Mollie, we update CommerceToo
 
 | Action name (CT)                 | Value                                                                      |
 | -------------------------------- | -------------------------------------------------------------------------- |
-| `changeTransactionState`         | `createOrderPaymentResponse: <transactionId>, state: 'Pending'`            |
-| `changeTransactionTimestamp`     | `createOrderPaymentResponse: <createdAt>`                                  |
-| `changeTransactionInteractionId` | `transactionId: <initial CT transaction ID>` *                             |
-|                                  | `interactionId: <mollie payment ID>`                                       |
-| `addInterfaceInteraction`        | `actionType: "CreateOrderPayment"`                                         |
-|                                  | `id: <UUID>`                                                               |
-|                                  | `timestamp: <createdAt>`                                                   |
-|                                  | `requestValue: {<transactionId, paymentMethod>`                            |
-|                                  | `responseValue: <molliePaymentId, checkoutUrl, transactionId>`             |
+| `changeTransactionState`         | `transactionId: <initialChargeTransactionId>, state: 'Pending'`            |
+| `changeTransactionTimestamp`     | `transactionId: <initialChargeTransactionId>, timestamp: <createdAt>`                                  |
+| `changeTransactionInteractionId` | `transactionId: <initialChargeTransactionId>, interactionId: <molliePaymentId>` |
+| `addInterfaceInteraction`        | `actionType: "CreatePayment", id: <UUID>, timestamp: <createdAt>, requestValue: {<transactionId, paymentMethod>, responseValue: <molliePaymentId, checkoutUrl, transactionId>`                                         |
 
 \* Actions will always use first `Initial` transaction. There should only be one per payment. Transaction id will be the ID of the transaction which triggered the create payment.
