@@ -10,6 +10,7 @@ import {
 import { initMollieClient } from '../client/mollie.client';
 import CustomError from '../errors/custom.error';
 import { CancelParameters } from '@mollie/api-client/dist/types/src/binders/payments/refunds/parameters';
+import { logger } from '../utils/logger.utils';
 
 /**
  * Creates a Mollie payment using the provided payment parameters.
@@ -18,7 +19,19 @@ import { CancelParameters } from '@mollie/api-client/dist/types/src/binders/paym
  * @return {Promise<Payment>} A promise that resolves to the created Payment object.
  */
 export const createMolliePayment = async (paymentParams: PaymentCreateParams): Promise<Payment> => {
-  return await initMollieClient().payments.create(paymentParams);
+  try {
+    return await initMollieClient().payments.create(paymentParams);
+  } catch (error: unknown) {
+    let errorMessage;
+
+    if (error instanceof MollieApiError) {
+      errorMessage = `SCTM - createMolliePayment - error: ${error.message}, field: ${error.field}`;
+    } else {
+      errorMessage = 'SCTM - createMolliePayment - Failed to create payment with unknown errors';
+    }
+
+    throw new CustomError(400, errorMessage);
+  }
 };
 
 /**
@@ -49,6 +62,19 @@ export const listPaymentMethods = async (options: MethodsListParams): Promise<Li
   }
 };
 
-export const cancelPaymentRefund = async (paymentId: string, params: CancelParameters): Promise<boolean> => {
-  return await initMollieClient().paymentRefunds.cancel(paymentId, params);
+export const cancelPaymentRefund = async (refundId: string, params: CancelParameters): Promise<boolean> => {
+  try {
+    return await initMollieClient().paymentRefunds.cancel(refundId, params);
+  } catch (error: unknown) {
+    let errorMessage;
+    if (error instanceof MollieApiError) {
+      errorMessage = `SCTM - cancelPaymentRefund - error: ${error.message}`;
+    } else {
+      errorMessage = 'SCTM - cancelPaymentRefund - Failed to cancel the refund with unknown errors';
+    }
+
+    logger.error(errorMessage);
+
+    throw new CustomError(400, errorMessage);
+  }
 };

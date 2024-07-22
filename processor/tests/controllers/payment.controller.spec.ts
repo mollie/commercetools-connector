@@ -3,13 +3,22 @@ import { paymentController } from '../../src/controllers/payment.controller';
 import { CustomFields, Payment, PaymentReference } from '@commercetools/platform-sdk';
 import CustomError from '../../src/errors/custom.error';
 import { determinePaymentAction } from '../../src/utils/paymentAction.utils';
-import { handleCreatePayment, handleListPaymentMethodsByPayment } from '../../src/service/payment.service';
-import { ConnectorActions } from '../../src/utils/constant.utils';
+import {
+  handleCreatePayment,
+  handleListPaymentMethodsByPayment,
+  handlePaymentCancelRefund,
+} from '../../src/service/payment.service';
+import {
+  CancelRefundStatusText,
+  ConnectorActions,
+  CustomFields as CustomFieldName,
+} from '../../src/utils/constant.utils';
 import { validateCommerceToolsPaymentPayload } from '../../src/validators/payment.validators';
 
 jest.mock('../../src/service/payment.service', () => ({
   handleListPaymentMethodsByPayment: jest.fn(),
   handleCreatePayment: jest.fn(),
+  handlePaymentCancelRefund: jest.fn(),
 }));
 
 jest.mock('../../src/validators/payment.validators.ts', () => ({
@@ -181,5 +190,71 @@ describe('Test payment.controller.ts', () => {
     expect(handleListPaymentMethodsByPayment).toBeCalledTimes(0);
     expect(handleCreatePayment).toBeCalledTimes(1);
     expect(handleCreatePayment).toReturnWith(handleCreatePaymentResponse);
+  });
+
+  test('able to call and retrieve the result from handlePaymentCancelRefund', async () => {
+    mockAction = 'Create' as string;
+    mockResource = {
+      typeId: 'payment',
+      obj: {
+        paymentMethodInfo: {
+          paymentInterface: 'mollie',
+          method: 'card',
+        },
+        amountPlanned: {
+          type: 'centPrecision',
+          currencyCode: 'EUR',
+          centAmount: 1000,
+          fractionDigits: 2,
+        },
+        custom: {
+          fields: {
+            sctm_payment_methods_request: {
+              locale: 'de_DE',
+            },
+          },
+        } as unknown as CustomFields,
+      } as unknown as Payment,
+    } as PaymentReference;
+
+    const transactionCustomFieldValue = JSON.stringify({
+      responseText: 'Manually cancelled',
+      statusText: CancelRefundStatusText,
+    });
+
+    const handlePaymentCancelRefundResponse = {
+      statusCode: 200,
+      actions: [
+        {
+          action: 'changeTransactionState',
+          transactionId: 'tr_123456',
+          state: 'Failure',
+        },
+        {
+          action: 'setTransactionCustomField',
+          transactionId: 'tr_123456',
+          name: CustomFieldName.paymentCancelRefund,
+          value: transactionCustomFieldValue,
+        },
+      ],
+    };
+
+    (validateCommerceToolsPaymentPayload as jest.Mock).mockImplementationOnce(() => {
+      return;
+    });
+
+    (determinePaymentAction as jest.Mock).mockReturnValue({
+      action: ConnectorActions.CancelRefund,
+      errorMessage: '',
+    });
+
+    (handlePaymentCancelRefund as jest.Mock).mockReturnValue(handlePaymentCancelRefundResponse);
+
+    const response = await paymentController(mockAction, mockResource);
+    expect(response).toBeDefined();
+    expect(handleListPaymentMethodsByPayment).toBeCalledTimes(0);
+    expect(handleCreatePayment).toBeCalledTimes(0);
+    expect(handlePaymentCancelRefund).toBeCalledTimes(1);
+    expect(handlePaymentCancelRefund).toReturnWith(handlePaymentCancelRefundResponse);
   });
 });

@@ -47,6 +47,7 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
   try {
     const mollieOptions = await mapCommercetoolsPaymentCustomFieldsToMollieListParams(ctPayment);
     const methods: List<Method> = await listPaymentMethods(mollieOptions);
+
     const availableMethods = JSON.stringify({
       count: methods.length,
       methods: methods.length ? methods : [],
@@ -234,7 +235,7 @@ export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<Con
     paymentId: molliePayment.id,
   };
 
-  await cancelPaymentRefund(pendingRefundTransaction?.id as string, paymentCancelRefundParams);
+  await cancelPaymentRefund(pendingRefundTransaction?.interactionId as string, paymentCancelRefundParams);
 
   const ctActions: UpdateAction[] = getPaymentCancelRefundActions(pendingRefundTransaction as Transaction);
 
@@ -249,9 +250,9 @@ export const getPaymentCancelRefundActions = (pendingRefundTransaction: Transact
 
   let transactionCustomFieldValue;
   try {
-    transactionCustomFieldValue = !pendingRefundTransaction.custom?.fields.customFieldName
+    transactionCustomFieldValue = !pendingRefundTransaction.custom?.fields[transactionCustomFieldName]
       ? {}
-      : JSON.parse(pendingRefundTransaction.custom?.fields.customFieldName);
+      : JSON.parse(pendingRefundTransaction.custom?.fields[transactionCustomFieldName]);
   } catch (error: unknown) {
     logger.error(
       `SCTM - handleCancelRefund - Failed to parse the JSON string from the custom field ${transactionCustomFieldName}.`,
