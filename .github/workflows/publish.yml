@@ -44,8 +44,6 @@ jobs:
               --header 'Content-Type: application/json' \
               --header "Authorization: Bearer $ACCESS_TOKEN")
 
-          echo $CONNECTOR_DETAILS
-          
           VERSION=$(echo $CONNECTOR_DETAILS | jq -r '.version')
 
           echo Updating version $VERSION
@@ -53,4 +51,4 @@ jobs:
           curl --fail-with-body --silent --location POST "https://connect.$CTP_REGION.commercetools.com/connectors/drafts/key=$CTP_CONNECTOR_KEY" \
               --header 'Content-Type: application/json' \
               --header "Authorization: Bearer $ACCESS_TOKEN" \
-              --data-raw "{\"version\": $VERSION, \"actions\": [{\"action\": \"setRepository\",\"url\": \"git@github.com:mollie/commercetools-connector.git\",\"tag\": \"$GITHUB_REF_NAME\"},{\"action\": \"updatePreviewable\"}]}"
+              --data-raw "{\"version\": $VERSION, \"actions\": [{\"action\": \"setRepository\",\"url\": \"git@github.com:mollie/commercetools-connector.git\",\"tag\": \"$GITHUB_REF_NAME\"},{\"action\": \"updatePreviewable\"},{\"action\":\"publish\",\"certification\": false}]}"
