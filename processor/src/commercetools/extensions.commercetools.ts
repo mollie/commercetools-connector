@@ -45,6 +45,7 @@ export async function createPaymentExtension(applicationUrl: string): Promise<vo
             actions: ['Create', 'Update'],
           },
         ],
+        timeoutInMs: 10000,
       },
     })
     .execute();

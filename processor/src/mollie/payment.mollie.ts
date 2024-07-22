@@ -9,6 +9,7 @@ import {
 } from '@mollie/api-client';
 import { initMollieClient } from '../client/mollie.client';
 import CustomError from '../errors/custom.error';
+import { CancelParameters } from '@mollie/api-client/dist/types/src/binders/payments/refunds/parameters';
 
 /**
  * Creates a Mollie payment using the provided payment parameters.
@@ -46,4 +47,8 @@ export const listPaymentMethods = async (options: MethodsListParams): Promise<Li
 
     return {} as List<Method>;
   }
+};
+
+export const cancelPaymentRefund = async (paymentId: string, params: CancelParameters): Promise<boolean> => {
+  return await initMollieClient().paymentRefunds.cancel(paymentId, params);
 };

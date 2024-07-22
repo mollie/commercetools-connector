@@ -1,6 +1,6 @@
 import { ControllerResponseType } from '../types/controller.types';
-import { ConnectorActions, CustomFields, PAY_LATER_ENUMS } from '../utils/constant.utils';
-import { List, Method, Payment as MPayment, PaymentMethod } from '@mollie/api-client';
+import { CancelRefundStatusText, ConnectorActions, CustomFields, PAY_LATER_ENUMS } from '../utils/constant.utils';
+import { List, Method, Payment as MPayment, PaymentMethod, PaymentStatus } from '@mollie/api-client';
 import { logger } from '../utils/logger.utils';
 import {
   createMollieCreatePaymentParams,
@@ -8,7 +8,7 @@ import {
 } from '../utils/map.utils';
 import { Payment, UpdateAction } from '@commercetools/platform-sdk';
 import CustomError from '../errors/custom.error';
-import { createMolliePayment, getPaymentById, listPaymentMethods } from '../mollie/payment.mollie';
+import { cancelPaymentRefund, createMolliePayment, getPaymentById, listPaymentMethods } from '../mollie/payment.mollie';
 import {
   AddTransaction,
   ChangeTransactionState,
@@ -20,7 +20,10 @@ import {
 } from '../types/commercetools.types';
 import { makeCTMoney, shouldPaymentStatusUpdate } from '../utils/mollie.utils';
 import { getPaymentByMolliePaymentId, updatePayment } from '../commercetools/payment.commercetools';
-import { PaymentUpdateAction } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/payment';
+import {
+  PaymentUpdateAction,
+  Transaction,
+} from '@commercetools/platform-sdk/dist/declarations/src/generated/models/payment';
 import { v4 as uuid } from 'uuid';
 import {
   addInterfaceInteraction,
@@ -28,8 +31,10 @@ import {
   changeTransactionState,
   changeTransactionTimestamp,
   setCustomFields,
+  setTransactionCustomField,
 } from '../commercetools/action.commercetools';
 import { readConfiguration } from '../utils/config.utils';
+import { CancelParameters } from '@mollie/api-client/dist/types/src/binders/payments/refunds/parameters';
 
 /**
  * Handles listing payment methods by payment.
@@ -204,4 +209,72 @@ export const getCreatePaymentUpdateAction = async (molliePayment: MPayment, CTPa
   } catch (error: any) {
     return Promise.reject(error);
   }
+};
+
+export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<ControllerResponseType> => {
+  const successChargeTransaction = ctPayment.transactions.find(
+    (transaction) => transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Success,
+  );
+
+  const pendingRefundTransaction = ctPayment.transactions.find(
+    (transaction) => transaction.type === CTTransactionType.Refund && transaction.state === CTTransactionState.Pending,
+  );
+
+  const molliePayment = await getPaymentById(successChargeTransaction?.interactionId as string);
+
+  if (molliePayment.status !== PaymentStatus.pending) {
+    logger.error('SCTM - handleCancelRefund - Mollie Payment status must be pending, payment ID: ' + molliePayment.id);
+    throw new CustomError(
+      400,
+      'SCTM - handleCancelRefund - Mollie Payment status must be pending, payment ID: ' + molliePayment.id,
+    );
+  }
+
+  const paymentCancelRefundParams: CancelParameters = {
+    paymentId: molliePayment.id,
+  };
+
+  await cancelPaymentRefund(pendingRefundTransaction?.id as string, paymentCancelRefundParams);
+
+  const ctActions: UpdateAction[] = getPaymentCancelRefundActions(pendingRefundTransaction as Transaction);
+
+  return {
+    statusCode: 200,
+    actions: ctActions,
+  };
+};
+
+export const getPaymentCancelRefundActions = (pendingRefundTransaction: Transaction) => {
+  const transactionCustomFieldName = CustomFields.paymentCancelRefund;
+
+  let transactionCustomFieldValue;
+  try {
+    transactionCustomFieldValue = !pendingRefundTransaction.custom?.fields.customFieldName
+      ? {}
+      : JSON.parse(pendingRefundTransaction.custom?.fields.customFieldName);
+  } catch (error: unknown) {
+    logger.error(
+      `SCTM - handleCancelRefund - Failed to parse the JSON string from the custom field ${transactionCustomFieldName}.`,
+    );
+    throw new CustomError(
+      400,
+      `SCTM - handleCancelRefund - Failed to parse the JSON string from the custom field ${transactionCustomFieldName}.`,
+    );
+  }
+
+  const newTransactionCustomFieldValue = {
+    reasonText: transactionCustomFieldValue.reasonText,
+    statusText: CancelRefundStatusText,
+  };
+
+  return [
+    // Update transaction state
+    changeTransactionState(pendingRefundTransaction.id, CTTransactionState.Failure),
+    // Set transaction custom field value
+    setTransactionCustomField(
+      pendingRefundTransaction.id,
+      transactionCustomFieldName,
+      JSON.stringify(newTransactionCustomFieldValue),
+    ),
+  ];
 };
