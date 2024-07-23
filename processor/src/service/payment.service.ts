@@ -1,6 +1,6 @@
 import { ControllerResponseType } from '../types/controller.types';
 import { CancelRefundStatusText, ConnectorActions, CustomFields, PAY_LATER_ENUMS } from '../utils/constant.utils';
-import { List, Method, Payment as MPayment, PaymentMethod, PaymentStatus } from '@mollie/api-client';
+import { List, Method, Payment as MPayment, PaymentMethod } from '@mollie/api-client';
 import { logger } from '../utils/logger.utils';
 import {
   createMollieCreatePaymentParams,
@@ -8,7 +8,13 @@ import {
 } from '../utils/map.utils';
 import { Payment, UpdateAction } from '@commercetools/platform-sdk';
 import CustomError from '../errors/custom.error';
-import { cancelPaymentRefund, createMolliePayment, getPaymentById, listPaymentMethods } from '../mollie/payment.mollie';
+import {
+  cancelPaymentRefund,
+  createMolliePayment,
+  getPaymentById,
+  getPaymentRefund,
+  listPaymentMethods,
+} from '../mollie/payment.mollie';
 import {
   AddTransaction,
   ChangeTransactionState,
@@ -217,25 +223,54 @@ export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<Con
     (transaction) => transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Success,
   );
 
+  if (!successChargeTransaction?.interactionId || successChargeTransaction?.interactionId.trim() === '') {
+    logger.error(
+      `SCTM - handleCancelRefund - Cannot get the Mollie payment ID from CommerceTools transaction, transaction ID: ${successChargeTransaction?.id}`,
+    );
+    throw new CustomError(
+      400,
+      `SCTM - handleCancelRefund - Cannot get the Mollie payment ID from CommerceTools transaction, transaction ID: ${successChargeTransaction?.id}`,
+    );
+  }
+
   const pendingRefundTransaction = ctPayment.transactions.find(
     (transaction) => transaction.type === CTTransactionType.Refund && transaction.state === CTTransactionState.Pending,
   );
 
-  const molliePayment = await getPaymentById(successChargeTransaction?.interactionId as string);
-
-  if (molliePayment.status !== PaymentStatus.pending) {
-    logger.error(`SCTM - handleCancelRefund - Mollie Payment status must be pending, payment ID: ${molliePayment.id}`);
+  if (!pendingRefundTransaction?.interactionId || pendingRefundTransaction?.interactionId.trim() === '') {
+    logger.error(
+      `SCTM - handleCancelRefund - Cannot get the Mollie refund ID from CommerceTools transaction, transaction ID: ${pendingRefundTransaction?.id}`,
+    );
     throw new CustomError(
       400,
-      `SCTM - handleCancelRefund - Mollie Payment status must be pending, payment ID: ${molliePayment.id}`,
+      `SCTM - handleCancelRefund - Cannot get the Mollie refund ID from CommerceTools transaction, transaction ID: ${pendingRefundTransaction?.id}`,
+    );
+  }
+
+  const paymentGetRefundParams: CancelParameters = {
+    paymentId: successChargeTransaction?.interactionId as string,
+  };
+
+  const molliePaymentRefund = await getPaymentRefund(
+    pendingRefundTransaction?.interactionId as string,
+    paymentGetRefundParams,
+  );
+
+  if (!['queued', 'pending'].includes(molliePaymentRefund.status)) {
+    logger.error(
+      `SCTM - handleCancelRefund - Mollie refund status must be queued or pending, refund ID: ${molliePaymentRefund.id}`,
+    );
+    throw new CustomError(
+      400,
+      `SCTM - handleCancelRefund - Mollie refund status must be queued or pending, refund ID: ${molliePaymentRefund.id}`,
     );
   }
 
   const paymentCancelRefundParams: CancelParameters = {
-    paymentId: molliePayment.id,
+    paymentId: successChargeTransaction.interactionId,
   };
 
-  await cancelPaymentRefund(pendingRefundTransaction?.interactionId as string, paymentCancelRefundParams);
+  await cancelPaymentRefund(molliePaymentRefund.id, paymentCancelRefundParams);
 
   const ctActions: UpdateAction[] = getPaymentCancelRefundActions(pendingRefundTransaction as Transaction);
 

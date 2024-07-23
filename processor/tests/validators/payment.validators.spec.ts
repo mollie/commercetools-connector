@@ -1,6 +1,7 @@
 import { ConnectorActions } from './../../src/utils/constant.utils';
 import { Payment } from '@commercetools/platform-sdk';
 import {
+  checkAmountPlanned,
   checkExtensionAction,
   checkPaymentInterface,
   checkPaymentMethodInput,
@@ -232,6 +233,45 @@ describe('checkPaymentMethodInput', () => {
 
     expect(checkPaymentMethodInput(ConnectorActions.CreatePayment, CTPayment)).toBe(true);
   });
+
+  it('should call checkPaymentMethodSpecificParameters if the payment method is "creditcard', () => {
+    const paymentValidators = require('../../src/validators/payment.validators');
+
+    jest.spyOn(paymentValidators, 'checkPaymentMethodSpecificParameters');
+
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'creditcard',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request:
+            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/","cardToken":"token_12345"}',
+        },
+      },
+    };
+
+    checkPaymentMethodInput(ConnectorActions.CreatePayment, CTPayment);
+
+    expect(checkPaymentMethodSpecificParameters).toBeCalledTimes(1);
+  });
 });
 
 describe('checkPaymentMethodSpecificParameters', () => {
@@ -294,7 +334,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
         },
         fields: {
           sctm_create_payment_request:
-            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/","cardToken":""}',
+            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/","cardToken":123}',
         },
       },
     };
@@ -304,11 +344,11 @@ describe('checkPaymentMethodSpecificParameters', () => {
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect((error as CustomError).message).toBe(
-        'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard',
+        'SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard',
       );
       expect(logger.error).toBeCalledTimes(1);
       expect(logger.error).toBeCalledWith(
-        'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard',
+        'SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard',
       );
     }
   });
@@ -387,9 +427,59 @@ describe('checkPaymentMethodSpecificParameters', () => {
   });
 });
 
-import * as paymentValidators from '../../src/validators/payment.validators';
+describe('checkAmountPlanned', () => {
+  it('should throw an error if the amountPlanned is not found', () => {
+    const CTPayment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'dummy',
+      },
+    };
+
+    try {
+      checkAmountPlanned(CTPayment as unknown as Payment);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith('SCTM - PAYMENT PROCESSING - Payment {amountPlanned} not found.');
+    }
+  });
+
+  it('should return true if amountPlanned exists', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'dummy',
+      },
+    };
+
+    expect(checkAmountPlanned(CTPayment)).toBe(true);
+  });
+});
+
+// import * as paymentValidators from '../../src/validators/payment.validators';
 
 describe('validateCommerceToolsPaymentPayload', () => {
+  const paymentValidators = require('../../src/validators/payment.validators');
+
   jest.spyOn(paymentValidators, 'checkPaymentMethodInput');
 
   it('should not call the checkPaymentMethodInput when the action is not "CreatePayment"', () => {

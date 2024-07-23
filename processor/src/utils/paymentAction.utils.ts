@@ -11,6 +11,8 @@ import { CTTransaction, CTTransactionState, CTTransactionType } from '../types/c
  * @return {DeterminePaymentActionType} The determined payment action and error message if applicable
  */
 export const determinePaymentAction = (ctPayment?: Payment): DeterminePaymentActionType => {
+  let errorMessage = '';
+
   if (!ctPayment) {
     logger.error('SCTM - Object ctPayment not found');
     return {
@@ -27,6 +29,7 @@ export const determinePaymentAction = (ctPayment?: Payment): DeterminePaymentAct
   if (shouldGetPaymentMethods) {
     return {
       action: ConnectorActions.GetPaymentMethods,
+      errorMessage,
     };
   }
 
@@ -53,7 +56,6 @@ export const determinePaymentAction = (ctPayment?: Payment): DeterminePaymentAct
   });
 
   let action;
-  let errorMessage = '';
 
   switch (true) {
     // Error cases

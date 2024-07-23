@@ -108,7 +108,7 @@ export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment): void
     );
   }
 
-  if (!paymentCustomFields?.cardToken || paymentCustomFields.cardToken == '') {
+  if (!paymentCustomFields?.cardToken) {
     logger.error('SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard');
 
     throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard');
