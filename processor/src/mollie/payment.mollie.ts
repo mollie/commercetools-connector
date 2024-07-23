@@ -30,6 +30,8 @@ export const createMolliePayment = async (paymentParams: PaymentCreateParams): P
       errorMessage = 'SCTM - createMolliePayment - Failed to create payment with unknown errors';
     }
 
+    logger.error(errorMessage);
+
     throw new CustomError(400, errorMessage);
   }
 };
