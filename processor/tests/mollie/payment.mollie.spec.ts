@@ -1,6 +1,6 @@
 import { jest, expect, describe, it, test, afterEach } from '@jest/globals';
 import { createMolliePayment, getPaymentById, listPaymentMethods } from '../../src/mollie/payment.mollie';
-import { PaymentCreateParams } from '@mollie/api-client';;
+import { PaymentCreateParams } from '@mollie/api-client';
 
 const mockPaymentsCreate = jest.fn();
 const mockPaymentsGet = jest.fn();
