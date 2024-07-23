@@ -2,13 +2,13 @@ import { determinePaymentAction } from '../utils/paymentAction.utils';
 import { ControllerResponseType } from '../types/controller.types';
 import {
   handleCreatePayment,
+  handleCreateRefund,
   handleListPaymentMethodsByPayment,
   handlePaymentCancelRefund,
 } from '../service/payment.service';
 import { PaymentReference, Payment } from '@commercetools/platform-sdk';
 import { ConnectorActions } from '../utils/constant.utils';
 import { validateCommerceToolsPaymentPayload } from '../validators/payment.validators';
-import CustomError from '../errors/custom.error';
 import SkipError from '../errors/skip.error';
 
 /**
@@ -24,30 +24,24 @@ export const paymentController = async (
 ): Promise<ControllerResponseType> => {
   const ctPayment: Payment = JSON.parse(JSON.stringify(resource)).obj;
 
-  const controllerAction = determinePaymentAction(ctPayment);
+  const paymentAction = determinePaymentAction(ctPayment);
 
-  if (controllerAction.errorMessage !== '') {
-    throw new CustomError(400, controllerAction.errorMessage as string);
+  if (paymentAction === ConnectorActions.NoAction) {
+    throw new SkipError('No payment actions matched');
   }
 
-  if (controllerAction.action === ConnectorActions.NoAction) {
-    throw new SkipError('SCTM - No payment actions matched');
-  }
+  validateCommerceToolsPaymentPayload(action, paymentAction, ctPayment);
 
-  validateCommerceToolsPaymentPayload(action, controllerAction.action, ctPayment);
-
-  switch (controllerAction.action) {
+  switch (paymentAction) {
     case ConnectorActions.GetPaymentMethods:
       return await handleListPaymentMethodsByPayment(ctPayment);
     case ConnectorActions.CreatePayment:
       return await handleCreatePayment(ctPayment);
+    case ConnectorActions.CreateRefund:
+      return await handleCreateRefund(ctPayment);
     case ConnectorActions.CancelRefund:
       return await handlePaymentCancelRefund(ctPayment);
     default:
-      if (controllerAction.errorMessage === '') {
-        throw new SkipError('SCTM - No payment actions matched');
-      }
-
-      throw new CustomError(400, controllerAction.errorMessage as string);
+      throw new SkipError('No payment actions matched');
   }
 };

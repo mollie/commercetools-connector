@@ -1,94 +1,99 @@
 import { DeterminePaymentActionType } from '../types/controller.types';
 import { logger } from './logger.utils';
 import { Payment } from '@commercetools/platform-sdk';
-import { CustomFields, ConnectorActions } from './constant.utils';
-import { CTTransaction, CTTransactionState, CTTransactionType } from '../types/commercetools.types';
+import { CustomFields, ConnectorActions, ErrorMessages } from './constant.utils';
+import { CTTransactionState, CTTransactionType } from '../types/commercetools.types';
+import CustomError from '../errors/custom.error';
+import { Transaction } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/payment';
 
-/**
- * Determines the payment action based on the provided Payment object.
- *
- * @param {Payment} ctPayment - The Payment object to determine the action for
- * @return {DeterminePaymentActionType} The determined payment action and error message if applicable
- */
-export const determinePaymentAction = (ctPayment?: Payment): DeterminePaymentActionType => {
-  if (!ctPayment) {
-    logger.error('SCTM - Object ctPayment not found');
-    return {
-      action: ConnectorActions.NoAction,
-      errorMessage: 'SCTM - Object ctPayment not found',
-    };
+const getTransactionGroups = (transactions: Transaction[]) => {
+  const groups = {
+    initialCharge: [] as Transaction[],
+    pendingCharge: [] as Transaction[],
+    successCharge: [] as Transaction[],
+    initialRefund: [] as Transaction[],
+    pendingRefund: [] as Transaction[],
+  };
+
+  transactions?.forEach((transaction) => {
+    switch (transaction.state) {
+      case CTTransactionState.Initial:
+        if (transaction.type === CTTransactionType.Charge) {
+          groups.initialCharge.push(transaction);
+        } else if (transaction.type === CTTransactionType.Refund) {
+          groups.initialRefund.push(transaction);
+        }
+        break;
+      case CTTransactionState.Pending:
+        if (transaction.type === CTTransactionType.Charge) {
+          groups.pendingCharge.push(transaction);
+        } else if (transaction.type === CTTransactionType.Refund) {
+          groups.pendingRefund.push(transaction);
+        }
+        break;
+      case CTTransactionState.Success:
+        if (transaction.type === CTTransactionType.Charge) {
+          groups.successCharge.push(transaction);
+        }
+        break;
+    }
+  });
+
+  return groups;
+};
+
+const determineAction = (groups: ReturnType<typeof getTransactionGroups>, key?: string): DeterminePaymentActionType => {
+  if (groups.initialCharge.length > 1) {
+    throw new CustomError(400, 'Only one transaction can be in "Initial" state at any time');
   }
 
-  // To list payment methods
+  if (groups.initialCharge.length === 1 && groups.pendingCharge.length >= 1) {
+    throw new CustomError(
+      400,
+      'Must only have one Charge transaction processing (i.e. in state "Initial" or "Pending") at a time',
+    );
+  }
+
+  if (groups.pendingCharge.length && !key) {
+    throw new CustomError(
+      400,
+      'Cannot create a Transaction in state "Pending". This state is reserved to indicate the transaction has been accepted by the payment service provider',
+    );
+  }
+
+  if ((key || groups.initialCharge.length === 1) && !groups.successCharge.length && !groups.pendingCharge.length) {
+    return ConnectorActions.CreatePayment;
+  }
+
+  if (groups.successCharge.length === 1 && groups.initialRefund.length) {
+    return ConnectorActions.CreateRefund;
+  }
+
+  if (groups.successCharge.length === 1 && groups.pendingRefund.length === 1) {
+    return ConnectorActions.CancelRefund;
+  }
+
+  logger.warn('SCTM - No payment actions matched');
+  return ConnectorActions.NoAction;
+};
+
+export const determinePaymentAction = (ctPayment?: Payment): DeterminePaymentActionType => {
+  if (!ctPayment) {
+    logger.error(ErrorMessages.paymentObjectNotFound);
+
+    throw new CustomError(400, ErrorMessages.paymentObjectNotFound);
+  }
+
   const shouldGetPaymentMethods =
     ctPayment.custom?.fields?.[CustomFields.payment.request] &&
     !ctPayment.custom?.fields?.[CustomFields.payment.response];
 
   if (shouldGetPaymentMethods) {
-    return {
-      action: ConnectorActions.GetPaymentMethods,
-    };
+    return ConnectorActions.GetPaymentMethods;
   }
 
-  const { id, key, transactions } = ctPayment;
+  const { key, transactions } = ctPayment;
+  const groups = getTransactionGroups(transactions);
 
-  const initialTransactions: CTTransaction[] = [];
-  const initialChargeTransactions: CTTransaction[] = [];
-  const pendingChargeTransactions: CTTransaction[] = [];
-  const successChargeTransactions: CTTransaction[] = [];
-  const pendingRefundTransactions: CTTransaction[] = [];
-
-  transactions?.forEach((transaction: any) => {
-    if (transaction.state === CTTransactionState.Initial) {
-      initialTransactions.push(transaction);
-    }
-
-    if (transaction.type === CTTransactionType.Charge) {
-      if (transaction.state === CTTransactionState.Initial) initialChargeTransactions.push(transaction);
-      if (transaction.state === CTTransactionState.Pending) pendingChargeTransactions.push(transaction);
-      if (transaction.state === CTTransactionState.Success) successChargeTransactions.push(transaction);
-    } else if (transaction.type === CTTransactionType.Refund) {
-      if (transaction.state === CTTransactionState.Pending) pendingRefundTransactions.push(transaction);
-    }
-  });
-
-  let action;
-  let errorMessage = '';
-
-  switch (true) {
-    // Error cases
-    case initialTransactions.length > 1:
-      action = ConnectorActions.NoAction;
-      errorMessage = 'Only one transaction can be in "Initial" state at any time';
-      break;
-    case initialChargeTransactions.length === 1 && pendingChargeTransactions.length >= 1:
-      action = ConnectorActions.NoAction;
-      errorMessage =
-        'Must only have one Charge transaction processing (i.e. in state "Initial" or "Pending") at a time';
-      break;
-    case !!pendingChargeTransactions.length && !key:
-      action = ConnectorActions.NoAction;
-      errorMessage =
-        'Cannot create a Transaction in state "Pending". This state is reserved to indicate the transaction has been accepted by the payment service provider';
-      break;
-
-    // Create Payment
-    case (!!key || !!id) &&
-      initialChargeTransactions.length === 1 &&
-      !successChargeTransactions.length &&
-      !pendingChargeTransactions.length:
-      action = ConnectorActions.CreatePayment;
-      break;
-    case successChargeTransactions.length === 1 && pendingRefundTransactions.length === 1:
-      action = ConnectorActions.CancelRefund;
-      break;
-    default:
-      action = ConnectorActions.NoAction;
-      logger.warn('SCTM - No payment actions matched');
-  }
-
-  return {
-    action,
-    errorMessage,
-  };
+  return determineAction(groups, key);
 };

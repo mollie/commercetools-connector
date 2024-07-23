@@ -22,12 +22,13 @@ export const CustomFields = {
 export enum ConnectorActions {
   GetPaymentMethods = 'getPaymentMethods',
   CreatePayment = 'createPayment',
+  CreateRefund = 'createRefund',
   CancelRefund = 'cancelRefund',
   NoAction = 'noAction',
 }
 
 export const ErrorMessages = {
-  paymentObjectNotFound: 'SCTM - Object ctPayment not found',
+  paymentObjectNotFound: 'Object ctPayment not found',
 };
 
 export const PAY_LATER_ENUMS = [PaymentMethod.klarnapaylater, PaymentMethod.klarnasliceit];

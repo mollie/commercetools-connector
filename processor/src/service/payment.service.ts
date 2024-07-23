@@ -6,9 +6,10 @@ import {
   createMollieCreatePaymentParams,
   mapCommercetoolsPaymentCustomFieldsToMollieListParams,
 } from '../utils/map.utils';
-import { Payment, UpdateAction } from '@commercetools/platform-sdk';
+import { CentPrecisionMoney, Payment, UpdateAction } from '@commercetools/platform-sdk';
 import CustomError from '../errors/custom.error';
-import { cancelPaymentRefund, createMolliePayment, getPaymentById, listPaymentMethods } from '../mollie/payment.mollie';
+import { createMolliePayment, getPaymentById, listPaymentMethods } from '../mollie/payment.mollie';
+import { cancelPaymentRefund, createPaymentRefund } from '../mollie/refund.mollie';
 import {
   AddTransaction,
   ChangeTransactionState,
@@ -18,7 +19,7 @@ import {
   molliePaymentToCTStatusMap,
   UpdateActionKey,
 } from '../types/commercetools.types';
-import { makeCTMoney, shouldPaymentStatusUpdate } from '../utils/mollie.utils';
+import { makeCTMoney, makeMollieAmount, shouldPaymentStatusUpdate } from '../utils/mollie.utils';
 import { getPaymentByMolliePaymentId, updatePayment } from '../commercetools/payment.commercetools';
 import {
   PaymentUpdateAction,
@@ -34,7 +35,10 @@ import {
   setTransactionCustomField,
 } from '../commercetools/action.commercetools';
 import { readConfiguration } from '../utils/config.utils';
-import { CancelParameters } from '@mollie/api-client/dist/types/src/binders/payments/refunds/parameters';
+import {
+  CancelParameters,
+  CreateParameters,
+} from '@mollie/api-client/dist/types/src/binders/payments/refunds/parameters';
 
 /**
  * Handles listing payment methods by payment.
@@ -210,6 +214,31 @@ export const getCreatePaymentUpdateAction = async (molliePayment: MPayment, CTPa
   } catch (error: any) {
     return Promise.reject(error);
   }
+};
+
+export const handleCreateRefund = async (ctPayment: Payment): Promise<ControllerResponseType> => {
+  const successChargeTransaction = ctPayment.transactions.find(
+    (transaction) => transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Success,
+  );
+
+  const initialRefundTransaction = ctPayment.transactions.find(
+    (transaction) => transaction.type === CTTransactionType.Refund && transaction.state === CTTransactionState.Initial,
+  );
+
+  const paymentCreateRefundParams: CreateParameters = {
+    paymentId: successChargeTransaction?.interactionId as string,
+    amount: makeMollieAmount(initialRefundTransaction?.amount as CentPrecisionMoney),
+  };
+
+  const refund = await createPaymentRefund(paymentCreateRefundParams);
+
+  return {
+    statusCode: 200,
+    actions: [
+      changeTransactionInteractionId(initialRefundTransaction?.id as string, refund.id),
+      changeTransactionState(initialRefundTransaction?.id as string, CTTransactionState.Pending),
+    ],
+  };
 };
 
 export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<ControllerResponseType> => {

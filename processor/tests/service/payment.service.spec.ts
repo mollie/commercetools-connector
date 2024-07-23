@@ -16,12 +16,8 @@ import {
 } from '../../src/utils/constant.utils';
 import { PaymentStatus, Payment as molliePayment } from '@mollie/api-client';
 import { CTTransactionState } from '../../src/types/commercetools.types';
-import {
-  listPaymentMethods,
-  getPaymentById,
-  createMolliePayment,
-  cancelPaymentRefund,
-} from '../../src/mollie/payment.mollie';
+import { listPaymentMethods, getPaymentById, createMolliePayment } from '../../src/mollie/payment.mollie';
+import { cancelPaymentRefund } from '../../src/mollie/refund.mollie';
 import CustomError from '../../src/errors/custom.error';
 import { logger } from '../../src/utils/logger.utils';
 import { getPaymentByMolliePaymentId, updatePayment } from '../../src/commercetools/payment.commercetools';
@@ -45,6 +41,9 @@ jest.mock('../../src/mollie/payment.mollie', () => ({
   listPaymentMethods: jest.fn(),
   createMolliePayment: jest.fn(),
   getPaymentById: jest.fn(),
+}));
+
+jest.mock('../../src/mollie/refund.mollie', () => ({
   cancelPaymentRefund: jest.fn(),
 }));
 

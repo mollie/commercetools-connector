@@ -40,6 +40,8 @@ export const post = async (request: Request, response: Response) => {
     return apiSuccess(200, response, data?.actions);
   } catch (error) {
     if (error instanceof SkipError) {
+      logger.debug('Skip action', error.message);
+
       return apiSuccess(200, response, []);
     }
     if (error instanceof CustomError) {

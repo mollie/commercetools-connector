@@ -9,10 +9,7 @@ import {
 } from '@mollie/api-client';
 import { initMollieClient } from '../client/mollie.client';
 import CustomError from '../errors/custom.error';
-import { CancelParameters } from '@mollie/api-client/dist/types/src/binders/payments/refunds/parameters';
 import { logger } from '../utils/logger.utils';
-
-const prefixErrorMessage = `SCTM - Calling Mollie API`;
 
 /**
  * Creates a Mollie payment using the provided payment parameters.
@@ -27,9 +24,9 @@ export const createMolliePayment = async (paymentParams: PaymentCreateParams): P
     let errorMessage;
 
     if (error instanceof MollieApiError) {
-      errorMessage = `${prefixErrorMessage} - createMolliePayment - error: ${error.message}, field: ${error.field}`;
+      errorMessage = `createMolliePayment - error: ${error.message}, field: ${error.field}`;
     } else {
-      errorMessage = `${prefixErrorMessage} - createMolliePayment - Failed to create payment with unknown errors`;
+      errorMessage = `createMolliePayment - Failed to create payment with unknown errors`;
     }
 
     logger.error({
@@ -66,26 +63,5 @@ export const listPaymentMethods = async (options: MethodsListParams): Promise<Li
     }
 
     return {} as List<Method>;
-  }
-};
-
-export const cancelPaymentRefund = async (refundId: string, params: CancelParameters): Promise<boolean> => {
-  try {
-    return await initMollieClient().paymentRefunds.cancel(refundId, params);
-  } catch (error: unknown) {
-    let errorMessage;
-
-    if (error instanceof MollieApiError) {
-      errorMessage = `${prefixErrorMessage} - cancelPaymentRefund - error: ${error.message}`;
-    } else {
-      errorMessage = `${prefixErrorMessage} - cancelPaymentRefund - Calling Mollie API - Failed to cancel the refund with unknown errors`;
-    }
-
-    logger.error({
-      message: errorMessage,
-      error,
-    });
-
-    throw new CustomError(400, errorMessage);
   }
 };
