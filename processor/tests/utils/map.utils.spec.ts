@@ -94,10 +94,8 @@ describe('createMollieCreatePaymentParams', () => {
       billingAddress: {},
       issuer: '',
       metadata: null,
-      profileId: null,
       restrictPaymentMethodsToCountry: null,
       shippingAddress: {},
-      testmode: null,
       cardToken: '',
       include: '',
     });
@@ -156,10 +154,8 @@ describe('createMollieCreatePaymentParams', () => {
       billingAddress: {},
       issuer: '',
       metadata: null,
-      profileId: null,
       restrictPaymentMethodsToCountry: null,
       shippingAddress: {},
-      testmode: null,
       cardToken: customFieldObject.cardToken,
       include: '',
     });
@@ -223,10 +219,8 @@ describe('createMollieCreatePaymentParams', () => {
       applicationFee: {},
       billingAddress: {},
       metadata: null,
-      profileId: null,
       restrictPaymentMethodsToCountry: null,
       shippingAddress: {},
-      testmode: null,
     });
   });
 
@@ -289,10 +283,8 @@ describe('createMollieCreatePaymentParams', () => {
       applicationFee: {},
       billingAddress: {},
       metadata: null,
-      profileId: null,
       restrictPaymentMethodsToCountry: null,
       shippingAddress: {},
-      testmode: null,
     });
   });
 
@@ -352,10 +344,8 @@ describe('createMollieCreatePaymentParams', () => {
       applicationFee: {},
       billingAddress: {},
       metadata: null,
-      profileId: null,
       restrictPaymentMethodsToCountry: null,
       shippingAddress: {},
-      testmode: null,
     });
   });
 
@@ -413,10 +403,8 @@ describe('createMollieCreatePaymentParams', () => {
       applicationFee: {},
       billingAddress: {},
       metadata: null,
-      profileId: null,
       restrictPaymentMethodsToCountry: null,
       shippingAddress: {},
-      testmode: null,
     });
   });
 
@@ -472,10 +460,8 @@ describe('createMollieCreatePaymentParams', () => {
       applicationFee: {},
       billingAddress: {},
       metadata: null,
-      profileId: null,
       restrictPaymentMethodsToCountry: null,
       shippingAddress: {},
-      testmode: null,
     });
   });
 
@@ -583,10 +569,8 @@ describe('createMollieCreatePaymentParams', () => {
       applicationFee: {},
       billingAddress: {},
       metadata: null,
-      profileId: null,
       restrictPaymentMethodsToCountry: null,
       shippingAddress: {},
-      testmode: null,
     });
   });
 
@@ -646,10 +630,8 @@ describe('createMollieCreatePaymentParams', () => {
       applicationFee: {},
       billingAddress: {},
       metadata: null,
-      profileId: null,
       restrictPaymentMethodsToCountry: null,
       shippingAddress: {},
-      testmode: null,
     });
   });
 
@@ -709,10 +691,8 @@ describe('createMollieCreatePaymentParams', () => {
       applicationFee: {},
       billingAddress: {},
       metadata: null,
-      profileId: null,
       restrictPaymentMethodsToCountry: null,
       shippingAddress: {},
-      testmode: null,
     });
   });
 });
