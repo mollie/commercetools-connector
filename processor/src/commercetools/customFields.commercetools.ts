@@ -240,6 +240,10 @@ export async function createCustomPaymentTransactionCancelRefundType(): Promise<
           en: 'SCTM - Payment Cancel Refund on Transaction custom fields',
           de: 'SCTM - Zahlung stornieren Rückerstattung bei benutzerdefinierten Transaktionsfeldern',
         },
+        description: {
+          en: 'Showing the reason of cancelling and identifying if the cancel action came from CommerceTools or Mollie',
+          de: 'Anzeige des Kündigungsgrundes und Identifizierung, ob die Kündigung von CommerceTools oder Mollie erfolgte',
+        },
         resourceTypeIds: ['transaction'],
         fieldDefinitions: [
           {
