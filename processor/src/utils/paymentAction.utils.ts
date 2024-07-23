@@ -27,6 +27,7 @@ export const determinePaymentAction = (ctPayment?: Payment): DeterminePaymentAct
   if (shouldGetPaymentMethods) {
     return {
       action: ConnectorActions.GetPaymentMethods,
+      errorMessage: '',
     };
   }
 

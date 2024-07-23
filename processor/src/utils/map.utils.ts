@@ -142,8 +142,8 @@ export const createMollieCreatePaymentParams = (payment: Payment): PaymentCreate
     // captureMode: paymentRequest.captureMode ?? null, PICT-204 is on hold
     // captureDelay: paymentRequest.captureMode ?? null, PICT-204 is on hold
     applicationFee: paymentRequest.applicationFee ?? {},
-    profileId: paymentRequest.profileId ?? null,
-    testmode: paymentRequest.testmode ?? null,
+    // profileId: paymentRequest.profileId ?? null,
+    // testmode: paymentRequest.testmode ?? null,
     ...specificParam,
   };
 

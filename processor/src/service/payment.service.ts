@@ -55,9 +55,9 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
 
     const ctUpdateActions: UpdateAction[] = [setCustomFields(CustomFields.payment.response, availableMethods)];
 
-    const hasCardPayment = methods.find((method: Method) => method.id === PaymentMethod.creditcard);
+    const hasCardPayment = methods.findIndex((method: Method) => method.id === PaymentMethod.creditcard);
 
-    if (hasCardPayment) {
+    if (hasCardPayment >= 0) {
       ctUpdateActions.push(setCustomFields(CustomFields.payment.profileId, readConfiguration().mollie.profileId));
     }
 
