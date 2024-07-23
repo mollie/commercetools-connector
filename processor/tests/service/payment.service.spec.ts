@@ -16,7 +16,12 @@ import {
 } from '../../src/utils/constant.utils';
 import { PaymentStatus, Payment as molliePayment } from '@mollie/api-client';
 import { CTTransactionState } from '../../src/types/commercetools.types';
-import { listPaymentMethods, getPaymentById, createMolliePayment, cancelPaymentRefund } from '../../src/mollie/payment.mollie';
+import {
+  listPaymentMethods,
+  getPaymentById,
+  createMolliePayment,
+  cancelPaymentRefund,
+} from '../../src/mollie/payment.mollie';
 import CustomError from '../../src/errors/custom.error';
 import { logger } from '../../src/utils/logger.utils';
 import { getPaymentByMolliePaymentId, updatePayment } from '../../src/commercetools/payment.commercetools';
