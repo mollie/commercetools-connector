@@ -142,8 +142,12 @@ export const createMollieCreatePaymentParams = (payment: Payment): PaymentCreate
     // captureMode: paymentRequest.captureMode ?? null, PICT-204 is on hold
     // captureDelay: paymentRequest.captureMode ?? null, PICT-204 is on hold
     applicationFee: paymentRequest.applicationFee ?? {},
-    profileId: paymentRequest.profileId ?? null,
-    testmode: paymentRequest.testmode ?? null,
+
+    // TODO: Conflicts between docs and Mollie API Client
+    // The official document pointed out that these 2 fields are supported
+    // But if we send them along with the payload even hard-coded the value, Mollie return with the error: "Non-existent body parameter 'profileId' or 'testmode'"
+    // profileId: paymentRequest.profileId ?? null,
+    // testmode: paymentRequest.testmode ?? null,
     ...specificParam,
   };
 
