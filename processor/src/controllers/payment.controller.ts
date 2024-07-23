@@ -1,6 +1,10 @@
 import { determinePaymentAction } from '../utils/paymentAction.utils';
 import { ControllerResponseType } from '../types/controller.types';
-import { handleCreatePayment, handleListPaymentMethodsByPayment } from '../service/payment.service';
+import {
+  handleCreatePayment,
+  handleListPaymentMethodsByPayment,
+  handlePaymentCancelRefund,
+} from '../service/payment.service';
 import { PaymentReference, Payment } from '@commercetools/platform-sdk';
 import { ConnectorActions } from '../utils/constant.utils';
 import { validateCommerceToolsPaymentPayload } from '../validators/payment.validators';
@@ -37,6 +41,8 @@ export const paymentController = async (
       return await handleListPaymentMethodsByPayment(ctPayment);
     case ConnectorActions.CreatePayment:
       return await handleCreatePayment(ctPayment);
+    case ConnectorActions.CancelRefund:
+      return await handlePaymentCancelRefund(ctPayment);
     default:
       if (controllerAction.errorMessage === '') {
         throw new SkipError('SCTM - No payment actions matched');

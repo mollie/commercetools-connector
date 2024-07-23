@@ -15,10 +15,11 @@ import { logger } from '../../src/utils/logger.utils';
 
 jest.mock('@mollie/api-client', () => ({
   PaymentMethod: {
-    applePay: 'applePay',
+    applepay: 'applepay',
     paypal: 'paypal',
     dummy: 'dummy',
     creditcard: 'creditcard',
+    giftcard: 'giftcard',
   },
 }));
 
@@ -136,7 +137,7 @@ describe('hasValidPaymentMethod', () => {
   });
 
   it('should return true if the payment method is defined and is supported by Mollie', () => {
-    expect(hasValidPaymentMethod('applePay')).toBe(true);
+    expect(hasValidPaymentMethod('applepay')).toBe(true);
     expect(hasValidPaymentMethod('paypal')).toBe(true);
     expect(hasValidPaymentMethod('dummy')).toBe(true);
   });
@@ -254,7 +255,18 @@ describe('checkPaymentMethodSpecificParameters', () => {
       },
     };
 
-    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(false);
+    try {
+      checkPaymentMethodSpecificParameters(CTPayment);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).message).toBe(
+        'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard',
+      );
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith(
+        'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard',
+      );
+    }
   });
 
   it('should return false if the payment method is creditcard and cardToken is an empty string', () => {
@@ -287,7 +299,18 @@ describe('checkPaymentMethodSpecificParameters', () => {
       },
     };
 
-    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(false);
+    try {
+      checkPaymentMethodSpecificParameters(CTPayment);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).message).toBe(
+        'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard',
+      );
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith(
+        'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard',
+      );
+    }
   });
 
   it('should throw CustomError if the payment method is creditcard and the custom field sctm_create_payment_request is not a JSON string', () => {
@@ -320,7 +343,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
     };
 
     try {
-      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
+      checkPaymentMethodSpecificParameters(CTPayment);
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect(logger.error).toBeCalledTimes(1);
@@ -360,7 +383,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
       },
     };
 
-    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(true);
+    expect(checkPaymentMethodSpecificParameters(CTPayment)).toBe(undefined);
   });
 });
 

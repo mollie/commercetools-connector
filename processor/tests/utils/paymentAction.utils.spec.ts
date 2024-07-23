@@ -190,6 +190,50 @@ describe('determinePaymentAction', () => {
       expectedConnectorAction: ConnectorActions.CreatePayment,
       expectedErrorMessage: '',
     },
+    {
+      CTPayment: {
+        id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        key: 'creating-payment-case',
+        version: 1,
+        createdAt: '2024-07-04T14:07:35.625Z',
+        lastModifiedAt: '2024-07-04T14:07:35.625Z',
+        amountPlanned: {
+          type: 'centPrecision',
+          currencyCode: 'EUR',
+          centAmount: 1000,
+          fractionDigits: 2,
+        },
+        paymentStatus: {},
+        transactions: [
+          {
+            id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+            type: 'Charge',
+            amount: {
+              type: 'centPrecision',
+              currencyCode: 'EUR',
+              centAmount: 1000,
+              fractionDigits: 2,
+            },
+            state: 'Success',
+          },
+          {
+            id: '5c8b0375-305a-4f19-ae8e-07806b102000',
+            type: 'Refund',
+            amount: {
+              type: 'centPrecision',
+              currencyCode: 'EUR',
+              centAmount: 1000,
+              fractionDigits: 2,
+            },
+            state: 'Pending',
+          },
+        ],
+        interfaceInteractions: [],
+        paymentMethodInfo: {},
+      } as Payment,
+      expectedConnectorAction: ConnectorActions.CancelRefund,
+      expectedErrorMessage: '',
+    },
   ];
 
   it.each(dataSet)(

@@ -1,5 +1,5 @@
 import { Payment as CTPayment } from '@commercetools/platform-sdk';
-import { PaymentMethod as MolliePaymentMethods } from '@mollie/api-client';
+import { PaymentMethod as MolliePaymentMethods, PaymentMethod } from '@mollie/api-client';
 import SkipError from '../errors/skip.error';
 import CustomError from '../errors/custom.error';
 import { logger } from '../utils/logger.utils';
@@ -73,14 +73,25 @@ export const checkPaymentMethodInput = (connectorAction: string, ctPayment: CTPa
     throw new CustomError(400, `SCTM - PAYMENT PROCESSING - Invalid paymentMethodInfo.method "${method}".`);
   }
 
-  if (!checkPaymentMethodSpecificParameters(ctPayment, method)) {
-    throw new CustomError(400, `SCTM - PAYMENT PROCESSING - Payment method "${method}" requires a card token.`);
+  if (method === PaymentMethod.creditcard) {
+    checkPaymentMethodSpecificParameters(ctPayment);
   }
 
   return true;
 };
 
-export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, method: string): boolean => {
+/**
+ * Checks whether the payment method specific parameters are present in the payment object
+ * Currently, only perform the check with two payment methods: applepay and creditcard
+ * For applepay: applePayPaymentToken must be exist
+ * For creditcard: cardToken must be exist
+ *
+ * @param {CTPayment} CTPayment - The Commercetools Payment object to check.
+ * @return {true | CustomError} An object containing the validation result.
+ * The `isInvalid` property indicates if the payment method input is invalid.
+ * The `errorMessage` property contains the error message if the input is invalid.
+ */
+export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment): void => {
   let paymentCustomFields;
 
   try {
@@ -97,23 +108,20 @@ export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, metho
     );
   }
 
-  if (method === MolliePaymentMethods.creditcard) {
-    if (!paymentCustomFields.cardToken) {
-      logger.error('SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard.');
+  if (!paymentCustomFields?.cardToken || paymentCustomFields.cardToken == '') {
+    logger.error('SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard');
 
-      return false;
-    }
-
-    if (typeof paymentCustomFields.cardToken !== 'string' || paymentCustomFields.cardToken.trim() === '') {
-      logger.error(
-        'SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard.',
-      );
-
-      return false;
-    }
+    throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard');
   }
 
-  return true;
+  if (typeof paymentCustomFields?.cardToken !== 'string' || paymentCustomFields?.cardToken.trim() === '') {
+    logger.error('SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard');
+
+    throw new CustomError(
+      400,
+      'SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard',
+    );
+  }
 };
 
 export const checkAmountPlanned = (ctPayment: CTPayment): true | CustomError => {

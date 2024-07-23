@@ -2,7 +2,7 @@ import { apiSuccess } from '../api/success.api';
 import { ControllerResponseType } from '../types/controller.types';
 import { ExtensionInput } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/extension';
 import { logger } from '../utils/logger.utils';
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { paymentController } from './payment.controller';
 import CustomError from '../errors/custom.error';
 import SkipError from '../errors/skip.error';
@@ -16,10 +16,9 @@ import { formatErrorResponse } from '../errors/mollie.error';
  *
  * @param {Request} request The express request
  * @param {Response} response The express response
- * @param {NextFunction} next
  * @returns
  */
-export const post = async (request: Request, response: Response, next: NextFunction) => {
+export const post = async (request: Request, response: Response) => {
   try {
     const { action, resource }: ExtensionInput = request.body;
 
