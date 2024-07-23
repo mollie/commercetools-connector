@@ -200,3 +200,78 @@ export async function createCustomPaymentInterfaceInteractionType(): Promise<voi
     })
     .execute();
 }
+
+export async function createCustomPaymentTransactionCancelRefundType(): Promise<void> {
+  const apiRoot = createApiRoot();
+
+  const customFieldName = CustomFields.paymentCancelRefund;
+
+  const {
+    body: { results: types },
+  } = await createApiRoot()
+    .types()
+    .get({
+      queryArgs: {
+        where: `key = "${customFieldName}"`,
+      },
+    })
+    .execute();
+
+  if (types.length > 0) {
+    const type = types[0];
+
+    await apiRoot
+      .types()
+      .withKey({ key: customFieldName })
+      .delete({
+        queryArgs: {
+          version: type.version,
+        },
+      })
+      .execute();
+  }
+
+  await apiRoot
+    .types()
+    .post({
+      body: {
+        key: customFieldName,
+        name: {
+          en: 'SCTM - Payment Cancel Refund on Transaction custom fields',
+          de: 'SCTM - Zahlung stornieren Rückerstattung bei benutzerdefinierten Transaktionsfeldern',
+        },
+        description: {
+          en: 'Showing the reason of cancelling and identifying if the cancel action came from CommerceTools or Mollie',
+          de: 'Anzeige des Kündigungsgrundes und Identifizierung, ob die Kündigung von CommerceTools oder Mollie erfolgte',
+        },
+        resourceTypeIds: ['transaction'],
+        fieldDefinitions: [
+          {
+            name: 'reasonText',
+            label: {
+              en: 'The reason of cancelling the refund, include the user name',
+              de: 'Der Grund für die Stornierung der Rückerstattung, den Benutzernamen einschließen',
+            },
+            required: false,
+            type: {
+              name: 'String',
+            },
+            inputHint: 'MultiLine',
+          },
+          {
+            name: 'statusText',
+            label: {
+              en: 'To differentiate between the “failure” from CommerceTools and the real status',
+              de: 'Um zwischen dem „Fehler“ von CommerceTools und dem tatsächlichen Status zu unterscheiden',
+            },
+            required: false,
+            type: {
+              name: 'String',
+            },
+            inputHint: 'MultiLine',
+          },
+        ],
+      },
+    })
+    .execute();
+}

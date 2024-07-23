@@ -4,7 +4,7 @@ import { makeMollieAmount } from './mollie.utils';
 import { ParsedMethodsRequestType } from '../types/mollie.types';
 import { Payment } from '@commercetools/platform-sdk';
 import CustomError from '../errors/custom.error';
-import { PaymentCreateParams, MethodsListParams } from '@mollie/api-client';
+import { PaymentCreateParams, MethodsListParams, PaymentMethod } from '@mollie/api-client';
 
 /**
  * Extracts method list parameters from a Commercetools Payment object and returns a Promise resolving to a MethodsListParams object.
@@ -72,14 +72,79 @@ export const mapCommercetoolsPaymentCustomFieldsToMollieListParams = async (
 export const createMollieCreatePaymentParams = (payment: Payment): PaymentCreateParams => {
   const { amountPlanned, paymentMethodInfo, custom } = payment;
 
+  const [method, issuer] = paymentMethodInfo?.method?.split(',') ?? [null, null];
+
   const requestCustomField = custom?.fields?.[CustomFields.createPayment.request];
 
   const paymentRequest = requestCustomField ? JSON.parse(requestCustomField) : {};
 
+  const defaultWebhookEndpoint = new URL(process.env.CONNECT_SERVICE_URL ?? '').origin + '/webhook';
+
+  let specificParam;
+  switch (method) {
+    case PaymentMethod.applepay:
+      specificParam = {
+        applePayPaymentToken: paymentRequest.applePayPaymentToken ?? '',
+      };
+
+      break;
+    case PaymentMethod.banktransfer:
+      specificParam = {
+        dueDate: paymentRequest.dueDate ?? '',
+        billingEmail: paymentRequest.billingEmail ?? '',
+      };
+
+      break;
+    case PaymentMethod.przelewy24:
+      specificParam = {
+        billingEmail: paymentRequest.billingEmail ?? '',
+      };
+
+      break;
+
+    case PaymentMethod.paypal:
+      specificParam = {
+        sessionId: paymentRequest.sessionId ?? '',
+        digitalGoods: paymentRequest.digitalGoods ?? '',
+      };
+
+      break;
+    case PaymentMethod.giftcard:
+      specificParam = {
+        voucherNumber: paymentRequest.voucherNumber ?? '',
+        voucherPin: paymentRequest.voucherPin ?? '',
+      };
+
+      break;
+    case PaymentMethod.creditcard:
+      specificParam = {
+        cardToken: paymentRequest.cardToken ?? '',
+      };
+
+      break;
+    default:
+      break;
+  }
+
   const molliePaymentParams: PaymentCreateParams = {
-    ...paymentRequest,
-    method: paymentMethodInfo.method,
+    include: paymentRequest.include ?? '',
+    description: paymentRequest.description ?? '',
     amount: makeMollieAmount(amountPlanned),
+    redirectUrl: paymentRequest.redirectUrl ?? null,
+    webhookUrl: defaultWebhookEndpoint,
+    billingAddress: paymentRequest.billingAddress ?? {},
+    shippingAddress: paymentRequest.shippingAddress ?? {},
+    locale: paymentRequest.locale ?? null,
+    method: method as PaymentMethod,
+    issuer: issuer ?? '',
+    restrictPaymentMethodsToCountry: paymentRequest.restrictPaymentMethodsToCountry ?? null,
+    metadata: paymentRequest.metadata ?? null,
+    // captureMode: paymentRequest.captureMode ?? null, PICT-204 is on hold
+    // captureDelay: paymentRequest.captureMode ?? null, PICT-204 is on hold
+    applicationFee: paymentRequest.applicationFee ?? {},
+    profileId: paymentRequest.profileId ?? null,
+    testmode: paymentRequest.testmode ?? null,
+    ...specificParam,
   };
 
   return molliePaymentParams;

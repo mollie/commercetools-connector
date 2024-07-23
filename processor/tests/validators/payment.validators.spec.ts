@@ -1,3 +1,4 @@
+import { ConnectorActions } from './../../src/utils/constant.utils';
 import { Payment } from '@commercetools/platform-sdk';
 import {
   checkExtensionAction,
@@ -5,6 +6,7 @@ import {
   checkPaymentMethodInput,
   checkPaymentMethodSpecificParameters,
   hasValidPaymentMethod,
+  validateCommerceToolsPaymentPayload,
 } from './../../src/validators/payment.validators';
 import { describe, it, expect, jest, afterEach } from '@jest/globals';
 import CustomError from '../../src/errors/custom.error';
@@ -13,10 +15,11 @@ import { logger } from '../../src/utils/logger.utils';
 
 jest.mock('@mollie/api-client', () => ({
   PaymentMethod: {
-    applePay: 'applePay',
+    applepay: 'applepay',
     paypal: 'paypal',
     dummy: 'dummy',
     creditcard: 'creditcard',
+    giftcard: 'giftcard',
   },
 }));
 
@@ -134,7 +137,7 @@ describe('hasValidPaymentMethod', () => {
   });
 
   it('should return true if the payment method is defined and is supported by Mollie', () => {
-    expect(hasValidPaymentMethod('applePay')).toBe(true);
+    expect(hasValidPaymentMethod('applepay')).toBe(true);
     expect(hasValidPaymentMethod('paypal')).toBe(true);
     expect(hasValidPaymentMethod('dummy')).toBe(true);
   });
@@ -149,7 +152,7 @@ describe('checkPaymentMethodInput', () => {
     jest.clearAllMocks(); // Clear all mocks after each test case
   });
 
-  it('should throw CustomError and a correct error message if the payment method is not defined', () => {
+  it('should throw CustomError and a correct error message if the payment method is not defined when trying to create a Mollie payment', () => {
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
       version: 1,
@@ -168,7 +171,7 @@ describe('checkPaymentMethodInput', () => {
     };
 
     try {
-      checkPaymentMethodInput(CTPayment);
+      checkPaymentMethodInput(ConnectorActions.CreatePayment, CTPayment);
     } catch (error: any) {
       expect(error).toBeInstanceOf(CustomError);
       expect(error.message).toBe(
@@ -198,7 +201,7 @@ describe('checkPaymentMethodInput', () => {
     };
 
     try {
-      checkPaymentMethodInput(CTPayment);
+      checkPaymentMethodInput(ConnectorActions.CreatePayment, CTPayment);
     } catch (error: any) {
       expect(error).toBeInstanceOf(CustomError);
       expect(error.message).toBe(
@@ -227,7 +230,7 @@ describe('checkPaymentMethodInput', () => {
       },
     };
 
-    expect(checkPaymentMethodInput(CTPayment)).toBe(true);
+    expect(checkPaymentMethodInput(ConnectorActions.CreatePayment, CTPayment)).toBe(true);
   });
 });
 
@@ -252,7 +255,18 @@ describe('checkPaymentMethodSpecificParameters', () => {
       },
     };
 
-    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(false);
+    try {
+      checkPaymentMethodSpecificParameters(CTPayment);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).message).toBe(
+        'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard',
+      );
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith(
+        'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard',
+      );
+    }
   });
 
   it('should return false if the payment method is creditcard and cardToken is an empty string', () => {
@@ -285,7 +299,18 @@ describe('checkPaymentMethodSpecificParameters', () => {
       },
     };
 
-    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(false);
+    try {
+      checkPaymentMethodSpecificParameters(CTPayment);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).message).toBe(
+        'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard',
+      );
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith(
+        'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard',
+      );
+    }
   });
 
   it('should throw CustomError if the payment method is creditcard and the custom field sctm_create_payment_request is not a JSON string', () => {
@@ -318,7 +343,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
     };
 
     try {
-      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
+      checkPaymentMethodSpecificParameters(CTPayment);
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect(logger.error).toBeCalledTimes(1);
@@ -358,6 +383,47 @@ describe('checkPaymentMethodSpecificParameters', () => {
       },
     };
 
-    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(true);
+    expect(checkPaymentMethodSpecificParameters(CTPayment)).toBe(undefined);
+  });
+});
+
+import * as paymentValidators from '../../src/validators/payment.validators';
+
+describe('validateCommerceToolsPaymentPayload', () => {
+  jest.spyOn(paymentValidators, 'checkPaymentMethodInput');
+
+  it('should not call the checkPaymentMethodInput when the action is not "CreatePayment"', () => {
+    try {
+      validateCommerceToolsPaymentPayload('Update', ConnectorActions.GetPaymentMethods, {} as Payment);
+    } catch (error: unknown) {
+      expect(checkPaymentMethodInput).toBeCalledTimes(0);
+    }
+  });
+
+  it('should call the checkPaymentMethodInput when the action is "CreatePayment"', () => {
+    try {
+      const CTPayment: Payment = {
+        id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        version: 1,
+        createdAt: '2024-07-04T14:07:35.625Z',
+        lastModifiedAt: '2024-07-04T14:07:35.625Z',
+        amountPlanned: {
+          type: 'centPrecision',
+          currencyCode: 'EUR',
+          centAmount: 1000,
+          fractionDigits: 2,
+        },
+        paymentStatus: {},
+        transactions: [],
+        interfaceInteractions: [],
+        paymentMethodInfo: {
+          paymentInterface: 'Mollie',
+        },
+      };
+
+      validateCommerceToolsPaymentPayload('Update', ConnectorActions.CreatePayment, CTPayment);
+    } catch (error: unknown) {
+      expect(checkPaymentMethodInput).toBeCalledTimes(1);
+    }
   });
 });

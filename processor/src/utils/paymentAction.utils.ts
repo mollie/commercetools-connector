@@ -30,24 +30,27 @@ export const determinePaymentAction = (ctPayment?: Payment): DeterminePaymentAct
     };
   }
 
-  const { key, transactions } = ctPayment;
+  const { id, key, transactions } = ctPayment;
 
+  const initialTransactions: CTTransaction[] = [];
   const initialChargeTransactions: CTTransaction[] = [];
   const pendingChargeTransactions: CTTransaction[] = [];
   const successChargeTransactions: CTTransaction[] = [];
+  const pendingRefundTransactions: CTTransaction[] = [];
 
-  const chargeTransactions =
-    transactions?.filter(
-      /* eslint-disable  @typescript-eslint/no-explicit-any */
-      (transaction: any) => transaction.type === CTTransactionType.Charge,
-    ) ?? [];
-  chargeTransactions?.forEach((transaction: any) => {
-    if (transaction.state === CTTransactionState.Initial) initialChargeTransactions.push(transaction);
-    if (transaction.state === CTTransactionState.Pending) pendingChargeTransactions.push(transaction);
-    if (transaction.state === CTTransactionState.Success) successChargeTransactions.push(transaction);
+  transactions?.forEach((transaction: any) => {
+    if (transaction.state === CTTransactionState.Initial) {
+      initialTransactions.push(transaction);
+    }
+
+    if (transaction.type === CTTransactionType.Charge) {
+      if (transaction.state === CTTransactionState.Initial) initialChargeTransactions.push(transaction);
+      if (transaction.state === CTTransactionState.Pending) pendingChargeTransactions.push(transaction);
+      if (transaction.state === CTTransactionState.Success) successChargeTransactions.push(transaction);
+    } else if (transaction.type === CTTransactionType.Refund) {
+      if (transaction.state === CTTransactionState.Pending) pendingRefundTransactions.push(transaction);
+    }
   });
-
-  const initialTransactions = transactions?.filter(({ state }) => state === CTTransactionState.Initial) ?? [];
 
   let action;
   let errorMessage = '';
@@ -70,15 +73,18 @@ export const determinePaymentAction = (ctPayment?: Payment): DeterminePaymentAct
       break;
 
     // Create Payment
-    case !!key &&
+    case (!!key || !!id) &&
       initialChargeTransactions.length === 1 &&
       !successChargeTransactions.length &&
       !pendingChargeTransactions.length:
       action = ConnectorActions.CreatePayment;
       break;
+    case successChargeTransactions.length === 1 && pendingRefundTransactions.length === 1:
+      action = ConnectorActions.CancelRefund;
+      break;
     default:
       action = ConnectorActions.NoAction;
-      errorMessage = 'SCTM - No payment actions matched';
+      logger.warn('SCTM - No payment actions matched');
   }
 
   return {

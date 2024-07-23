@@ -1,5 +1,5 @@
 import { describe, test, jest, expect, beforeEach } from '@jest/globals';
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { post } from '../../src/controllers/processor.controller';
 
 jest.mock('../../src/controllers/payment.controller', () => ({
@@ -8,7 +8,6 @@ jest.mock('../../src/controllers/payment.controller', () => ({
 
 describe('Test processor.controller.ts', () => {
   let res: Partial<Response>;
-  const next: NextFunction = jest.fn();
 
   beforeEach(() => {
     res = {
@@ -55,8 +54,7 @@ describe('Test processor.controller.ts', () => {
       },
     } as unknown as Request;
 
-    await post(request, res as Response, next);
-    // expect(next).toBeCalledTimes(1);
+    await post(request, res as Response);
     expect(res.status).toBeCalledTimes(1);
     expect(res.json).toBeCalledTimes(1);
   });
