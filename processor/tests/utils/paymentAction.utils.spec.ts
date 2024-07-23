@@ -6,10 +6,9 @@ import { logger } from '../../src/utils/logger.utils';
 
 describe('Test controller.utils.ts', () => {
   test('call determinePaymentAction without object reference', async () => {
-    const response = determinePaymentAction();
-    expect(response).toBeDefined();
-    expect(response.action).toBe(ConnectorActions.NoAction);
-    expect(response.errorMessage).toBe(ErrorMessages.paymentObjectNotFound);
+    expect(() => {
+      determinePaymentAction();
+    }).toThrow(ErrorMessages.paymentObjectNotFound);
 
     expect(logger.error).toBeCalledTimes(1);
   });
@@ -26,8 +25,7 @@ describe('Test controller.utils.ts', () => {
     } as unknown as Payment;
     const response = determinePaymentAction(mockCtPayment);
     expect(response).toBeDefined();
-    expect(response.action).toBe(ConnectorActions.GetPaymentMethods);
-    expect(response.errorMessage).not.toBe(ErrorMessages.paymentObjectNotFound);
+    expect(response).toBe(ConnectorActions.GetPaymentMethods);
   });
 });
 
@@ -239,10 +237,15 @@ describe('determinePaymentAction', () => {
   it.each(dataSet)(
     'should return correct action and error message',
     ({ CTPayment, expectedConnectorAction, expectedErrorMessage }) => {
-      const { action, errorMessage } = determinePaymentAction(CTPayment);
-
-      expect(action).toBe(expectedConnectorAction);
-      expect(errorMessage).toBe(expectedErrorMessage);
+      if (expectedErrorMessage) {
+        expect(() => {
+          determinePaymentAction(CTPayment);
+        }).toThrow(expectedErrorMessage);
+      } else {
+        const action = determinePaymentAction(CTPayment);
+        expect(action).toBeDefined();
+        expect(action).toBe(expectedConnectorAction);
+      }
     },
   );
 });

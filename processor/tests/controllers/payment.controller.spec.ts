@@ -7,6 +7,7 @@ import {
   handleCreatePayment,
   handleListPaymentMethodsByPayment,
   handlePaymentCancelRefund,
+  handleCreateRefund,
 } from '../../src/service/payment.service';
 import {
   CancelRefundStatusText,
@@ -19,6 +20,7 @@ jest.mock('../../src/service/payment.service', () => ({
   handleListPaymentMethodsByPayment: jest.fn(),
   handleCreatePayment: jest.fn(),
   handlePaymentCancelRefund: jest.fn(),
+  handleCreateRefund: jest.fn(),
 }));
 
 jest.mock('../../src/validators/payment.validators.ts', () => ({
@@ -123,10 +125,7 @@ describe('Test payment.controller.ts', () => {
       return;
     });
     (handleListPaymentMethodsByPayment as jest.Mock).mockReturnValue(handleListPaymentMethodsByPaymentResponse);
-    (determinePaymentAction as jest.Mock).mockReturnValue({
-      action: ConnectorActions.GetPaymentMethods,
-      errorMessage: '',
-    });
+    (determinePaymentAction as jest.Mock).mockReturnValue(ConnectorActions.GetPaymentMethods);
 
     const response = await paymentController(mockAction, mockResource);
     expect(response).toBeDefined();
@@ -178,10 +177,7 @@ describe('Test payment.controller.ts', () => {
       return;
     });
 
-    (determinePaymentAction as jest.Mock).mockReturnValue({
-      action: ConnectorActions.CreatePayment,
-      errorMessage: '',
-    });
+    (determinePaymentAction as jest.Mock).mockReturnValue(ConnectorActions.CreatePayment);
 
     (handleCreatePayment as jest.Mock).mockReturnValue(handleCreatePaymentResponse);
 
@@ -190,6 +186,80 @@ describe('Test payment.controller.ts', () => {
     expect(handleListPaymentMethodsByPayment).toBeCalledTimes(0);
     expect(handleCreatePayment).toBeCalledTimes(1);
     expect(handleCreatePayment).toReturnWith(handleCreatePaymentResponse);
+  });
+
+  test('able to call and retrieve the result from handlePaymentCreateRefund', async () => {
+    mockAction = 'Create' as string;
+    mockResource = {
+      typeId: 'payment',
+      obj: {
+        paymentMethodInfo: {
+          paymentInterface: 'mollie',
+          method: 'card',
+        },
+        amountPlanned: {
+          type: 'centPrecision',
+          currencyCode: 'EUR',
+          centAmount: 1000,
+          fractionDigits: 2,
+        },
+        transactions: [
+          {
+            id: 'tr_123456',
+            type: 'Charge',
+            amount: {
+              type: 'centPrecision',
+              currencyCode: 'EUR',
+              centAmount: 1000,
+              fractionDigits: 2,
+            },
+            state: 'Success',
+          },
+          {
+            id: 'tr_XXXXX',
+            type: 'Refund',
+            amount: {
+              type: 'centPrecision',
+              currencyCode: 'EUR',
+              centAmount: 1000,
+              fractionDigits: 2,
+            },
+            state: 'Initial',
+          },
+        ],
+      } as unknown as Payment,
+    } as PaymentReference;
+
+    const handlePaymentCancelRefundResponse = {
+      statusCode: 200,
+      actions: [
+        {
+          action: 'changeTransactionInteractionId',
+          transactionId: 'tr_XXXXX',
+          interactionId: 'refund_id',
+        },
+        {
+          action: 'changeTransactionState',
+          transactionId: 'tr_XXXXX',
+          interactionId: 'Pending',
+        },
+      ],
+    };
+
+    (validateCommerceToolsPaymentPayload as jest.Mock).mockImplementationOnce(() => {
+      return;
+    });
+
+    (determinePaymentAction as jest.Mock).mockReturnValue(ConnectorActions.CreateRefund);
+
+    (handleCreateRefund as jest.Mock).mockReturnValue(handlePaymentCancelRefundResponse);
+
+    const response = await paymentController(mockAction, mockResource);
+    expect(response).toBeDefined();
+    expect(handleListPaymentMethodsByPayment).toBeCalledTimes(0);
+    expect(handleCreatePayment).toBeCalledTimes(0);
+    expect(handleCreateRefund).toBeCalledTimes(1);
+    expect(handleCreateRefund).toReturnWith(handlePaymentCancelRefundResponse);
   });
 
   test('able to call and retrieve the result from handlePaymentCancelRefund', async () => {
@@ -243,10 +313,7 @@ describe('Test payment.controller.ts', () => {
       return;
     });
 
-    (determinePaymentAction as jest.Mock).mockReturnValue({
-      action: ConnectorActions.CancelRefund,
-      errorMessage: '',
-    });
+    (determinePaymentAction as jest.Mock).mockReturnValue(ConnectorActions.CancelRefund);
 
     (handlePaymentCancelRefund as jest.Mock).mockReturnValue(handlePaymentCancelRefundResponse);
 

@@ -13,7 +13,7 @@ describe('Test constant.utils.ts', () => {
   test('should return the correct {ErrorMessages} constant', () => {
     expect(ErrorMessages).toBeDefined();
     expect(ErrorMessages?.paymentObjectNotFound).toBeDefined();
-    expect(ErrorMessages?.paymentObjectNotFound).toBe('SCTM - Object ctPayment not found');
+    expect(ErrorMessages?.paymentObjectNotFound).toBe('Object ctPayment not found');
   });
 
   test('should return the correct {ConnectorActions} constant', () => {

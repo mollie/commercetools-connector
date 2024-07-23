@@ -3,10 +3,10 @@ import { Amount } from '@mollie/api-client/dist/types/src/data/global';
 import { CTMoney, CTTransactionState } from '../types/commercetools.types';
 import { PaymentStatus } from '@mollie/api-client';
 
-function convertCTToMollieAmountValue(ctValue: number, fractionDigits = 2): string {
+const convertCTToMollieAmountValue = (ctValue: number, fractionDigits = 2): string => {
   const divider = Math.pow(10, fractionDigits);
   return (ctValue / divider).toFixed(fractionDigits);
-}
+};
 
 export const makeMollieAmount = ({ centAmount, fractionDigits, currencyCode }: CentPrecisionMoney): Amount => {
   return {

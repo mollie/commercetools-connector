@@ -1,6 +1,7 @@
 import { describe, test, expect, jest, beforeEach, afterEach, it } from '@jest/globals';
 import { CustomFields, Payment } from '@commercetools/platform-sdk';
 import {
+  handlePaymentWebhook,
   getCreatePaymentUpdateAction,
   getPaymentCancelRefundActions,
   handleCreatePayment,
@@ -15,18 +16,19 @@ import {
 } from '../../src/utils/constant.utils';
 import { PaymentStatus, Payment as molliePayment, Refund } from '@mollie/api-client';
 import { CTTransactionState } from '../../src/types/commercetools.types';
-import {
-  cancelPaymentRefund,
-  getPaymentRefund,
-  createMolliePayment,
-  getPaymentById,
-  listPaymentMethods,
-} from '../../src/mollie/payment.mollie';
+import { listPaymentMethods, getPaymentById, createMolliePayment } from '../../src/mollie/payment.mollie';
 import CustomError from '../../src/errors/custom.error';
 import { logger } from '../../src/utils/logger.utils';
+import { getPaymentByMolliePaymentId, updatePayment } from '../../src/commercetools/payment.commercetools';
+import { cancelPaymentRefund, getPaymentRefund } from '../../src/mollie/refund.mollie';
 const uuid = '5c8b0375-305a-4f19-ae8e-07806b101999';
 jest.mock('uuid', () => ({
   v4: () => uuid,
+}));
+
+jest.mock('../../src/commercetools/payment.commercetools', () => ({
+  getPaymentByMolliePaymentId: jest.fn(),
+  updatePayment: jest.fn(),
 }));
 
 jest.mock('../../src/service/payment.service.ts', () => ({
@@ -40,7 +42,11 @@ jest.mock('../../src/mollie/payment.mollie', () => ({
   createMolliePayment: jest.fn(),
   getPaymentById: jest.fn(),
   getPaymentRefund: jest.fn(),
+}));
+
+jest.mock('../../src/mollie/refund.mollie', () => ({
   cancelPaymentRefund: jest.fn(),
+  getPaymentRefund: jest.fn(),
 }));
 
 jest.mock('../../src/utils/map.utils.ts', () => ({
@@ -827,5 +833,91 @@ describe('Test handlePaymentCancelRefund', () => {
     expect(cancelPaymentRefund).toBeCalledWith(mollieRefund.id, {
       paymentId: CTPayment.transactions[0].interactionId,
     });
+  });
+});
+
+describe('Test handlePaymentWebhook', () => {
+  it('should handle with no action', async () => {
+    const fakePaymentId = 'tr_XXXX';
+    (getPaymentById as jest.Mock).mockReturnValue({
+      id: fakePaymentId,
+      status: 'open',
+      amount: {
+        currency: 'EUR',
+        value: '10.00',
+      },
+    });
+    (getPaymentByMolliePaymentId as jest.Mock).mockReturnValue({
+      transactions: [
+        {
+          interactionId: fakePaymentId,
+          state: 'Initial',
+        },
+      ],
+    });
+    await handlePaymentWebhook(fakePaymentId);
+    expect(logger.debug).toBeCalledTimes(2);
+    expect(logger.debug).toBeCalledWith(`SCTM - handlePaymentWebhook - paymentId:${fakePaymentId}`);
+    expect(logger.debug).toBeCalledWith(`handlePaymentWebhook - No actions needed`);
+  });
+
+  it('should handle with add action', async () => {
+    const fakePaymentId = 'tr_XXXX';
+    (getPaymentById as jest.Mock).mockReturnValue({
+      id: fakePaymentId,
+      status: 'open',
+      amount: {
+        currency: 'EUR',
+        value: '10.00',
+      },
+    });
+    const ctPayment = {
+      transactions: [],
+    };
+    (getPaymentByMolliePaymentId as jest.Mock).mockReturnValue(ctPayment);
+    await handlePaymentWebhook(fakePaymentId);
+    expect(updatePayment as jest.Mock).toBeCalledTimes(1);
+    expect(updatePayment as jest.Mock).toBeCalledWith(ctPayment, [
+      {
+        action: 'addTransaction',
+        transaction: {
+          amount: { centAmount: 1000, currencyCode: 'EUR', fractionDigits: 2, type: 'centPrecision' },
+          interactionId: 'tr_XXXX',
+          state: 'Initial',
+          type: 'Charge',
+        },
+      },
+    ]);
+  });
+
+  it('should handle with update action', async () => {
+    const fakePaymentId = 'tr_XXXX';
+    (getPaymentById as jest.Mock).mockReturnValue({
+      id: fakePaymentId,
+      status: 'paid',
+      amount: {
+        currency: 'EUR',
+        value: '10.00',
+      },
+    });
+    const ctPayment = {
+      transactions: [
+        {
+          id: 'test',
+          interactionId: fakePaymentId,
+          state: 'Initial',
+        },
+      ],
+    };
+    (getPaymentByMolliePaymentId as jest.Mock).mockReturnValue(ctPayment);
+    await handlePaymentWebhook(fakePaymentId);
+    expect(updatePayment as jest.Mock).toBeCalledTimes(1);
+    expect(updatePayment as jest.Mock).toBeCalledWith(ctPayment, [
+      {
+        action: 'changeTransactionState',
+        transactionId: 'test',
+        state: 'Success',
+      },
+    ]);
   });
 });

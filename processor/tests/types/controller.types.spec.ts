@@ -7,7 +7,7 @@ const functions = {
   }),
 
   isDeterminePaymentActionType: jest.fn((obj: DeterminePaymentActionType): obj is DeterminePaymentActionType => {
-    return typeof obj?.action === 'string';
+    return typeof obj === 'string';
   }),
 };
 
@@ -31,20 +31,6 @@ describe('Test controller.types.ts', () => {
   });
 
   test('should return the correct {DeterminePaymentActionType} type declaration', () => {
-    const mockType = {
-      action: 'getPaymentMethods',
-      errorMessage: 'SCTM - Object ctPayment not found',
-    } as DeterminePaymentActionType;
-
-    expect(functions.isDeterminePaymentActionType(mockType)).toBeTruthy();
-  });
-
-  test('should return the incorrect {DeterminePaymentActionType} type declaration', () => {
-    const mockType = {
-      trigger: 'getPaymentMethods',
-      errorMessage: 'SCTM - Object ctPayment not found',
-    } as unknown as DeterminePaymentActionType;
-
-    expect(functions.isDeterminePaymentActionType(mockType)).toBeFalsy();
+    expect(functions.isDeterminePaymentActionType('getPaymentMethods')).toBeTruthy();
   });
 });

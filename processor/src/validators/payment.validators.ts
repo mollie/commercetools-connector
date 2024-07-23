@@ -4,6 +4,8 @@ import SkipError from '../errors/skip.error';
 import CustomError from '../errors/custom.error';
 import { logger } from '../utils/logger.utils';
 import { ConnectorActions, CustomFields } from '../utils/constant.utils';
+import { DeterminePaymentActionType } from '../types/controller.types';
+import { CTTransactionState, CTTransactionType } from '../types/commercetools.types';
 
 /**
  * Checks if the given action is either 'Create' or 'Update'.
@@ -54,9 +56,13 @@ export const hasValidPaymentMethod: (method: string | undefined) => boolean = (m
  * @return {true | CustomError} An object containing the validation result.
  * The `isInvalid` property indicates if the payment method input is invalid.
  * The `errorMessage` property contains the error message if the input is invalid.
+ * @param connectorAction
  * @param ctPayment
  */
-export const checkPaymentMethodInput = (connectorAction: string, ctPayment: CTPayment): true | CustomError => {
+export const checkPaymentMethodInput = (
+  connectorAction: DeterminePaymentActionType,
+  ctPayment: CTPayment,
+): true | CustomError => {
   const CTPaymentMethod = ctPayment.paymentMethodInfo?.method ?? '';
   const [method] = CTPaymentMethod.split(',');
 
@@ -75,6 +81,39 @@ export const checkPaymentMethodInput = (connectorAction: string, ctPayment: CTPa
 
   if (method === PaymentMethod.creditcard) {
     checkPaymentMethodSpecificParameters(ctPayment);
+  }
+
+  return true;
+};
+
+/**
+ * Checks if the given Commercetools Payment object has a valid refund transaction.
+ *
+ * @param {CTPayment} ctPayment - The Commercetools Payment object to check.
+ * @return {true | CustomError} Returns true if the refund transaction is valid, otherwise exception.
+ */
+export const checkValidRefundTransaction = (ctPayment: CTPayment): boolean => {
+  const successChargeTransaction = ctPayment.transactions.find(
+    (transaction) => transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Success,
+  );
+
+  if (!successChargeTransaction?.interactionId) {
+    logger.error('SCTM - handleCreateRefund - No successful charge transaction found');
+    throw new CustomError(400, 'SCTM - handleCreateRefund - No successful charge transaction found');
+  }
+
+  const initialRefundTransaction = ctPayment.transactions.find(
+    (transaction) => transaction.type === CTTransactionType.Refund && transaction.state === CTTransactionState.Initial,
+  );
+
+  if (!initialRefundTransaction) {
+    logger.error('SCTM - handleCreateRefund - No initial refund transaction found');
+    throw new CustomError(400, 'SCTM - handleCreateRefund - No initial refund transaction found');
+  }
+
+  if (!initialRefundTransaction?.amount || !initialRefundTransaction?.amount.centAmount) {
+    logger.error('SCTM - handleCreateRefund - No amount found in initial refund transaction');
+    throw new CustomError(400, 'SCTM - handleCreateRefund - No amount found in initial refund transaction');
   }
 
   return true;
@@ -137,21 +176,26 @@ export const checkAmountPlanned = (ctPayment: CTPayment): true | CustomError => 
  * Validates the payload of a CommerceTools payment based on the provided action and payment object.
  *
  * @param {string} extensionAction - The action to perform on the payment.
- * @param {string} controllerAction - The determined action that need to be done with the payment.
+ * @param connectorAction
  * @param {CTPayment} ctPayment - The CommerceTools payment object to validate.
  * @return {void} - An object containing the validated action and an error message if validation fails.
  */
 export const validateCommerceToolsPaymentPayload = (
   extensionAction: string,
-  connectorAction: string,
+  connectorAction: DeterminePaymentActionType,
   ctPayment: CTPayment,
 ): void => {
   checkExtensionAction(extensionAction);
 
   checkPaymentInterface(ctPayment);
 
-  if (connectorAction === ConnectorActions.CreatePayment) {
-    checkPaymentMethodInput(connectorAction, ctPayment);
+  switch (connectorAction) {
+    case ConnectorActions.CreatePayment:
+      checkPaymentMethodInput(connectorAction, ctPayment);
+      break;
+    case ConnectorActions.CreateRefund:
+      checkValidRefundTransaction(ctPayment);
+      break;
   }
 
   checkAmountPlanned(ctPayment);

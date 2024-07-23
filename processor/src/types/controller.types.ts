@@ -5,7 +5,9 @@ export type ControllerResponseType = {
   actions?: UpdateAction[];
 };
 
-export type DeterminePaymentActionType = {
-  action: string;
-  errorMessage?: string;
-};
+export type DeterminePaymentActionType =
+  | 'getPaymentMethods'
+  | 'createPayment'
+  | 'createRefund'
+  | 'cancelRefund'
+  | 'noAction';
