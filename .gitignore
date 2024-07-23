@@ -7,3 +7,4 @@ dist
 .idea
 build/
 processor/.env
+processor/junit-report.xml
