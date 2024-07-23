@@ -32,8 +32,10 @@ export const createMolliePayment = async (paymentParams: PaymentCreateParams): P
       errorMessage = `${prefixErrorMessage} - createMolliePayment - Failed to create payment with unknown errors`;
     }
 
-    logger.error(errorMessage);
-    logger.error(error);
+    logger.error({
+      message: errorMessage,
+      error,
+    });
 
     throw new CustomError(400, errorMessage);
   }
@@ -79,8 +81,10 @@ export const cancelPaymentRefund = async (refundId: string, params: CancelParame
       errorMessage = `${prefixErrorMessage} - cancelPaymentRefund - Calling Mollie API - Failed to cancel the refund with unknown errors`;
     }
 
-    logger.error(errorMessage);
-    logger.error(error);
+    logger.error({
+      message: errorMessage,
+      error,
+    });
 
     throw new CustomError(400, errorMessage);
   }

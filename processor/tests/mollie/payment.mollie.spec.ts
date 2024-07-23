@@ -102,9 +102,10 @@ describe('cancelPaymentRefund', () => {
 
   it('should be able to return error message when error occurred', async () => {
     const errorMessage = 'Something wrong happened';
+    const mollieApiError = new MollieApiError(errorMessage);
 
     (mockPaymentRefundCancel as jest.Mock).mockImplementation(() => {
-      throw new MollieApiError(errorMessage);
+      throw mollieApiError;
     });
 
     const paymentCancelRefund: CancelParameters = {
@@ -116,7 +117,10 @@ describe('cancelPaymentRefund', () => {
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect(logger.error).toBeCalledTimes(1);
-      expect(logger.error).toBeCalledWith(`SCTM - cancelPaymentRefund - error: ` + errorMessage);
+      expect(logger.error).toBeCalledWith({
+        message: `SCTM - Calling Mollie API - cancelPaymentRefund - error: ` + errorMessage,
+        error: mollieApiError,
+      });
     }
   });
 });
