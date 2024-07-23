@@ -16,11 +16,13 @@ export const CustomFields = {
     request: 'sctm_create_payment_request',
     interfaceInteraction: 'sctm_interface_interaction_type',
   },
+  paymentCancelRefund: 'sctm_payment_cancel_refund',
 };
 
 export enum ConnectorActions {
   GetPaymentMethods = 'getPaymentMethods',
   CreatePayment = 'createPayment',
+  CancelRefund = 'cancelRefund',
   NoAction = 'noAction',
 }
 
@@ -29,3 +31,5 @@ export const ErrorMessages = {
 };
 
 export const PAY_LATER_ENUMS = [PaymentMethod.klarnapaylater, PaymentMethod.klarnasliceit];
+
+export const CancelRefundStatusText = 'Cancelled from shop side';

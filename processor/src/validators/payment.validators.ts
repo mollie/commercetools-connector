@@ -1,5 +1,5 @@
 import { Payment as CTPayment } from '@commercetools/platform-sdk';
-import { PaymentMethod as MolliePaymentMethods } from '@mollie/api-client';
+import { PaymentMethod as MolliePaymentMethods, PaymentMethod } from '@mollie/api-client';
 import SkipError from '../errors/skip.error';
 import CustomError from '../errors/custom.error';
 import { logger } from '../utils/logger.utils';
@@ -73,8 +73,8 @@ export const checkPaymentMethodInput = (connectorAction: string, ctPayment: CTPa
     throw new CustomError(400, `SCTM - PAYMENT PROCESSING - Invalid paymentMethodInfo.method "${method}".`);
   }
 
-  if (!checkPaymentMethodSpecificParameters(ctPayment, method)) {
-    throw new CustomError(400, `SCTM - PAYMENT PROCESSING - Payment method "${method}" requires a card token.`);
+  if (method === PaymentMethod.creditcard) {
+    checkPaymentMethodSpecificParameters(ctPayment);
   }
 
   return true;
@@ -91,7 +91,7 @@ export const checkPaymentMethodInput = (connectorAction: string, ctPayment: CTPa
  * The `isInvalid` property indicates if the payment method input is invalid.
  * The `errorMessage` property contains the error message if the input is invalid.
  */
-export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, method: string): boolean => {
+export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment): void => {
   let paymentCustomFields;
 
   try {
@@ -108,99 +108,20 @@ export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, metho
     );
   }
 
-  switch (method) {
-    case MolliePaymentMethods.applepay:
-      if (!paymentCustomFields?.applePayPaymentToken) {
-        logger.error('SCTM - PAYMENT PROCESSING - applePayPaymentToken is required for payment method applepay');
+  if (!paymentCustomFields?.cardToken || paymentCustomFields.cardToken == '') {
+    logger.error('SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard');
 
-        return false;
-      }
-
-      if (
-        typeof paymentCustomFields?.applePayPaymentToken !== 'string' ||
-        paymentCustomFields?.applePayPaymentToken.trim() === ''
-      ) {
-        logger.error(
-          'SCTM - PAYMENT PROCESSING - applePayPaymentToken must be a string and not empty for payment method applepay',
-        );
-
-        return false;
-      }
-
-      break;
-    case MolliePaymentMethods.paypal:
-      if (!paymentCustomFields?.sessionId) {
-        logger.error('SCTM - PAYMENT PROCESSING - sessionId is required for payment method paypal');
-
-        return false;
-      }
-
-      if (typeof paymentCustomFields?.sessionId !== 'string' || paymentCustomFields?.sessionId.trim() === '') {
-        logger.error('SCTM - PAYMENT PROCESSING - sessionId must be a string and not empty for payment method paypal');
-
-        return false;
-      }
-
-      if (!paymentCustomFields?.digitalGoods && typeof paymentCustomFields?.digitalGoods !== 'boolean') {
-        logger.error(
-          'SCTM - PAYMENT PROCESSING - digitalGoods is required for payment method paypal paypal and must be a boolean',
-        );
-
-        return false;
-      }
-
-      break;
-    case MolliePaymentMethods.giftcard:
-      if (!paymentCustomFields?.voucherNumber) {
-        logger.error('SCTM - PAYMENT PROCESSING - voucherNumber is required for payment method giftcard');
-
-        return false;
-      }
-
-      if (typeof paymentCustomFields?.voucherNumber !== 'string' || paymentCustomFields?.voucherNumber.trim() === '') {
-        logger.error(
-          'SCTM - PAYMENT PROCESSING - voucherNumber must be a string and not empty for payment method giftcard',
-        );
-
-        return false;
-      }
-
-      if (!paymentCustomFields?.voucherPin) {
-        logger.error('SCTM - PAYMENT PROCESSING - voucherPin is required for payment method giftcard');
-
-        return false;
-      }
-
-      if (typeof paymentCustomFields?.voucherPin !== 'string' || paymentCustomFields?.voucherPin.trim() === '') {
-        logger.error(
-          'SCTM - PAYMENT PROCESSING - voucherPin must be a string and not empty for payment method giftcard',
-        );
-
-        return false;
-      }
-
-      break;
-    case MolliePaymentMethods.creditcard:
-      if (!paymentCustomFields?.cardToken || paymentCustomFields.cardToken == '') {
-        logger.error('SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard');
-
-        return false;
-      }
-
-      if (typeof paymentCustomFields?.cardToken !== 'string' || paymentCustomFields?.cardToken.trim() === '') {
-        logger.error(
-          'SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard',
-        );
-
-        return false;
-      }
-
-      break;
-    default:
-      break;
+    throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard');
   }
 
-  return true;
+  if (typeof paymentCustomFields?.cardToken !== 'string' || paymentCustomFields?.cardToken.trim() === '') {
+    logger.error('SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard');
+
+    throw new CustomError(
+      400,
+      'SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard',
+    );
+  }
 };
 
 export const checkAmountPlanned = (ctPayment: CTPayment): true | CustomError => {

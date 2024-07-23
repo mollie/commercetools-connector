@@ -9,9 +9,6 @@
 
 Just like [Creating Payment with Credit Card](./CreatePaymentWithCreditCard.md), where the `cardToken` there is a specific params for the method: `creditcard` on Mollie when you are leveraging the Mollie Component to speed up the implementation on your application's Front-end side, Mollie also require some more specific params for the others method which has been pointed out on this [docs](https://docs.mollie.com/reference/extra-payment-parameters)
 
-There are some of them are mandatory when creating payment with that specific methods, such as: applepay, paypal, giftcard, creditcard (when using Mollie Component)
-The others can be filled in when the user being redirected to the Checkout URL.
-
 <br />
 
 **Conditions**
@@ -29,10 +26,9 @@ Refer to [CreatePayment.md#conditions](./CreatePayment.md#conditions)
 | `amountPlanned.currencyCode: "EUR"`                                                                       | `amount.currency: EUR`                       | YES      |
 | `amountPlanned.centAmount: "1000"` and `amountPlanned.fractionDigits: "2"`                                | `amount.value: "10.00"`                      | YES      |
 | `custom.fields.sctm_create_payment_request.redirectUrl: "https://webshop.example.org/order/12345/"`       | `redirectUrl: "https://webshop.example.org/order/12345/"`                      | YES      |
-| `custom.fields.sctm_create_payment_request.webhookUrl: "https://webshop.example.org/payments/webhook/"`   | `redirectUrl: "https://webshop.example.org/payments/webhook/"`                      | NO      |
 
 The others params which listed [here](https://docs.mollie.com/reference/create-payment) can be passed through the custom field of the Payment object name **sctm_create_payment_request** with exactly
-the same format like those 2 fields ``redirectUrl`` and ``webhookUrl`` above
+the same format like the field ``cardToken`` 
 
 <br />
 
@@ -85,14 +81,10 @@ When create order payment is successfully added on Mollie, we update CommerceToo
 
 | Action name (CT)                 | Value                                                                      |
 | -------------------------------- | -------------------------------------------------------------------------- |
-| `changeTransactionState`         | `createOrderPaymentResponse: <transactionId>, state: 'Pending'`            |
-| `changeTransactionTimestamp`     | `createOrderPaymentResponse: <createdAt>`                                  |
-| `changeTransactionInteractionId` | `transactionId: <initial CT transaction ID>` *                             |
-|                                  | `interactionId: <mollie payment ID>`                                       |
-| `addInterfaceInteraction`        | `actionType: "CreateOrderPayment"`                                         |
-|                                  | `id: <UUID>`                                                               |
-|                                  | `timestamp: <createdAt>`                                                   |
-|                                  | `requestValue: {<transactionId, paymentMethod>`                            |
-|                                  | `responseValue: <molliePaymentId, checkoutUrl, transactionId>`             |
+| `changeTransactionState`         | `transactionId: <initialChargeTransactionId>, state: 'Pending'`            |
+| `changeTransactionTimestamp`     | `transactionId: <initialChargeTransactionId>, timestamp: <createdAt>`                                  |
+| `changeTransactionInteractionId` | `transactionId: <initialChargeTransactionId>, interactionId: <molliePaymentId>` |
+| `addInterfaceInteraction`        | `actionType: "CreatePayment", id: <UUID>, timestamp: <createdAt>, requestValue: {<transactionId, paymentMethod>, responseValue: <molliePaymentId, checkoutUrl, transactionId>`                                         |
+
 
 \* Actions will always use first `Initial` transaction. There should only be one per payment. Transaction id will be the ID of the transaction which triggered the create payment.

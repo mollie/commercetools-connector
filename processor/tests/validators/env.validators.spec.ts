@@ -100,7 +100,7 @@ describe('Test env.validators.ts', () => {
       condition: { min: 1, max: undefined },
     },
   ])(
-    'should return the correct validation array expected envValidators[%s][%s] contains [%s, %s]',
+    'should return the correct validation array contains [%s, %s]',
     async ({ index1, index2, field1, field2, error, condition }) => {
       field1 && expect(envValidators[index1][index2]).toContain(field1);
       field2 && expect(envValidators[index1][index2]).toContain(field2);

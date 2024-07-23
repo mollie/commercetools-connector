@@ -6,6 +6,7 @@ import {
   changeTransactionState,
   changeTransactionTimestamp,
   setCustomFields,
+  setTransactionCustomField,
 } from '../../src/commercetools/action.commercetools';
 import { CTTransactionState, CreateInterfaceInteractionParams } from '../../src/types/commercetools.types';
 
@@ -130,6 +131,24 @@ describe('Test actions.utils.ts', () => {
       action: 'changeTransactionState',
       transactionId: id,
       state: state,
+    });
+  });
+
+  test('should be able to return the correct setTransactionCustomField action', () => {
+    const transactionId = 'trasnsactionId';
+    const name = 'transactionCustomFieldName';
+    const value = {
+      reasonText: 'Cancel refund reason',
+      statusText: 'Cancel refund status',
+    };
+
+    const valueString = JSON.stringify(value);
+
+    expect(setTransactionCustomField(transactionId, name, valueString)).toEqual({
+      action: 'setTransactionCustomField',
+      transactionId: transactionId,
+      name: name,
+      value: valueString,
     });
   });
 });
