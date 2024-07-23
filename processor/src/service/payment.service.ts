@@ -224,10 +224,10 @@ export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<Con
   const molliePayment = await getPaymentById(successChargeTransaction?.interactionId as string);
 
   if (molliePayment.status !== PaymentStatus.pending) {
-    logger.error('SCTM - handleCancelRefund - Mollie Payment status must be pending, payment ID: ' + molliePayment.id);
+    logger.error(`SCTM - handleCancelRefund - Mollie Payment status must be pending, payment ID: ${molliePayment.id}`);
     throw new CustomError(
       400,
-      'SCTM - handleCancelRefund - Mollie Payment status must be pending, payment ID: ' + molliePayment.id,
+      `SCTM - handleCancelRefund - Mollie Payment status must be pending, payment ID: ${molliePayment.id}`,
     );
   }
 

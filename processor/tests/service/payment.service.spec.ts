@@ -13,9 +13,14 @@ import {
   ConnectorActions,
   CustomFields as CustomFieldName,
 } from '../../src/utils/constant.utils';
-import { Payment as molliePayment } from '@mollie/api-client';
+import { PaymentStatus, Payment as molliePayment } from '@mollie/api-client';
 import { CTTransactionState } from '../../src/types/commercetools.types';
-import { listPaymentMethods } from '../../src/mollie/payment.mollie';
+import {
+  cancelPaymentRefund,
+  createMolliePayment,
+  getPaymentById,
+  listPaymentMethods,
+} from '../../src/mollie/payment.mollie';
 import CustomError from '../../src/errors/custom.error';
 import { logger } from '../../src/utils/logger.utils';
 const uuid = '5c8b0375-305a-4f19-ae8e-07806b101999';
@@ -26,14 +31,19 @@ jest.mock('uuid', () => ({
 jest.mock('../../src/service/payment.service.ts', () => ({
   ...(jest.requireActual('../../src/service/payment.service.ts') as object),
   getCreatePaymentUpdateAction: jest.fn(),
-  handleCreatePayment: jest.fn(),
   getPaymentCancelRefundActions: jest.fn(),
-  handlePaymentCancelRefund: jest.fn(),
 }));
 
 jest.mock('../../src/mollie/payment.mollie', () => ({
   listPaymentMethods: jest.fn(),
   createMolliePayment: jest.fn(),
+  getPaymentById: jest.fn(),
+  cancelPaymentRefund: jest.fn(),
+}));
+
+jest.mock('../../src/utils/map.utils.ts', () => ({
+  ...(jest.requireActual('../../src/utils/map.utils.ts') as object),
+  createMollieCreatePaymentParams: jest.fn(),
 }));
 
 describe('Test listPaymentMethodsByPayment', () => {
@@ -354,23 +364,76 @@ describe('Test createPayment', () => {
     jest.clearAllMocks();
   });
 
-  it('should return a success value', () => {
-    const getCreatePaymentUpdateActionMock = (getCreatePaymentUpdateAction as jest.Mock).mockImplementationOnce(() => {
-      return [];
-    });
+  it('should return status code and array of actions', async () => {
+    const molliePayment: molliePayment = {
+      resource: 'payment',
+      id: 'tr_7UhSN1zuXS',
+      amount: {
+        value: '10.00',
+        currency: 'EUR',
+      },
+      description: 'Order #12345',
+      redirectUrl: 'https://webshop.example.org/order/12345/',
+      webhookUrl: 'https://webshop.example.org/payments/webhook/',
+      metadata: '{"order_id":12345}',
+      profileId: 'pfl_QkEhN94Ba',
+      status: PaymentStatus.open,
+      isCancelable: false,
+      createdAt: '2024-03-20T09:13:37+00:00',
+      expiresAt: '2024-03-20T09:28:37+00:00',
+      _links: {
+        self: {
+          href: '...',
+          type: 'application/hal+json',
+        },
+        checkout: {
+          href: 'https://www.mollie.com/checkout/select-method/7UhSN1zuXS',
+          type: 'text/html',
+        },
+        documentation: {
+          href: '...',
+          type: 'text/html',
+        },
+      },
+    } as molliePayment;
 
-    (handleCreatePayment as jest.Mock).mockImplementationOnce(async () => {
-      return {
-        statusCode: 201,
-        actions: getCreatePaymentUpdateActionMock(),
-      };
-    });
+    (createMolliePayment as jest.Mock).mockReturnValueOnce(molliePayment);
 
-    handleCreatePayment(CTPayment).then((response) => {
-      expect(response).toEqual({
-        actions: [],
-        statusCode: 201,
-      });
+    const actual = await handleCreatePayment(CTPayment);
+
+    const ctActions = [
+      {
+        action: 'addInterfaceInteraction',
+        type: { key: 'sctm_interface_interaction_type' },
+        fields: {
+          id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          actionType: 'createPayment',
+          createdAt: '2024-03-20T09:13:37+00:00',
+          request: '{"transactionId":"5c8b0375-305a-4f19-ae8e-07806b101999","paymentMethod":"creditcard"}',
+          response:
+            '{"molliePaymentId":"tr_7UhSN1zuXS","checkoutUrl":"https://www.mollie.com/checkout/select-method/7UhSN1zuXS","transactionId":"5c8b0375-305a-4f19-ae8e-07806b101999"}',
+        },
+      },
+      {
+        action: 'changeTransactionInteractionId',
+        transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        interactionId: 'tr_7UhSN1zuXS',
+      },
+      {
+        action: 'changeTransactionTimestamp',
+        transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        timestamp: '2024-03-20T09:13:37+00:00',
+      },
+      {
+        action: 'changeTransactionState',
+        transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        state: 'Pending',
+      },
+    ];
+
+    expect(actual).toEqual({
+      statusCode: 201,
+      actions: ctActions,
     });
   });
 });
@@ -539,14 +602,27 @@ describe('Test handlePaymentCancelRefund', () => {
     transactions: [
       {
         id: '5c8b0375-305a-4f19-ae8e-07806b101999',
-        type: 'Authorization',
+        type: 'Charge',
+        interactionId: 'tr_123123',
         amount: {
           type: 'centPrecision',
           currencyCode: 'EUR',
           centAmount: 1000,
           fractionDigits: 2,
         },
-        state: 'Initial',
+        state: 'Success',
+      },
+      {
+        id: '5c8b0375-305a-4f19-ae8e-07806b102000',
+        type: 'Refund',
+        interactionId: 'refund_id_123123',
+        amount: {
+          type: 'centPrecision',
+          currencyCode: 'EUR',
+          centAmount: 1000,
+          fractionDigits: 2,
+        },
+        state: 'Pending',
       },
     ],
     interfaceInteractions: [],
@@ -563,25 +639,98 @@ describe('Test handlePaymentCancelRefund', () => {
     jest.clearAllMocks();
   });
 
-  it('should return a success value', () => {
-    const getPaymentCancelRefundActionsMock = (getPaymentCancelRefundActions as jest.Mock).mockImplementationOnce(
-      () => {
-        return [];
+  it('should throw error if the Mollie Payment status is not pending', async () => {
+    const molliePayment: molliePayment = {
+      resource: 'payment',
+      id: 'tr_7UhSN1zuXS',
+      amount: {
+        value: '10.00',
+        currency: 'EUR',
       },
-    );
+      description: 'Order #12345',
+      redirectUrl: 'https://webshop.example.org/order/12345/',
+      webhookUrl: 'https://webshop.example.org/payments/webhook/',
+      metadata: '{"order_id":12345}',
+      profileId: 'pfl_QkEhN94Ba',
+      status: PaymentStatus.open,
+      isCancelable: false,
+      createdAt: '2024-03-20T09:13:37+00:00',
+      expiresAt: '2024-03-20T09:28:37+00:00',
+      _links: {
+        self: {
+          href: '...',
+          type: 'application/hal+json',
+        },
+        checkout: {
+          href: 'https://www.mollie.com/checkout/select-method/7UhSN1zuXS',
+          type: 'text/html',
+        },
+        documentation: {
+          href: '...',
+          type: 'text/html',
+        },
+      },
+    } as molliePayment;
 
-    (handlePaymentCancelRefund as jest.Mock).mockImplementationOnce(async () => {
-      return {
-        statusCode: 200,
-        actions: getPaymentCancelRefundActionsMock(),
-      };
-    });
+    (getPaymentById as jest.Mock).mockReturnValueOnce(molliePayment);
 
-    handlePaymentCancelRefund(CTPayment).then((response) => {
-      expect(response).toEqual({
-        actions: [],
-        statusCode: 200,
-      });
+    try {
+      await handlePaymentCancelRefund(CTPayment);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith(
+        `SCTM - handleCancelRefund - Mollie Payment status must be pending, payment ID: ${molliePayment.id}`,
+      );
+    }
+  });
+
+  it('should return status code and array of actions', async () => {
+    const molliePayment: molliePayment = {
+      resource: 'payment',
+      id: 'tr_7UhSN1zuXS',
+      amount: {
+        value: '10.00',
+        currency: 'EUR',
+      },
+      description: 'Order #12345',
+      redirectUrl: 'https://webshop.example.org/order/12345/',
+      webhookUrl: 'https://webshop.example.org/payments/webhook/',
+      metadata: '{"order_id":12345}',
+      profileId: 'pfl_QkEhN94Ba',
+      status: PaymentStatus.pending,
+      isCancelable: false,
+      createdAt: '2024-03-20T09:13:37+00:00',
+      expiresAt: '2024-03-20T09:28:37+00:00',
+      _links: {
+        self: {
+          href: '...',
+          type: 'application/hal+json',
+        },
+        checkout: {
+          href: 'https://www.mollie.com/checkout/select-method/7UhSN1zuXS',
+          type: 'text/html',
+        },
+        documentation: {
+          href: '...',
+          type: 'text/html',
+        },
+      },
+    } as molliePayment;
+
+    (getPaymentById as jest.Mock).mockReturnValueOnce(molliePayment);
+
+    (cancelPaymentRefund as jest.Mock).mockReturnValueOnce(true);
+
+    (getPaymentCancelRefundActions as jest.Mock).mockReturnValueOnce([]);
+
+    await handlePaymentCancelRefund(CTPayment);
+
+    expect(getPaymentById).toBeCalledTimes(1);
+    expect(getPaymentById).toBeCalledWith(CTPayment.transactions[0].interactionId);
+    expect(cancelPaymentRefund).toBeCalledTimes(1);
+    expect(cancelPaymentRefund).toBeCalledWith(CTPayment.transactions[1].interactionId, {
+      paymentId: molliePayment.id,
     });
   });
 });
