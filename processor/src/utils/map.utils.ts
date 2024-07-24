@@ -6,130 +6,95 @@ import { Payment } from '@commercetools/platform-sdk';
 import CustomError from '../errors/custom.error';
 import { PaymentCreateParams, MethodsListParams, PaymentMethod } from '@mollie/api-client';
 
-/**
- * Extracts method list parameters from a Commercetools Payment object and returns a Promise resolving to a MethodsListParams object.
- *
- * @param {Payment} ctPayment - The Commercetools Payment object from which to extract the method list parameters.
- * @return {Promise<MethodsListParams>} A Promise resolving to a MethodsListParams object containing the extracted method list parameters.
- * @throws {CustomError} If there is an error parsing the payment methods request field.
- */
+const extractMethodsRequest = (ctPayment: Payment): ParsedMethodsRequestType | undefined => {
+  return ctPayment?.custom?.fields?.[CustomFields.payment.request];
+};
+
+const buildMethodsListParams = (parsedMethodsRequest: ParsedMethodsRequestType): Partial<MethodsListParams> => {
+  const { locale, billingCountry, includeWallets, orderLineCategories, issuers, pricing, sequenceType } =
+    parsedMethodsRequest;
+
+  const include = [issuers ? 'issuers' : '', pricing ? 'pricing' : ''].filter(Boolean).join(',');
+
+  return {
+    locale,
+    billingCountry,
+    includeWallets,
+    sequenceType,
+    orderLineCategories,
+    ...(include && { include }),
+  } as MethodsListParams;
+};
+
 export const mapCommercetoolsPaymentCustomFieldsToMollieListParams = async (
   ctPayment: Payment,
 ): Promise<MethodsListParams> => {
   try {
-    const mObject: MethodsListParams = {
+    const baseParams: MethodsListParams = {
       amount: makeMollieAmount(ctPayment.amountPlanned),
       resource: 'payments',
     };
 
-    const parsedMethodsRequest = ctPayment?.custom?.fields?.[CustomFields.payment.request];
+    const parsedMethodsRequest = extractMethodsRequest(ctPayment);
 
     if (!parsedMethodsRequest) {
       logger.debug(
         'SCTM - field {custom.fields.sctm_payment_methods_request} not found. Returning default Mollie object',
-        mObject,
+        baseParams,
       );
-      return mObject;
+      return baseParams;
     }
 
-    const {
-      locale,
-      billingCountry,
-      includeWallets,
-      orderLineCategories,
-      issuers,
-      pricing,
-      sequenceType,
-    }: ParsedMethodsRequestType = parsedMethodsRequest;
-
-    const include = issuers || pricing ? `${issuers ? 'issuers,' : ''}${pricing ? 'pricing' : ''}` : undefined;
-
-    Object.assign(
-      mObject,
-      locale && { locale: locale },
-      include && { include: include },
-      includeWallets && { includeWallets: includeWallets },
-      billingCountry && { billingCountry: billingCountry },
-      sequenceType && { sequenceType: sequenceType },
-      orderLineCategories && { orderLineCategories: orderLineCategories },
-    );
-
-    return Promise.resolve(mObject);
+    return {
+      ...baseParams,
+      ...buildMethodsListParams(parsedMethodsRequest),
+    };
   } catch (error: unknown) {
     logger.error('SCTM - PARSING ERROR - field {custom.fields.sctm_payment_methods_request}');
-    return Promise.reject(
-      new CustomError(400, 'SCTM - PARSING ERROR - field {custom.fields.sctm_payment_methods_request}'),
-    );
+    throw new CustomError(400, 'SCTM - PARSING ERROR - field {custom.fields.sctm_payment_methods_request}');
   }
 };
 
-/**
- * Creates Mollie Payment parameters based on the CommerceTools Payment object.
- *
- * @param {Payment} payment - The CommerceTools Payment object to extract payment parameters from.
- * @return {PaymentCreateParams} - The payment parameters for creating a payment.
- */
+const getSpecificPaymentParams = (method: PaymentMethod, paymentRequest: any) => {
+  switch (method) {
+    case PaymentMethod.applepay:
+      return { applePayPaymentToken: paymentRequest.applePayPaymentToken ?? '' };
+    case PaymentMethod.banktransfer:
+      return {
+        dueDate: paymentRequest.dueDate ?? '',
+        billingEmail: paymentRequest.billingEmail ?? '',
+      };
+    case PaymentMethod.przelewy24:
+      return { billingEmail: paymentRequest.billingEmail ?? '' };
+    case PaymentMethod.paypal:
+      return {
+        sessionId: paymentRequest.sessionId ?? '',
+        digitalGoods: paymentRequest.digitalGoods ?? '',
+      };
+    case PaymentMethod.giftcard:
+      return {
+        voucherNumber: paymentRequest.voucherNumber ?? '',
+        voucherPin: paymentRequest.voucherPin ?? '',
+      };
+    case PaymentMethod.creditcard:
+      return { cardToken: paymentRequest.cardToken ?? '' };
+    default:
+      return {};
+  }
+};
+
 export const createMollieCreatePaymentParams = (payment: Payment): PaymentCreateParams => {
   const { amountPlanned, paymentMethodInfo, custom } = payment;
 
   const [method, issuer] = paymentMethodInfo?.method?.split(',') ?? [null, null];
-
   const requestCustomField = custom?.fields?.[CustomFields.createPayment.request];
-
   const paymentRequest = requestCustomField ? JSON.parse(requestCustomField) : {};
 
   const defaultWebhookEndpoint = new URL(process.env.CONNECT_SERVICE_URL ?? '').origin + '/webhook';
 
-  let specificParam;
-  switch (method) {
-    case PaymentMethod.applepay:
-      specificParam = {
-        applePayPaymentToken: paymentRequest.applePayPaymentToken ?? '',
-      };
-
-      break;
-    case PaymentMethod.banktransfer:
-      specificParam = {
-        dueDate: paymentRequest.dueDate ?? '',
-        billingEmail: paymentRequest.billingEmail ?? '',
-      };
-
-      break;
-    case PaymentMethod.przelewy24:
-      specificParam = {
-        billingEmail: paymentRequest.billingEmail ?? '',
-      };
-
-      break;
-
-    case PaymentMethod.paypal:
-      specificParam = {
-        sessionId: paymentRequest.sessionId ?? '',
-        digitalGoods: paymentRequest.digitalGoods ?? '',
-      };
-
-      break;
-    case PaymentMethod.giftcard:
-      specificParam = {
-        voucherNumber: paymentRequest.voucherNumber ?? '',
-        voucherPin: paymentRequest.voucherPin ?? '',
-      };
-
-      break;
-    case PaymentMethod.creditcard:
-      specificParam = {
-        cardToken: paymentRequest.cardToken ?? '',
-      };
-
-      break;
-    default:
-      break;
-  }
-
   const molliePaymentParams: PaymentCreateParams = {
-    include: paymentRequest.include ?? '',
-    description: paymentRequest.description ?? '',
     amount: makeMollieAmount(amountPlanned),
+    description: paymentRequest.description ?? '',
     redirectUrl: paymentRequest.redirectUrl ?? null,
     webhookUrl: defaultWebhookEndpoint,
     billingAddress: paymentRequest.billingAddress ?? {},
@@ -139,16 +104,9 @@ export const createMollieCreatePaymentParams = (payment: Payment): PaymentCreate
     issuer: issuer ?? '',
     restrictPaymentMethodsToCountry: paymentRequest.restrictPaymentMethodsToCountry ?? null,
     metadata: paymentRequest.metadata ?? null,
-    // captureMode: paymentRequest.captureMode ?? null, PICT-204 is on hold
-    // captureDelay: paymentRequest.captureMode ?? null, PICT-204 is on hold
     applicationFee: paymentRequest.applicationFee ?? {},
-
-    // TODO: Conflicts between docs and Mollie API Client
-    // The official document pointed out that these 2 fields are supported
-    // But if we send them along with the payload even hard-coded the value, Mollie return with the error: "Non-existent body parameter 'profileId' or 'testmode'"
-    // profileId: paymentRequest.profileId ?? null,
-    // testmode: paymentRequest.testmode ?? null,
-    ...specificParam,
+    include: paymentRequest.include ?? '',
+    ...getSpecificPaymentParams(method as PaymentMethod, paymentRequest),
   };
 
   return molliePaymentParams;
