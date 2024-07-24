@@ -58,10 +58,18 @@ export const listPaymentMethods = async (options: MethodsListParams): Promise<Li
   try {
     return await initMollieClient().methods.list(options);
   } catch (error: unknown) {
+    let errorMessage;
     if (error instanceof MollieApiError) {
-      throw new CustomError(error.statusCode ?? 400, error.message);
+      errorMessage = `listPaymentMethods - error: ${error.message}, field: ${error.field}`;
+    } else {
+      errorMessage = `listPaymentMethods - Failed to list payments with unknown errors`;
     }
 
-    return {} as List<Method>;
+    logger.error({
+      message: errorMessage,
+      error,
+    });
+
+    throw new CustomError(400, errorMessage);
   }
 };
