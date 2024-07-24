@@ -30,13 +30,9 @@ export const post = async (request: Request, response: Response, next: NextFunct
     logger.info(`Webhook with id ${id} is handled successfully.`);
 
     response.status(200).send();
-  } catch (error) {
+  } catch (error: any) {
     logger.error(`Error processing webhook event`, error);
 
-    if (error instanceof Error) {
-      next(new CustomError(400, error.message));
-    } else {
-      next(error);
-    }
+    next(new CustomError(400, error.message));
   }
 };
