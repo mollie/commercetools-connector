@@ -5,10 +5,12 @@ import {
   checkExtensionAction,
   checkPaymentInterface,
   checkPaymentMethodInput,
-  checkValidRefundTransaction,
+  checkValidSuccessChargeTransaction,
   checkPaymentMethodSpecificParameters,
   hasValidPaymentMethod,
   validateCommerceToolsPaymentPayload,
+  checkValidRefundTransactionForCreate,
+  checkValidRefundTransactionForCancel,
 } from './../../src/validators/payment.validators';
 import { describe, it, expect, jest, afterEach } from '@jest/globals';
 import CustomError from '../../src/errors/custom.error';
@@ -482,7 +484,9 @@ describe('validateCommerceToolsPaymentPayload', () => {
   const paymentValidators = require('../../src/validators/payment.validators');
 
   jest.spyOn(paymentValidators, 'checkPaymentMethodInput');
-  jest.spyOn(paymentValidators, 'checkValidRefundTransaction');
+  jest.spyOn(paymentValidators, 'checkValidSuccessChargeTransaction');
+  jest.spyOn(paymentValidators, 'checkValidRefundTransactionForCreate');
+  jest.spyOn(paymentValidators, 'checkValidRefundTransactionForCancel');
 
   it('should not call the checkPaymentMethodInput when the action is not "CreatePayment"', () => {
     try {
@@ -519,7 +523,7 @@ describe('validateCommerceToolsPaymentPayload', () => {
     }
   });
 
-  it('should call the checkValidRefundTransaction when the action is "CreateRefund"', () => {
+  it('should call the checkValidRefundTransaction and checkValidRefundTransactionForCreate when the action is "CreateRefund"', () => {
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
       version: 1,
@@ -564,7 +568,8 @@ describe('validateCommerceToolsPaymentPayload', () => {
     };
 
     validateCommerceToolsPaymentPayload('Update', ConnectorActions.CreateRefund, CTPayment);
-    expect(checkValidRefundTransaction).toBeCalledTimes(1);
+    expect(checkValidSuccessChargeTransaction).toBeCalledTimes(1);
+    expect(checkValidRefundTransactionForCreate).toBeCalledTimes(1);
   });
 
   const CTPayment: Payment = {
@@ -591,7 +596,7 @@ describe('validateCommerceToolsPaymentPayload', () => {
       CTPayment: {
         ...CTPayment,
       },
-      exception: 'SCTM - handleCreateRefund - No successful charge transaction found',
+      exception: 'SCTM - Validating transactions for refund actions - No successful charge transaction found',
     },
     {
       CTPayment: {
@@ -611,7 +616,7 @@ describe('validateCommerceToolsPaymentPayload', () => {
           },
         ],
       },
-      exception: 'SCTM - handleCreateRefund - No successful charge transaction found',
+      exception: 'SCTM - Validating transactions for refund actions - No successful charge transaction found',
     },
     {
       CTPayment: {
@@ -698,6 +703,173 @@ describe('validateCommerceToolsPaymentPayload', () => {
     ({ CTPayment, exception }) => {
       expect(() => {
         validateCommerceToolsPaymentPayload('Update', ConnectorActions.CreateRefund, CTPayment as Payment);
+      }).toThrow(exception);
+    },
+  );
+
+  it('should call the checkValidRefundTransaction and checkValidRefundTransactionForCancel when the action is "CancelRefund"', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [
+        {
+          id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          type: 'Charge',
+          amount: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 1000,
+            fractionDigits: 2,
+          },
+          state: 'Success',
+          interactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        },
+        {
+          id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          type: 'Refund',
+          amount: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 1000,
+            fractionDigits: 2,
+          },
+          state: 'Pending',
+          interactionId: '5c8b0375-305a-4f19-ae8e-07806b102000',
+        },
+      ],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        paymentInterface: 'Mollie',
+      },
+    };
+
+    validateCommerceToolsPaymentPayload('Update', ConnectorActions.CancelRefund, CTPayment);
+    expect(checkValidSuccessChargeTransaction).toBeCalledTimes(1);
+    expect(checkValidRefundTransactionForCancel).toBeCalledTimes(1);
+  });
+
+  const dataSetForCancelRefund = [
+    {
+      CTPayment: {
+        ...CTPayment,
+      },
+      exception: 'SCTM - Validating transactions for refund actions - No successful charge transaction found',
+    },
+    {
+      CTPayment: {
+        ...CTPayment,
+        transactions: [
+          {
+            id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+            type: 'Charge',
+            amount: {
+              type: 'centPrecision',
+              currencyCode: 'EUR',
+              centAmount: 1000,
+              fractionDigits: 2,
+            },
+            state: 'Pending',
+            interactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          },
+        ],
+      },
+      exception: 'SCTM - Validating transactions for refund actions - No successful charge transaction found',
+    },
+    {
+      CTPayment: {
+        ...CTPayment,
+        transactions: [
+          {
+            id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+            type: 'Charge',
+            amount: {
+              type: 'centPrecision',
+              currencyCode: 'EUR',
+              centAmount: 1000,
+              fractionDigits: 2,
+            },
+            state: 'Success',
+            interactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          },
+        ],
+      },
+      exception: 'SCTM - handleCancelRefund - No pending refund transaction found',
+    },
+    {
+      CTPayment: {
+        ...CTPayment,
+        transactions: [
+          {
+            id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+            type: 'Charge',
+            amount: {
+              type: 'centPrecision',
+              currencyCode: 'EUR',
+              centAmount: 1000,
+              fractionDigits: 2,
+            },
+            state: 'Success',
+            interactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          },
+          {
+            id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+            type: 'Refund',
+            state: 'Pending',
+          },
+        ],
+      },
+      exception:
+        'SCTM - handleCancelRefund - Cannot get the Mollie refund ID from CommerceTools transaction, transaction ID: 5c8b0375-305a-4f19-ae8e-07806b101999',
+    },
+    {
+      CTPayment: {
+        ...CTPayment,
+        transactions: [
+          {
+            id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+            type: 'Charge',
+            amount: {
+              type: 'centPrecision',
+              currencyCode: 'EUR',
+              centAmount: 1000,
+              fractionDigits: 2,
+            },
+            state: 'Success',
+            interactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          },
+          {
+            id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+            type: 'Refund',
+            amount: {
+              type: 'centPrecision',
+              currencyCode: 'EUR',
+              centAmount: 0,
+              fractionDigits: 2,
+            },
+            state: 'Pending',
+            interactionId: ' ',
+          },
+        ],
+      },
+      exception:
+        'SCTM - handleCancelRefund - Cannot get the Mollie refund ID from CommerceTools transaction, transaction ID: 5c8b0375-305a-4f19-ae8e-07806b101999',
+    },
+  ];
+
+  it.each(dataSetForCancelRefund)(
+    'should throw exception on checkValidRefundTransaction with invalid "CancelRefund" action',
+    ({ CTPayment, exception }) => {
+      expect(() => {
+        validateCommerceToolsPaymentPayload('Update', ConnectorActions.CancelRefund, CTPayment as Payment);
       }).toThrow(exception);
     },
   );

@@ -253,29 +253,9 @@ export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<Con
     (transaction) => transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Success,
   );
 
-  if (!successChargeTransaction?.interactionId || successChargeTransaction?.interactionId.trim() === '') {
-    logger.error(
-      `SCTM - handleCancelRefund - Cannot get the Mollie payment ID from CommerceTools transaction, transaction ID: ${successChargeTransaction?.id}`,
-    );
-    throw new CustomError(
-      400,
-      `SCTM - handleCancelRefund - Cannot get the Mollie payment ID from CommerceTools transaction, transaction ID: ${successChargeTransaction?.id}`,
-    );
-  }
-
   const pendingRefundTransaction = ctPayment.transactions.find(
     (transaction) => transaction.type === CTTransactionType.Refund && transaction.state === CTTransactionState.Pending,
   );
-
-  if (!pendingRefundTransaction?.interactionId || pendingRefundTransaction?.interactionId.trim() === '') {
-    logger.error(
-      `SCTM - handleCancelRefund - Cannot get the Mollie refund ID from CommerceTools transaction, transaction ID: ${pendingRefundTransaction?.id}`,
-    );
-    throw new CustomError(
-      400,
-      `SCTM - handleCancelRefund - Cannot get the Mollie refund ID from CommerceTools transaction, transaction ID: ${pendingRefundTransaction?.id}`,
-    );
-  }
 
   const paymentGetRefundParams: CancelParameters = {
     paymentId: successChargeTransaction?.interactionId as string,
@@ -297,7 +277,7 @@ export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<Con
   }
 
   const paymentCancelRefundParams: CancelParameters = {
-    paymentId: successChargeTransaction.interactionId,
+    paymentId: successChargeTransaction?.interactionId as string,
   };
 
   await cancelPaymentRefund(molliePaymentRefund.id, paymentCancelRefundParams);
