@@ -6,6 +6,7 @@ import {
   getPaymentCancelRefundActions,
   handleCreatePayment,
   handleListPaymentMethodsByPayment,
+  handleCreateRefund,
   handlePaymentCancelRefund,
 } from '../../src/service/payment.service';
 import { ControllerResponseType } from '../../src/types/controller.types';
@@ -17,10 +18,11 @@ import {
 import { PaymentStatus, Payment as molliePayment, Refund } from '@mollie/api-client';
 import { CTTransactionState } from '../../src/types/commercetools.types';
 import { listPaymentMethods, getPaymentById, createMolliePayment } from '../../src/mollie/payment.mollie';
+import { cancelPaymentRefund, createPaymentRefund } from '../../src/mollie/refund.mollie';
 import CustomError from '../../src/errors/custom.error';
 import { logger } from '../../src/utils/logger.utils';
 import { getPaymentByMolliePaymentId, updatePayment } from '../../src/commercetools/payment.commercetools';
-import { cancelPaymentRefund, getPaymentRefund } from '../../src/mollie/refund.mollie';
+import { CreateParameters } from '@mollie/api-client/dist/types/src/binders/payments/refunds/parameters';
 const uuid = '5c8b0375-305a-4f19-ae8e-07806b101999';
 jest.mock('uuid', () => ({
   v4: () => uuid,
@@ -47,6 +49,7 @@ jest.mock('../../src/mollie/payment.mollie', () => ({
 jest.mock('../../src/mollie/refund.mollie', () => ({
   cancelPaymentRefund: jest.fn(),
   getPaymentRefund: jest.fn(),
+  createPaymentRefund: jest.fn(),
 }));
 
 jest.mock('../../src/utils/map.utils.ts', () => ({
@@ -443,6 +446,83 @@ describe('Test createPayment', () => {
       statusCode: 201,
       actions: ctActions,
     });
+  });
+});
+
+describe('Test handleCreateRefund', () => {
+  it('should return status code and array of actions', async () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [
+        {
+          id: uuid,
+          type: 'Charge',
+          interactionId: 'tr_123123',
+          amount: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 1000,
+            fractionDigits: 2,
+          },
+          state: 'Success',
+        },
+        {
+          id: 'test_refund',
+          type: 'Refund',
+          amount: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 1000,
+            fractionDigits: 2,
+          },
+          state: 'Initial',
+        },
+      ],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'creditcard',
+      },
+    };
+
+    (createPaymentRefund as jest.Mock).mockReturnValue({
+      id: 'fake_refund_id',
+    });
+
+    const paymentCreateRefundParams: CreateParameters = {
+      paymentId: 'tr_123123',
+      amount: {
+        value: '10.00',
+        currency: 'EUR',
+      },
+    };
+
+    const result = await handleCreateRefund(CTPayment);
+
+    expect(createPaymentRefund).toBeCalledTimes(1);
+    expect(createPaymentRefund).toBeCalledWith(paymentCreateRefundParams);
+    expect(result.statusCode).toBe(201);
+    expect(result.actions).toStrictEqual([
+      {
+        action: 'changeTransactionInteractionId',
+        transactionId: 'test_refund',
+        interactionId: 'fake_refund_id',
+      },
+      {
+        action: 'changeTransactionState',
+        transactionId: 'test_refund',
+        state: 'Pending',
+      },
+    ]);
   });
 });
 

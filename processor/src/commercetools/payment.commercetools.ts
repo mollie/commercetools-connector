@@ -40,9 +40,9 @@ export async function updatePayment(payment: Payment, updateActions: PaymentUpda
     const { body: paymentObject } = response;
 
     return paymentObject;
-  } catch (error) {
+  } catch (error: any) {
     logger.error('Error in updatePayment', error);
 
-    throw error;
+    throw new CustomError(error.status, error.message);
   }
 }

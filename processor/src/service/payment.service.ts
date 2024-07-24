@@ -233,7 +233,7 @@ export const handleCreateRefund = async (ctPayment: Payment): Promise<Controller
   const refund = await createPaymentRefund(paymentCreateRefundParams);
 
   return {
-    statusCode: 200,
+    statusCode: 201,
     actions: [
       changeTransactionInteractionId(initialRefundTransaction?.id as string, refund.id),
       changeTransactionState(initialRefundTransaction?.id as string, CTTransactionState.Pending),
