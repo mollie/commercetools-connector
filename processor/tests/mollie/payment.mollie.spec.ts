@@ -55,13 +55,12 @@ describe('createMolliePayment', () => {
     try {
       await createMolliePayment(paymentParams);
     } catch (error: any) {
-      expect(error.message).toBe(`createMolliePayment - error: Bad request, field: Test`);
+      expect(error.message).toBe(`SCTM - createMolliePayment - error: Bad request, field: Test`);
       expect(error.statusCode).toBe(400);
       expect(mockPaymentsCreate).toHaveBeenCalledTimes(1);
       expect(mockPaymentsCreate).toHaveBeenCalledWith(paymentParams);
       expect(logger.error).toHaveBeenCalledTimes(1);
-      expect(logger.error).toHaveBeenCalledWith({
-        message: `createMolliePayment - error: Bad request, field: Test`,
+      expect(logger.error).toHaveBeenCalledWith(`SCTM - createMolliePayment - error: Bad request, field: Test`, {
         error: new MollieApiError('Bad request', { statusCode: 400, field: 'Test' }),
       });
     }
@@ -83,14 +82,16 @@ describe('createMolliePayment', () => {
     try {
       await createMolliePayment(paymentParams);
     } catch (error: any) {
-      expect(error.message).toBe(`createMolliePayment - Failed to create payment with unknown errors`);
+      expect(error.message).toBe(`SCTM - createMolliePayment - Failed to create payment with unknown errors`);
       expect(mockPaymentsCreate).toHaveBeenCalledTimes(1);
       expect(mockPaymentsCreate).toHaveBeenCalledWith(paymentParams);
       expect(logger.error).toHaveBeenCalledTimes(1);
-      expect(logger.error).toHaveBeenCalledWith({
-        message: `createMolliePayment - Failed to create payment with unknown errors`,
-        error: new Error('Unknown error'),
-      });
+      expect(logger.error).toHaveBeenCalledWith(
+        `SCTM - createMolliePayment - Failed to create payment with unknown errors`,
+        {
+          error: new Error('Unknown error'),
+        },
+      );
     }
   });
 });
@@ -143,13 +144,12 @@ describe('listPaymentMethods', () => {
     try {
       await listPaymentMethods(mockOption);
     } catch (error: any) {
-      expect(error.message).toBe(`listPaymentMethods - error: Bad request, field: Test`);
+      expect(error.message).toBe(`SCTM - listPaymentMethods - error: Bad request, field: Test`);
       expect(error.statusCode).toBe(400);
       expect(mockPaymentsList).toHaveBeenCalledTimes(1);
       expect(mockPaymentsList).toHaveBeenCalledWith(mockOption);
       expect(logger.error).toHaveBeenCalledTimes(1);
-      expect(logger.error).toHaveBeenCalledWith({
-        message: `listPaymentMethods - error: Bad request, field: Test`,
+      expect(logger.error).toHaveBeenCalledWith(`SCTM - listPaymentMethods - error: Bad request, field: Test`, {
         error: new MollieApiError('Bad request', { statusCode: 400, field: 'Test' }),
       });
     }
@@ -171,15 +171,17 @@ describe('listPaymentMethods', () => {
     try {
       await listPaymentMethods(mockOption);
     } catch (error: any) {
-      expect(error.message).toBe(`listPaymentMethods - Failed to list payments with unknown errors`);
+      expect(error.message).toBe(`SCTM - listPaymentMethods - Failed to list payments with unknown errors`);
       expect(error.statusCode).toBe(400);
       expect(mockPaymentsList).toHaveBeenCalledTimes(1);
       expect(mockPaymentsList).toHaveBeenCalledWith(mockOption);
       expect(logger.error).toHaveBeenCalledTimes(1);
-      expect(logger.error).toHaveBeenCalledWith({
-        message: `listPaymentMethods - Failed to list payments with unknown errors`,
-        error: new Error('Unknown error'),
-      });
+      expect(logger.error).toHaveBeenCalledWith(
+        `SCTM - listPaymentMethods - Failed to list payments with unknown errors`,
+        {
+          error: new Error('Unknown error'),
+        },
+      );
     }
   });
 });

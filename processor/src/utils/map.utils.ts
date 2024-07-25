@@ -41,7 +41,10 @@ export const mapCommercetoolsPaymentCustomFieldsToMollieListParams = async (
     if (!parsedMethodsRequest) {
       logger.debug(
         'SCTM - field {custom.fields.sctm_payment_methods_request} not found. Returning default Mollie object',
-        baseParams,
+        {
+          ...baseParams,
+          commerceToolsPaymentId: ctPayment.id,
+        },
       );
       return baseParams;
     }
@@ -51,7 +54,13 @@ export const mapCommercetoolsPaymentCustomFieldsToMollieListParams = async (
       ...buildMethodsListParams(parsedMethodsRequest),
     };
   } catch (error: unknown) {
-    logger.error('SCTM - PARSING ERROR - field {custom.fields.sctm_payment_methods_request}');
+    logger.error(
+      `SCTM - PARSING ERROR - field {custom.fields.sctm_payment_methods_request}, CommerceTools Payment ID: ${ctPayment.id}`,
+      {
+        commerceToolsPaymentId: ctPayment.id,
+        error,
+      },
+    );
     throw new CustomError(400, 'SCTM - PARSING ERROR - field {custom.fields.sctm_payment_methods_request}');
   }
 };
@@ -92,6 +101,8 @@ export const createMollieCreatePaymentParams = (payment: Payment): PaymentCreate
   const paymentRequest = parseStringToJsonObject(
     payment.custom?.fields?.[CustomFields.createPayment.request],
     CustomFields.createPayment.request,
+    'SCTM - PAYMENT PROCESSING',
+    payment.id,
   );
 
   const defaultWebhookEndpoint = new URL(process.env.CONNECT_SERVICE_URL ?? '').origin + '/webhook';

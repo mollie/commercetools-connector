@@ -71,7 +71,13 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
       actions: ctUpdateActions,
     };
   } catch (error: unknown) {
-    logger.error(`SCTM - listPaymentMethodsByPayment - ${error}`);
+    logger.error(
+      `SCTM - listPaymentMethodsByPayment - Failed to list payment methods with CommerceTools Payment ID: ${ctPayment.id}`,
+      {
+        commerceToolsPaymentId: ctPayment.id,
+        error: error,
+      },
+    );
     if (error instanceof CustomError) {
       Promise.reject(error);
     }
@@ -254,10 +260,12 @@ export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<Con
   const molliePayment = await getPaymentById(successChargeTransaction?.interactionId as string);
 
   if (molliePayment.status !== PaymentStatus.pending) {
-    logger.error(`SCTM - handleCancelRefund - Mollie Payment status must be pending, payment ID: ${molliePayment.id}`);
+    logger.error(
+      `SCTM - handleCancelRefund - Mollie Payment status must be pending, Mollie Payment ID: ${molliePayment.id}`,
+    );
     throw new CustomError(
       400,
-      `SCTM - handleCancelRefund - Mollie Payment status must be pending, payment ID: ${molliePayment.id}`,
+      `SCTM - handleCancelRefund - Mollie Payment status must be pending, Mollie Payment ID: ${molliePayment.id}`,
     );
   }
 
@@ -282,6 +290,7 @@ export const getPaymentCancelRefundActions = (pendingRefundTransaction: Transact
     pendingRefundTransaction.custom?.fields[transactionCustomFieldName],
     transactionCustomFieldName,
     'SCTM - handleCancelRefund',
+    pendingRefundTransaction.id,
   );
 
   const newTransactionCustomFieldValue = {

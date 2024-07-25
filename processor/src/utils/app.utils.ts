@@ -14,10 +14,16 @@ export function createDateNowString(): string {
  *
  * @param {string} targetedString - The string to be parsed.
  * @param {string} fieldName - The name of the custom field.
+ * @param {string} commerceToolsId - CommerceTools Payment ID or Transaction ID.
  * @returns {object} - The parsed JSON object.
  * @throws {CustomError} - If the string cannot be parsed into a JSON object.
  */
-export function parseStringToJsonObject(targetedString: string, fieldName?: string, errorPrefix?: string) {
+export function parseStringToJsonObject(
+  targetedString: string,
+  fieldName?: string,
+  errorPrefix?: string,
+  commerceToolsId?: string,
+) {
   if (targetedString === undefined || targetedString.trim() === '') {
     return {};
   }
@@ -27,6 +33,9 @@ export function parseStringToJsonObject(targetedString: string, fieldName?: stri
   } catch {
     logger.error(
       `${errorPrefix ? errorPrefix : 'SCTM - PAYMENT PROCESSING'} - Failed to parse the JSON string from the custom field ${fieldName}.`,
+      {
+        commerceToolsId: commerceToolsId,
+      },
     );
 
     throw new CustomError(
