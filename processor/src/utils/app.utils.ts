@@ -31,16 +31,11 @@ export function parseStringToJsonObject(
   try {
     return JSON.parse(targetedString);
   } catch {
-    logger.error(
-      `${errorPrefix ? errorPrefix : 'SCTM - PAYMENT PROCESSING'} - Failed to parse the JSON string from the custom field ${fieldName}.`,
-      {
-        commerceToolsId: commerceToolsId,
-      },
-    );
+    const errorMessage = `${errorPrefix ? errorPrefix : 'SCTM - PAYMENT PROCESSING'} - Failed to parse the JSON string from the custom field ${fieldName}.`;
+    logger.error(errorMessage, {
+      commerceToolsId: commerceToolsId,
+    });
 
-    throw new CustomError(
-      400,
-      `${errorPrefix ? errorPrefix : 'SCTM - PAYMENT PROCESSING'} - Failed to parse the JSON string from the custom field ${fieldName}.`,
-    );
+    throw new CustomError(400, errorMessage);
   }
 }

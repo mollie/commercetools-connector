@@ -28,18 +28,14 @@ describe('Test parseStringToJsonObject', () => {
     try {
       parseStringToJsonObject('not a json string', fieldName, prefix, commerceToolsId);
     } catch (error) {
+      const errorMessage = `${prefix} - Failed to parse the JSON string from the custom field ${fieldName}.`;
       expect(logger.error).toBeCalledTimes(1);
-      expect(logger.error).toBeCalledWith(
-        `${prefix} - Failed to parse the JSON string from the custom field ${fieldName}.`,
-        {
-          commerceToolsId: commerceToolsId,
-        },
-      );
+      expect(logger.error).toBeCalledWith(errorMessage, {
+        commerceToolsId: commerceToolsId,
+      });
 
       expect(error).toBeInstanceOf(CustomError);
-      expect((error as CustomError).message).toBe(
-        `${prefix} - Failed to parse the JSON string from the custom field ${fieldName}.`,
-      );
+      expect((error as CustomError).message).toBe(errorMessage);
       expect((error as CustomError).statusCode).toBe(400);
     }
   });
