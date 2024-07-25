@@ -70,6 +70,31 @@ describe('createPaymentRefund', () => {
       });
     }
   });
+
+  it('with unknown exception', async () => {
+    (mockPaymentRefundCreate as jest.Mock).mockImplementation(() => {
+      throw new Error('Unknown error');
+    });
+
+    const paymentCreateRefund: CreateParameters = {
+      paymentId: 'tr_12345',
+      amount: {
+        currency: 'EUR',
+        value: '10,00',
+      },
+    };
+
+    try {
+      await createPaymentRefund(paymentCreateRefund);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith({
+        message: `createMolliePaymentRefund - Calling Mollie API - Failed to create refund with unknown errors`,
+        error: new Error('Unknown error'),
+      });
+    }
+  });
 });
 
 describe('getPaymentRefund', () => {

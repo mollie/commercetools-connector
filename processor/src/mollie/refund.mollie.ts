@@ -18,7 +18,7 @@ export const createPaymentRefund = async (params: CreateParameters): Promise<Ref
     if (error instanceof MollieApiError) {
       errorMessage = `createMolliePaymentRefund - error: ${error.message}`;
     } else {
-      errorMessage = `createMolliePaymentRefund - Calling Mollie API - Failed to cancel the refund with unknown errors`;
+      errorMessage = `createMolliePaymentRefund - Calling Mollie API - Failed to create refund with unknown errors`;
     }
 
     logger.error({
