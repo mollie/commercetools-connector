@@ -5,6 +5,7 @@ import { ParsedMethodsRequestType } from '../types/mollie.types';
 import { Payment } from '@commercetools/platform-sdk';
 import CustomError from '../errors/custom.error';
 import { PaymentCreateParams, MethodsListParams, PaymentMethod } from '@mollie/api-client';
+import { parseStringToJsonObject } from './app.utils';
 
 const extractMethodsRequest = (ctPayment: Payment): ParsedMethodsRequestType | undefined => {
   return ctPayment?.custom?.fields?.[CustomFields.payment.request];
@@ -88,7 +89,10 @@ export const createMollieCreatePaymentParams = (payment: Payment): PaymentCreate
 
   const [method, issuer] = paymentMethodInfo?.method?.split(',') ?? [null, null];
   const requestCustomField = custom?.fields?.[CustomFields.createPayment.request];
-  const paymentRequest = requestCustomField ? JSON.parse(requestCustomField) : {};
+  const paymentRequest = parseStringToJsonObject(
+    payment.custom?.fields?.[CustomFields.createPayment.request],
+    CustomFields.createPayment.request,
+  );
 
   const defaultWebhookEndpoint = new URL(process.env.CONNECT_SERVICE_URL ?? '').origin + '/webhook';
 

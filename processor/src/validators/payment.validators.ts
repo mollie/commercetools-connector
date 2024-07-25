@@ -6,6 +6,7 @@ import { logger } from '../utils/logger.utils';
 import { ConnectorActions, CustomFields } from '../utils/constant.utils';
 import { DeterminePaymentActionType } from '../types/controller.types';
 import { CTTransactionState, CTTransactionType } from '../types/commercetools.types';
+import { parseStringToJsonObject } from '../utils/app.utils';
 
 /**
  * Checks if the given action is either 'Create' or 'Update'.
@@ -131,21 +132,11 @@ export const checkValidRefundTransaction = (ctPayment: CTPayment): boolean => {
  * The `errorMessage` property contains the error message if the input is invalid.
  */
 export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment): void => {
-  let paymentCustomFields;
-
-  try {
-    paymentCustomFields = ctPayment.custom?.fields?.[CustomFields.createPayment.request]
-      ? JSON.parse(ctPayment.custom?.fields?.[CustomFields.createPayment.request])
-      : {};
-  } catch (error: unknown) {
-    logger.error(
-      'SCTM - PAYMENT PROCESSING - Failed to parse the JSON string from the custom field sctm_create_payment_request.',
-    );
-    throw new CustomError(
-      400,
-      `SCTM - PAYMENT PROCESSING - Failed to parse the JSON string from the custom field sctm_create_payment_request.`,
-    );
-  }
+  const paymentCustomFields = parseStringToJsonObject(
+    ctPayment.custom?.fields?.[CustomFields.createPayment.request],
+    CustomFields.createPayment.request,
+    'SCTM - PAYMENT PROCESSING',
+  );
 
   if (!paymentCustomFields?.cardToken || paymentCustomFields.cardToken == '') {
     logger.error('SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard');

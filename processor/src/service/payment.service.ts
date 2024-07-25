@@ -39,6 +39,7 @@ import {
   CancelParameters,
   CreateParameters,
 } from '@mollie/api-client/dist/types/src/binders/payments/refunds/parameters';
+import { parseStringToJsonObject } from '../utils/app.utils';
 
 /**
  * Handles listing payment methods by payment.
@@ -277,20 +278,11 @@ export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<Con
 export const getPaymentCancelRefundActions = (pendingRefundTransaction: Transaction) => {
   const transactionCustomFieldName = CustomFields.paymentCancelRefund;
 
-  let transactionCustomFieldValue;
-  try {
-    transactionCustomFieldValue = !pendingRefundTransaction.custom?.fields[transactionCustomFieldName]
-      ? {}
-      : JSON.parse(pendingRefundTransaction.custom?.fields[transactionCustomFieldName]);
-  } catch (error: unknown) {
-    logger.error(
-      `SCTM - handleCancelRefund - Failed to parse the JSON string from the custom field ${transactionCustomFieldName}.`,
-    );
-    throw new CustomError(
-      400,
-      `SCTM - handleCancelRefund - Failed to parse the JSON string from the custom field ${transactionCustomFieldName}.`,
-    );
-  }
+  const transactionCustomFieldValue = parseStringToJsonObject(
+    pendingRefundTransaction.custom?.fields[transactionCustomFieldName],
+    transactionCustomFieldName,
+    'SCTM - handleCancelRefund',
+  );
 
   const newTransactionCustomFieldValue = {
     reasonText: transactionCustomFieldValue.reasonText,
