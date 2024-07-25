@@ -13,6 +13,7 @@ const getTransactionGroups = (transactions: Transaction[]) => {
     successCharge: [] as Transaction[],
     initialRefund: [] as Transaction[],
     pendingRefund: [] as Transaction[],
+    initialCancelAuthorization: [] as Transaction[],
   };
 
   transactions?.forEach((transaction) => {
@@ -22,6 +23,8 @@ const getTransactionGroups = (transactions: Transaction[]) => {
           groups.initialCharge.push(transaction);
         } else if (transaction.type === CTTransactionType.Refund) {
           groups.initialRefund.push(transaction);
+        } else if (transaction.type === CTTransactionType.CancelAuthorization) {
+          groups.initialCancelAuthorization.push(transaction);
         }
         break;
       case CTTransactionState.Pending:
@@ -69,7 +72,11 @@ const determineAction = (groups: ReturnType<typeof getTransactionGroups>, key?: 
     return ConnectorActions.CreateRefund;
   }
 
-  if (groups.successCharge.length === 1 && groups.pendingRefund.length === 1) {
+  if (
+    groups.successCharge.length === 1 &&
+    groups.pendingRefund.length === 1 &&
+    groups.initialCancelAuthorization.length === 1
+  ) {
     return ConnectorActions.CancelRefund;
   }
 
