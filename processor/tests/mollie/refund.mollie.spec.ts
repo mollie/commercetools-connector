@@ -2,18 +2,21 @@ import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import {
   CancelParameters,
   CreateParameters,
+  GetParameters,
 } from '@mollie/api-client/dist/types/src/binders/payments/refunds/parameters';
-import { cancelPaymentRefund, createPaymentRefund } from '../../src/mollie/refund.mollie';
+import { cancelPaymentRefund, createPaymentRefund, getPaymentRefund } from '../../src/mollie/refund.mollie';
 import { MollieApiError } from '@mollie/api-client';
 import CustomError from '../../src/errors/custom.error';
 import { logger } from '../../src/utils/logger.utils';
 
+const mockPaymentRefundGet = jest.fn();
 const mockPaymentRefundCreate = jest.fn();
 const mockPaymentRefundCancel = jest.fn();
 
 jest.mock('../../src/client/mollie.client', () => ({
   initMollieClient: jest.fn(() => ({
     paymentRefunds: {
+      get: mockPaymentRefundGet,
       create: mockPaymentRefundCreate,
       cancel: mockPaymentRefundCancel,
     },
@@ -94,6 +97,66 @@ describe('createPaymentRefund', () => {
   });
 });
 
+describe('getPaymentRefund', () => {
+  it('should call get payment refund with the correct parameters', async () => {
+    const paymentGetRefundParams: GetParameters = {
+      paymentId: 'tr_12345',
+    };
+
+    await getPaymentRefund('refund_id_1', paymentGetRefundParams);
+
+    expect(mockPaymentRefundGet).toHaveBeenCalledTimes(1);
+    expect(mockPaymentRefundGet).toHaveBeenCalledWith('refund_id_1', paymentGetRefundParams);
+  });
+
+  it('should be able to return a proper error message when error which is an instance of MollieApiError occurred', async () => {
+    const errorMessage = 'Something wrong happened';
+    const mollieApiError = new MollieApiError(errorMessage);
+
+    (mockPaymentRefundGet as jest.Mock).mockImplementation(() => {
+      throw mollieApiError;
+    });
+
+    const paymentGetRefundParams: GetParameters = {
+      paymentId: 'tr_12345',
+    };
+
+    try {
+      await getPaymentRefund('refund_id_1', paymentGetRefundParams);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith({
+        message: `getPaymentRefund - error: ` + errorMessage,
+        error: mollieApiError,
+      });
+    }
+  });
+
+  it('should be able to return a proper error message when error which is not an instance of MollieApiError occurred', async () => {
+    const unexpectedError = new CustomError(400, 'dummy message');
+
+    (mockPaymentRefundGet as jest.Mock).mockImplementation(() => {
+      throw unexpectedError;
+    });
+
+    const paymentGetRefundParams: GetParameters = {
+      paymentId: 'tr_12345',
+    };
+
+    try {
+      await getPaymentRefund('refund_id_1', paymentGetRefundParams);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith({
+        message: `getPaymentRefund - Failed to cancel the refund with unknown errors`,
+        error: unexpectedError,
+      });
+    }
+  });
+});
+
 describe('cancelPaymentRefund', () => {
   afterEach(() => {
     jest.clearAllMocks(); // Clear all mocks after each test
@@ -110,7 +173,7 @@ describe('cancelPaymentRefund', () => {
     expect(mockPaymentRefundCancel).toHaveBeenCalledWith('refund_id_1', paymentCancelRefund);
   });
 
-  it('should be able to return error message when error occurred', async () => {
+  it('should be able to return a proper error message when error which is an instance of MollieApiError occurred', async () => {
     const errorMessage = 'Something wrong happened';
     const mollieApiError = new MollieApiError(errorMessage);
 
@@ -128,15 +191,17 @@ describe('cancelPaymentRefund', () => {
       expect(error).toBeInstanceOf(CustomError);
       expect(logger.error).toBeCalledTimes(1);
       expect(logger.error).toBeCalledWith({
-        message: `cancelMolliePaymentRefund - error: ` + errorMessage,
+        message: `cancelPaymentRefund - error: ` + errorMessage,
         error: mollieApiError,
       });
     }
   });
 
-  it('should be able to return error message when unknown error occurred', async () => {
+  it('should be able to return a proper error message when error which is not an instance of MollieApiError occurred', async () => {
+    const unexpectedError = new CustomError(400, 'dummy message');
+
     (mockPaymentRefundCancel as jest.Mock).mockImplementation(() => {
-      throw new Error('Unknown error');
+      throw unexpectedError;
     });
 
     const paymentCancelRefund: CancelParameters = {
@@ -149,8 +214,8 @@ describe('cancelPaymentRefund', () => {
       expect(error).toBeInstanceOf(CustomError);
       expect(logger.error).toBeCalledTimes(1);
       expect(logger.error).toBeCalledWith({
-        message: `cancelMollieRefund - Calling Mollie API - Failed to cancel the refund with unknown errors`,
-        error: new Error('Unknown error'),
+        message: `cancelPaymentRefund - Failed to cancel the refund with unknown errors`,
+        error: unexpectedError,
       });
     }
   });

@@ -6,6 +6,8 @@ import { logger } from '../../src/utils/logger.utils';
 const mockPaymentsCreate = jest.fn();
 const mockPaymentsGet = jest.fn();
 const mockPaymentsList = jest.fn();
+const mockPaymentRefundGet = jest.fn();
+const mockPaymentRefundCancel = jest.fn();
 
 jest.mock('../../src/client/mollie.client', () => ({
   initMollieClient: jest.fn(() => ({
@@ -15,6 +17,10 @@ jest.mock('../../src/client/mollie.client', () => ({
     },
     methods: {
       list: mockPaymentsList,
+    },
+    paymentRefunds: {
+      get: mockPaymentRefundGet,
+      cancel: mockPaymentRefundCancel,
     },
   })),
 }));
