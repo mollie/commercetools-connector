@@ -45,12 +45,16 @@ export const paymentController = async (
       logger.debug('SCTM - payment processing - paymentController - handleListPaymentMethodsByPayment');
       return await handleListPaymentMethodsByPayment(ctPayment);
     case ConnectorActions.CreatePayment:
+      logger.debug('SCTM - payment processing - paymentController - handleCreatePayment');
       return await handleCreatePayment(ctPayment);
     case ConnectorActions.CreateRefund:
+      logger.debug('SCTM - payment processing - paymentController - handleCreateRefund');
       return await handleCreateRefund(ctPayment);
     case ConnectorActions.CancelRefund:
+      logger.debug('SCTM - payment processing - paymentController - handlePaymentCancelRefund');
       return await handlePaymentCancelRefund(ctPayment);
     default:
+      logger.debug('SCTM - payment processing - paymentController - No payment actions matched');
       throw new SkipError('No payment actions matched');
   }
 };
