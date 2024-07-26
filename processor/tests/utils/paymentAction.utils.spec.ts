@@ -215,6 +215,11 @@ describe('determinePaymentAction', () => {
             state: 'Success',
           },
           {
+            id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+            type: 'CancelAuthorization',
+            state: 'Initial',
+          },
+          {
             id: '5c8b0375-305a-4f19-ae8e-07806b102000',
             type: 'Refund',
             amount: {
