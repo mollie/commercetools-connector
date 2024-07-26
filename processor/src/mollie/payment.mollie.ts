@@ -24,13 +24,12 @@ export const createMolliePayment = async (paymentParams: PaymentCreateParams): P
     let errorMessage;
 
     if (error instanceof MollieApiError) {
-      errorMessage = `createMolliePayment - error: ${error.message}, field: ${error.field}`;
+      errorMessage = `SCTM - createMolliePayment - error: ${error.message}, field: ${error.field}`;
     } else {
-      errorMessage = `createMolliePayment - Failed to create payment with unknown errors`;
+      errorMessage = `SCTM - createMolliePayment - Failed to create payment with unknown errors`;
     }
 
-    logger.error({
-      message: errorMessage,
+    logger.error(errorMessage, {
       error,
     });
 
@@ -60,13 +59,12 @@ export const listPaymentMethods = async (options: MethodsListParams): Promise<Li
   } catch (error: unknown) {
     let errorMessage;
     if (error instanceof MollieApiError) {
-      errorMessage = `listPaymentMethods - error: ${error.message}, field: ${error.field}`;
+      errorMessage = `SCTM - listPaymentMethods - error: ${error.message}, field: ${error.field}`;
     } else {
-      errorMessage = `listPaymentMethods - Failed to list payments with unknown errors`;
+      errorMessage = `SCTM - listPaymentMethods - Failed to list payments with unknown errors`;
     }
 
-    logger.error({
-      message: errorMessage,
+    logger.error(errorMessage, {
       error,
     });
 

@@ -45,8 +45,12 @@ export const post = async (request: Request, response: Response) => {
       return apiSuccess(200, response, []);
     }
     if (error instanceof CustomError) {
+      logger.debug('Error occurred when processing request', error);
+
       return apiError(response, error.errors);
     }
+
+    logger.debug('Unexpected error occurred when processing request', error);
 
     return apiError(response, formatErrorResponse(error).errors);
   }
