@@ -39,6 +39,7 @@ import {
   CancelParameters,
   CreateParameters,
 } from '@mollie/api-client/dist/types/src/binders/payments/refunds/parameters';
+import { parseStringToJsonObject } from '../utils/app.utils';
 
 /**
  * Handles listing payment methods by payment.
@@ -70,7 +71,13 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
       actions: ctUpdateActions,
     };
   } catch (error: unknown) {
-    logger.error(`SCTM - listPaymentMethodsByPayment - ${error}`);
+    logger.error(
+      `SCTM - listPaymentMethodsByPayment - Failed to list payment methods with CommerceTools Payment ID: ${ctPayment.id}`,
+      {
+        commerceToolsPaymentId: ctPayment.id,
+        error: error,
+      },
+    );
     if (error instanceof CustomError) {
       Promise.reject(error);
     }
@@ -253,10 +260,12 @@ export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<Con
   const molliePayment = await getPaymentById(successChargeTransaction?.interactionId as string);
 
   if (molliePayment.status !== PaymentStatus.pending) {
-    logger.error(`SCTM - handleCancelRefund - Mollie Payment status must be pending, payment ID: ${molliePayment.id}`);
+    logger.error(
+      `SCTM - handleCancelRefund - Mollie Payment status must be pending, Mollie Payment ID: ${molliePayment.id}`,
+    );
     throw new CustomError(
       400,
-      `SCTM - handleCancelRefund - Mollie Payment status must be pending, payment ID: ${molliePayment.id}`,
+      `SCTM - handleCancelRefund - Mollie Payment status must be pending, Mollie Payment ID: ${molliePayment.id}`,
     );
   }
 
@@ -277,20 +286,12 @@ export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<Con
 export const getPaymentCancelRefundActions = (pendingRefundTransaction: Transaction) => {
   const transactionCustomFieldName = CustomFields.paymentCancelRefund;
 
-  let transactionCustomFieldValue;
-  try {
-    transactionCustomFieldValue = !pendingRefundTransaction.custom?.fields[transactionCustomFieldName]
-      ? {}
-      : JSON.parse(pendingRefundTransaction.custom?.fields[transactionCustomFieldName]);
-  } catch (error: unknown) {
-    logger.error(
-      `SCTM - handleCancelRefund - Failed to parse the JSON string from the custom field ${transactionCustomFieldName}.`,
-    );
-    throw new CustomError(
-      400,
-      `SCTM - handleCancelRefund - Failed to parse the JSON string from the custom field ${transactionCustomFieldName}.`,
-    );
-  }
+  const transactionCustomFieldValue = parseStringToJsonObject(
+    pendingRefundTransaction.custom?.fields[transactionCustomFieldName],
+    transactionCustomFieldName,
+    'SCTM - handleCancelRefund',
+    pendingRefundTransaction.id,
+  );
 
   const newTransactionCustomFieldValue = {
     reasonText: transactionCustomFieldValue.reasonText,
