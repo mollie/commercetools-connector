@@ -594,6 +594,9 @@ describe('Test getPaymentCancelRefundActions', () => {
       expect(logger.error).toBeCalledTimes(1);
       expect(logger.error).toBeCalledWith(
         `SCTM - handleCancelRefund - Failed to parse the JSON string from the custom field ${transactionCustomFieldName}.`,
+        {
+          commerceToolsId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        },
       );
     }
   });
@@ -766,7 +769,7 @@ describe('Test handlePaymentCancelRefund', () => {
       expect(error).toBeInstanceOf(CustomError);
       expect(logger.error).toBeCalledTimes(1);
       expect(logger.error).toBeCalledWith(
-        `SCTM - handleCancelRefund - Mollie Payment status must be pending, payment ID: ${molliePayment.id}`,
+        `SCTM - handleCancelRefund - Mollie Payment status must be pending, Mollie Payment ID: ${molliePayment.id}`,
       );
     }
   });

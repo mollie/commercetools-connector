@@ -5,6 +5,7 @@ import { ParsedMethodsRequestType } from '../types/mollie.types';
 import { Payment } from '@commercetools/platform-sdk';
 import CustomError from '../errors/custom.error';
 import { PaymentCreateParams, MethodsListParams, PaymentMethod } from '@mollie/api-client';
+import { parseStringToJsonObject } from './app.utils';
 
 const extractMethodsRequest = (ctPayment: Payment): ParsedMethodsRequestType | undefined => {
   return ctPayment?.custom?.fields?.[CustomFields.payment.request];
@@ -40,7 +41,10 @@ export const mapCommercetoolsPaymentCustomFieldsToMollieListParams = async (
     if (!parsedMethodsRequest) {
       logger.debug(
         'SCTM - field {custom.fields.sctm_payment_methods_request} not found. Returning default Mollie object',
-        baseParams,
+        {
+          ...baseParams,
+          commerceToolsPaymentId: ctPayment.id,
+        },
       );
       return baseParams;
     }
@@ -50,7 +54,13 @@ export const mapCommercetoolsPaymentCustomFieldsToMollieListParams = async (
       ...buildMethodsListParams(parsedMethodsRequest),
     };
   } catch (error: unknown) {
-    logger.error('SCTM - PARSING ERROR - field {custom.fields.sctm_payment_methods_request}');
+    logger.error(
+      `SCTM - PARSING ERROR - field {custom.fields.sctm_payment_methods_request}, CommerceTools Payment ID: ${ctPayment.id}`,
+      {
+        commerceToolsPaymentId: ctPayment.id,
+        error,
+      },
+    );
     throw new CustomError(400, 'SCTM - PARSING ERROR - field {custom.fields.sctm_payment_methods_request}');
   }
 };
@@ -88,7 +98,12 @@ export const createMollieCreatePaymentParams = (payment: Payment): PaymentCreate
 
   const [method, issuer] = paymentMethodInfo?.method?.split(',') ?? [null, null];
   const requestCustomField = custom?.fields?.[CustomFields.createPayment.request];
-  const paymentRequest = requestCustomField ? JSON.parse(requestCustomField) : {};
+  const paymentRequest = parseStringToJsonObject(
+    payment.custom?.fields?.[CustomFields.createPayment.request],
+    CustomFields.createPayment.request,
+    'SCTM - PAYMENT PROCESSING',
+    payment.id,
+  );
 
   const defaultWebhookEndpoint = new URL(process.env.CONNECT_SERVICE_URL ?? '').origin + '/webhook';
 
