@@ -16,12 +16,13 @@ export const CustomFields = {
     request: 'sctm_create_payment_request',
     interfaceInteraction: 'sctm_interface_interaction_type',
   },
-  paymentCancelRefund: 'sctm_payment_cancel_refund',
+  paymentCancelReason: 'sctm_payment_cancel_reason',
 };
 
 export enum ConnectorActions {
   GetPaymentMethods = 'getPaymentMethods',
   CreatePayment = 'createPayment',
+  CancelPayment = 'cancelPayment',
   CreateRefund = 'createRefund',
   CancelRefund = 'cancelRefund',
   NoAction = 'noAction',

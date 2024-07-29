@@ -8,6 +8,7 @@ export type ControllerResponseType = {
 export type DeterminePaymentActionType =
   | 'getPaymentMethods'
   | 'createPayment'
+  | 'cancelPayment'
   | 'createRefund'
   | 'cancelRefund'
   | 'noAction';

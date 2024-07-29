@@ -1,6 +1,7 @@
 import { determinePaymentAction } from '../utils/paymentAction.utils';
 import { ControllerResponseType } from '../types/controller.types';
 import {
+  handleCancelPayment,
   handleCreatePayment,
   handleCreateRefund,
   handleListPaymentMethodsByPayment,
@@ -37,6 +38,8 @@ export const paymentController = async (
       return await handleListPaymentMethodsByPayment(ctPayment);
     case ConnectorActions.CreatePayment:
       return await handleCreatePayment(ctPayment);
+    case ConnectorActions.CancelPayment:
+      return await handleCancelPayment(ctPayment);
     case ConnectorActions.CreateRefund:
       return await handleCreateRefund(ctPayment);
     case ConnectorActions.CancelRefund:

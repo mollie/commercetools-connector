@@ -3,7 +3,7 @@ import { CustomFields, Payment } from '@commercetools/platform-sdk';
 import {
   handlePaymentWebhook,
   getCreatePaymentUpdateAction,
-  getPaymentCancelRefundActions,
+  getPaymentCancelActions,
   handleCreatePayment,
   handleListPaymentMethodsByPayment,
   handleCreateRefund,
@@ -36,7 +36,7 @@ jest.mock('../../src/commercetools/payment.commercetools', () => ({
 jest.mock('../../src/service/payment.service.ts', () => ({
   ...(jest.requireActual('../../src/service/payment.service.ts') as object),
   getCreatePaymentUpdateAction: jest.fn(),
-  getPaymentCancelRefundActions: jest.fn(),
+  getPaymentCancelActions: jest.fn(),
 }));
 
 jest.mock('../../src/mollie/payment.mollie', () => ({
@@ -526,7 +526,7 @@ describe('Test handleCreateRefund', () => {
   });
 });
 
-describe('Test getPaymentCancelRefundActions', () => {
+describe('Test getPaymentCancelActions', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -536,7 +536,7 @@ describe('Test getPaymentCancelRefundActions', () => {
   });
 
   test('should throw an error if the custom field is not able to be parsed', () => {
-    const transactionCustomFieldName = CustomFieldName.paymentCancelRefund;
+    const transactionCustomFieldName = CustomFieldName.paymentCancelReason;
 
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
@@ -578,17 +578,17 @@ describe('Test getPaymentCancelRefundActions', () => {
       },
     };
 
-    (getPaymentCancelRefundActions as jest.Mock).mockImplementationOnce(() => {
+    (getPaymentCancelActions as jest.Mock).mockImplementationOnce(() => {
       const paymentService = jest.requireActual(
         '../../src/service/payment.service.ts',
       ) as typeof import('../../src/service/payment.service.ts');
-      return paymentService.getPaymentCancelRefundActions(CTPayment.transactions[0]);
+      return paymentService.getPaymentCancelActions(CTPayment.transactions[0], ConnectorActions.CancelRefund);
     });
 
     try {
-      getPaymentCancelRefundActions(CTPayment.transactions[0]);
+      getPaymentCancelActions(CTPayment.transactions[0], ConnectorActions.CancelRefund);
     } catch (error: unknown) {
-      expect(getPaymentCancelRefundActions).toBeCalledTimes(1);
+      expect(getPaymentCancelActions).toBeCalledTimes(1);
       expect(error).toBeInstanceOf(CustomError);
       expect((error as CustomError).message).toBe(
         `SCTM - handleCancelRefund - Failed to parse the JSON string from the custom field ${transactionCustomFieldName}.`,
@@ -635,7 +635,7 @@ describe('Test getPaymentCancelRefundActions', () => {
               id: 'custom-field-1',
             },
             fields: {
-              sctm_payment_cancel_refund: JSON.stringify(customFieldValue),
+              sctm_payment_cancel_reason: JSON.stringify(customFieldValue),
             },
           },
         },
@@ -646,14 +646,14 @@ describe('Test getPaymentCancelRefundActions', () => {
       },
     };
 
-    (getPaymentCancelRefundActions as jest.Mock).mockImplementationOnce(() => {
+    (getPaymentCancelActions as jest.Mock).mockImplementationOnce(() => {
       const paymentService = jest.requireActual(
         '../../src/service/payment.service.ts',
       ) as typeof import('../../src/service/payment.service.ts');
-      return paymentService.getPaymentCancelRefundActions(CTPayment.transactions[0]);
+      return paymentService.getPaymentCancelActions(CTPayment.transactions[0], ConnectorActions.CancelRefund);
     });
 
-    const actual = await getPaymentCancelRefundActions(CTPayment.transactions[0]);
+    const actual = getPaymentCancelActions(CTPayment.transactions[0], ConnectorActions.CancelRefund);
     expect(actual).toHaveLength(2);
 
     expect(actual[0]).toEqual({
@@ -665,7 +665,7 @@ describe('Test getPaymentCancelRefundActions', () => {
     expect(actual[1]).toEqual({
       action: 'setTransactionCustomField',
       transactionId: CTPayment.transactions[0].id,
-      name: CustomFieldName.paymentCancelRefund,
+      name: CustomFieldName.paymentCancelReason,
       value: JSON.stringify({
         reasonText: customFieldValue.reasonText,
         statusText: CancelRefundStatusText,
@@ -802,7 +802,7 @@ describe('Test handlePaymentCancelRefund', () => {
 
     (cancelPaymentRefund as jest.Mock).mockReturnValueOnce(true);
 
-    (getPaymentCancelRefundActions as jest.Mock).mockReturnValueOnce([]);
+    (getPaymentCancelActions as jest.Mock).mockReturnValueOnce([]);
 
     await handlePaymentCancelRefund(CTPayment);
 

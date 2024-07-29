@@ -1,7 +1,8 @@
 import { jest, expect, describe, it, afterEach } from '@jest/globals';
-import { createMolliePayment, getPaymentById, listPaymentMethods } from '../../src/mollie/payment.mollie';
+import { cancelPayment, createMolliePayment, getPaymentById, listPaymentMethods } from '../../src/mollie/payment.mollie';
 import { MollieApiError, PaymentCreateParams } from '@mollie/api-client';
 import { logger } from '../../src/utils/logger.utils';
+import CustomError from '../../src/errors/custom.error';
 
 const mockPaymentsCreate = jest.fn();
 const mockPaymentsGet = jest.fn();
@@ -61,13 +62,12 @@ describe('createMolliePayment', () => {
     try {
       await createMolliePayment(paymentParams);
     } catch (error: any) {
-      expect(error.message).toBe(`createMolliePayment - error: Bad request, field: Test`);
+      expect(error.message).toBe(`SCTM - createMolliePayment - error: Bad request, field: Test`);
       expect(error.statusCode).toBe(400);
       expect(mockPaymentsCreate).toHaveBeenCalledTimes(1);
       expect(mockPaymentsCreate).toHaveBeenCalledWith(paymentParams);
       expect(logger.error).toHaveBeenCalledTimes(1);
-      expect(logger.error).toHaveBeenCalledWith({
-        message: `createMolliePayment - error: Bad request, field: Test`,
+      expect(logger.error).toHaveBeenCalledWith(`SCTM - createMolliePayment - error: Bad request, field: Test`, {
         error: new MollieApiError('Bad request', { statusCode: 400, field: 'Test' }),
       });
     }
@@ -89,14 +89,16 @@ describe('createMolliePayment', () => {
     try {
       await createMolliePayment(paymentParams);
     } catch (error: any) {
-      expect(error.message).toBe(`createMolliePayment - Failed to create payment with unknown errors`);
+      expect(error.message).toBe(`SCTM - createMolliePayment - Failed to create payment with unknown errors`);
       expect(mockPaymentsCreate).toHaveBeenCalledTimes(1);
       expect(mockPaymentsCreate).toHaveBeenCalledWith(paymentParams);
       expect(logger.error).toHaveBeenCalledTimes(1);
-      expect(logger.error).toHaveBeenCalledWith({
-        message: `createMolliePayment - Failed to create payment with unknown errors`,
-        error: new Error('Unknown error'),
-      });
+      expect(logger.error).toHaveBeenCalledWith(
+        'SCTM - createMolliePayment - Failed to create payment with unknown errors',
+        {
+          error: new Error('Unknown error'),
+        },
+      );
     }
   });
 });
@@ -149,13 +151,12 @@ describe('listPaymentMethods', () => {
     try {
       await listPaymentMethods(mockOption);
     } catch (error: any) {
-      expect(error.message).toBe(`listPaymentMethods - error: Bad request, field: Test`);
+      expect(error.message).toBe(`SCTM - listPaymentMethods - error: Bad request, field: Test`);
       expect(error.statusCode).toBe(400);
       expect(mockPaymentsList).toHaveBeenCalledTimes(1);
       expect(mockPaymentsList).toHaveBeenCalledWith(mockOption);
       expect(logger.error).toHaveBeenCalledTimes(1);
-      expect(logger.error).toHaveBeenCalledWith({
-        message: `listPaymentMethods - error: Bad request, field: Test`,
+      expect(logger.error).toHaveBeenCalledWith('SCTM - listPaymentMethods - error: Bad request, field: Test', {
         error: new MollieApiError('Bad request', { statusCode: 400, field: 'Test' }),
       });
     }
@@ -177,14 +178,67 @@ describe('listPaymentMethods', () => {
     try {
       await listPaymentMethods(mockOption);
     } catch (error: any) {
-      expect(error.message).toBe(`listPaymentMethods - Failed to list payments with unknown errors`);
+      expect(error.message).toBe(`SCTM - listPaymentMethods - Failed to list payments with unknown errors`);
       expect(error.statusCode).toBe(400);
       expect(mockPaymentsList).toHaveBeenCalledTimes(1);
       expect(mockPaymentsList).toHaveBeenCalledWith(mockOption);
       expect(logger.error).toHaveBeenCalledTimes(1);
-      expect(logger.error).toHaveBeenCalledWith({
-        message: `listPaymentMethods - Failed to list payments with unknown errors`,
-        error: new Error('Unknown error'),
+      expect(logger.error).toHaveBeenCalledWith(
+        'SCTM - listPaymentMethods - Failed to list payments with unknown errors',
+        {
+          error: new Error('Unknown error'),
+        },
+      );
+    }
+  });
+});
+
+describe('cancelPayment', () => {
+  afterEach(() => {
+    jest.clearAllMocks(); // Clear all mocks after each test
+  });
+
+  it('should call cancel refund with the correct parameters', async () => {
+    await cancelPayment('tr_WDqYK6vllg');
+
+    expect(mockPaymentRefundCancel).toHaveBeenCalledTimes(1);
+    expect(mockPaymentRefundCancel).toHaveBeenCalledWith('tr_WDqYK6vllg');
+  });
+
+  it('should be able to return a proper error message when error which is an instance of MollieApiError occurred', async () => {
+    const errorMessage = 'Something wrong happened';
+    const mollieApiError = new MollieApiError(errorMessage);
+
+    (mockPaymentRefundCancel as jest.Mock).mockImplementation(() => {
+      throw mollieApiError;
+    });
+
+    try {
+      await cancelPayment('tr_WDqYK6vllg');
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith(`SCTM - cancelPayment - error: ${errorMessage}`,{
+        error: mollieApiError,
+      });
+    }
+  });
+
+  it('should be able to return a proper error message when error which is not an instance of MollieApiError occurred', async () => {
+    const unexpectedError = new CustomError(400, 'dummy message');
+
+    (mockPaymentRefundCancel as jest.Mock).mockImplementation(() => {
+      throw unexpectedError;
+    });
+
+    try {
+      await cancelPayment('tr_WDqYK6vllg');
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith({
+        message: `SCTM - cancelPayment - Failed to cancel payments with unknown errors`,
+        error: unexpectedError,
       });
     }
   });

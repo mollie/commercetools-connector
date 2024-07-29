@@ -303,7 +303,7 @@ describe('Test payment.controller.ts', () => {
         {
           action: 'setTransactionCustomField',
           transactionId: 'tr_123456',
-          name: CustomFieldName.paymentCancelRefund,
+          name: CustomFieldName.paymentCancelReason,
           value: transactionCustomFieldValue,
         },
       ],

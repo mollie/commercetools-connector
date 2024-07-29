@@ -201,10 +201,10 @@ export async function createCustomPaymentInterfaceInteractionType(): Promise<voi
     .execute();
 }
 
-export async function createCustomPaymentTransactionCancelRefundType(): Promise<void> {
+export async function createCustomPaymentTransactionCancelReasonType(): Promise<void> {
   const apiRoot = createApiRoot();
 
-  const customFieldName = CustomFields.paymentCancelRefund;
+  const customFieldName = CustomFields.paymentCancelReason;
 
   const {
     body: { results: types },
