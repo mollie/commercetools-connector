@@ -40,6 +40,7 @@ import {
   CreateParameters,
 } from '@mollie/api-client/dist/types/src/binders/payments/refunds/parameters';
 import { parseStringToJsonObject } from '../utils/app.utils';
+import { getExtensionUrlByKey } from '../commercetools/extensions.commercetools';
 
 /**
  * Handles listing payment methods by payment.
@@ -151,7 +152,9 @@ const getPaymentStatusUpdateAction = (
  * @param ctPayment
  */
 export const handleCreatePayment = async (ctPayment: Payment): Promise<ControllerResponseType> => {
-  const paymentParams = createMollieCreatePaymentParams(ctPayment);
+  const extensionUrl = await getExtensionUrlByKey();
+
+  const paymentParams = createMollieCreatePaymentParams(ctPayment, extensionUrl);
 
   const molliePayment = await createMolliePayment(paymentParams);
 
