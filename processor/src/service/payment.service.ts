@@ -6,7 +6,7 @@ import {
   createMollieCreatePaymentParams,
   mapCommercetoolsPaymentCustomFieldsToMollieListParams,
 } from '../utils/map.utils';
-import { CentPrecisionMoney, Payment, UpdateAction } from '@commercetools/platform-sdk';
+import { CentPrecisionMoney, Extension, Payment, UpdateAction } from '@commercetools/platform-sdk';
 import CustomError from '../errors/custom.error';
 import { createMolliePayment, getPaymentById, listPaymentMethods } from '../mollie/payment.mollie';
 import { cancelPaymentRefund, createPaymentRefund } from '../mollie/refund.mollie';
@@ -41,6 +41,8 @@ import {
   CreateParameters,
 } from '@mollie/api-client/dist/types/src/binders/payments/refunds/parameters';
 import { parseStringToJsonObject } from '../utils/app.utils';
+import { getPaymentExtension } from '../commercetools/extensions.commercetools';
+import { HttpDestination } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/extension';
 
 /**
  * Handles listing payment methods by payment.
@@ -157,7 +159,9 @@ const getPaymentStatusUpdateAction = (
  * @param ctPayment
  */
 export const handleCreatePayment = async (ctPayment: Payment): Promise<ControllerResponseType> => {
-  const paymentParams = createMollieCreatePaymentParams(ctPayment);
+  const extensionUrl = (((await getPaymentExtension()) as Extension)?.destination as HttpDestination).url;
+
+  const paymentParams = createMollieCreatePaymentParams(ctPayment, extensionUrl);
 
   const molliePayment = await createMolliePayment(paymentParams);
 

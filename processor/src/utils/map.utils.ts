@@ -93,7 +93,7 @@ const getSpecificPaymentParams = (method: PaymentMethod, paymentRequest: any) =>
   }
 };
 
-export const createMollieCreatePaymentParams = (payment: Payment): PaymentCreateParams => {
+export const createMollieCreatePaymentParams = (payment: Payment, extensionUrl: string): PaymentCreateParams => {
   const { amountPlanned, paymentMethodInfo } = payment;
 
   const [method, issuer] = paymentMethodInfo?.method?.split(',') ?? [null, null];
@@ -104,7 +104,7 @@ export const createMollieCreatePaymentParams = (payment: Payment): PaymentCreate
     payment.id,
   );
 
-  const defaultWebhookEndpoint = new URL(process.env.CONNECT_SERVICE_URL ?? '').origin + '/webhook';
+  const defaultWebhookEndpoint = new URL(extensionUrl).origin + '/webhook';
 
   return {
     amount: makeMollieAmount(amountPlanned),
