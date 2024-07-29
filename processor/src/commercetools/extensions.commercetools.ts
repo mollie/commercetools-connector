@@ -1,33 +1,15 @@
 import { createApiRoot } from '../client/create.client';
+import { Extension } from '@commercetools/platform-sdk';
 
-const PAYMENT_EXTENSION_KEY = 'sctm-payment-create-update-extension';
+export const PAYMENT_EXTENSION_KEY = 'sctm-payment-create-update-extension';
 
 export async function createPaymentExtension(applicationUrl: string): Promise<void> {
   const apiRoot = createApiRoot();
 
-  const {
-    body: { results: extensions },
-  } = await apiRoot
-    .extensions()
-    .get({
-      queryArgs: {
-        where: `key = "${PAYMENT_EXTENSION_KEY}"`,
-      },
-    })
-    .execute();
+  const extension = await getPaymentExtension();
 
-  if (extensions.length > 0) {
-    const extension = extensions[0];
-
-    await apiRoot
-      .extensions()
-      .withKey({ key: PAYMENT_EXTENSION_KEY })
-      .delete({
-        queryArgs: {
-          version: extension.version,
-        },
-      })
-      .execute();
+  if (extension) {
+    await deletePaymentExtension(extension);
   }
 
   await apiRoot
@@ -51,7 +33,7 @@ export async function createPaymentExtension(applicationUrl: string): Promise<vo
     .execute();
 }
 
-export async function deletePaymentExtension(): Promise<void> {
+export async function getPaymentExtension(): Promise<Extension | null> {
   const apiRoot = createApiRoot();
 
   const {
@@ -65,9 +47,17 @@ export async function deletePaymentExtension(): Promise<void> {
     })
     .execute();
 
-  if (extensions.length > 0) {
-    const extension = extensions[0];
+  return extensions[0] || null;
+}
 
+export async function deletePaymentExtension(extension?: Extension | null): Promise<void> {
+  const apiRoot = createApiRoot();
+
+  if (!extension) {
+    extension = await getPaymentExtension();
+  }
+
+  if (extension) {
     await apiRoot
       .extensions()
       .withKey({ key: PAYMENT_EXTENSION_KEY })
