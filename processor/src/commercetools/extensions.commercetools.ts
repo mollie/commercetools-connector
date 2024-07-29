@@ -1,7 +1,7 @@
 import { HttpDestination } from '@commercetools/platform-sdk';
 import { createApiRoot } from '../client/create.client';
-import CustomError from '../errors/custom.error';
 import { logger } from '../utils/logger.utils';
+import CustomError from '../errors/custom.error';
 
 const PAYMENT_EXTENSION_KEY = 'sctm-payment-create-update-extension';
 
@@ -92,7 +92,7 @@ export async function getExtensionUrlByKey(): Promise<string> {
       .execute();
     return (extension.destination as HttpDestination).url;
   } catch (error: any) {
-    logger.error('Error in getExtensionUrl', error);
+    logger.error('Error in getExtensionUrlByKey', error);
     throw new CustomError(error.status, error.message);
   }
 }
