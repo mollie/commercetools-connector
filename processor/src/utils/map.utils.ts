@@ -94,10 +94,9 @@ const getSpecificPaymentParams = (method: PaymentMethod, paymentRequest: any) =>
 };
 
 export const createMollieCreatePaymentParams = (payment: Payment): PaymentCreateParams => {
-  const { amountPlanned, paymentMethodInfo, custom } = payment;
+  const { amountPlanned, paymentMethodInfo } = payment;
 
   const [method, issuer] = paymentMethodInfo?.method?.split(',') ?? [null, null];
-  const requestCustomField = custom?.fields?.[CustomFields.createPayment.request];
   const paymentRequest = parseStringToJsonObject(
     payment.custom?.fields?.[CustomFields.createPayment.request],
     CustomFields.createPayment.request,
@@ -107,7 +106,7 @@ export const createMollieCreatePaymentParams = (payment: Payment): PaymentCreate
 
   const defaultWebhookEndpoint = new URL(process.env.CONNECT_SERVICE_URL ?? '').origin + '/webhook';
 
-  const molliePaymentParams: PaymentCreateParams = {
+  return {
     amount: makeMollieAmount(amountPlanned),
     description: paymentRequest.description ?? '',
     redirectUrl: paymentRequest.redirectUrl ?? null,
@@ -123,6 +122,4 @@ export const createMollieCreatePaymentParams = (payment: Payment): PaymentCreate
     include: paymentRequest.include ?? '',
     ...getSpecificPaymentParams(method as PaymentMethod, paymentRequest),
   };
-
-  return molliePaymentParams;
 };
