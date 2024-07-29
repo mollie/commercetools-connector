@@ -1,4 +1,4 @@
-import { describe, test, expect, it, jest } from '@jest/globals';
+import { describe, test, expect, it } from '@jest/globals';
 import {
   createMollieCreatePaymentParams,
   mapCommercetoolsPaymentCustomFieldsToMollieListParams,
@@ -6,11 +6,6 @@ import {
 import { Payment } from '@commercetools/platform-sdk';
 import { MethodsListParams, PaymentCreateParams, PaymentMethod } from '@mollie/api-client';
 import { makeMollieAmount } from '../../src/utils/mollie.utils';
-import { getExtensionUrlByKey } from '../../src/commercetools/extensions.commercetools';
-
-jest.mock('../../src/commercetools/extensions.commercetools', () => ({
-  getExtensionUrlByKey: jest.fn(() => 'https://example.com/webhook'),
-}));
 
 describe('Test map.utils.ts', () => {
   let mockCtPayment: Payment;
@@ -78,7 +73,7 @@ describe('createMollieCreatePaymentParams', () => {
         method: 'creditcard',
       },
     };
-    const extensionUrl = await getExtensionUrlByKey();
+    const extensionUrl = 'https://example.com/webhook';
 
     const mollieCreatePaymentParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
     const mollieAmount = makeMollieAmount(CTPayment.amountPlanned);
@@ -140,7 +135,7 @@ describe('createMollieCreatePaymentParams', () => {
         },
       },
     };
-    const extensionUrl = await getExtensionUrlByKey();
+    const extensionUrl = 'https://example.com/webhook';
 
     const mollieCreatePaymentParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
 
@@ -206,7 +201,7 @@ describe('createMollieCreatePaymentParams', () => {
         },
       },
     };
-    const extensionUrl = await getExtensionUrlByKey();
+    const extensionUrl = 'https://example.com/webhook';
 
     const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
     expect(mollieCreatePaymentParams).toEqual({
@@ -271,7 +266,7 @@ describe('createMollieCreatePaymentParams', () => {
         },
       },
     };
-    const extensionUrl = await getExtensionUrlByKey();
+    const extensionUrl = 'https://example.com/webhook';
 
     const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
     expect(mollieCreatePaymentParams).toEqual({
@@ -331,7 +326,7 @@ describe('createMollieCreatePaymentParams', () => {
         },
       },
     };
-    const extensionUrl = await getExtensionUrlByKey();
+    const extensionUrl = 'https://example.com/webhook';
 
     const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
     expect(mollieCreatePaymentParams).toEqual({
@@ -392,7 +387,7 @@ describe('createMollieCreatePaymentParams', () => {
         },
       },
     };
-    const extensionUrl = await getExtensionUrlByKey();
+    const extensionUrl = 'https://example.com/webhook';
 
     const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
     expect(mollieCreatePaymentParams).toEqual({
@@ -451,7 +446,7 @@ describe('createMollieCreatePaymentParams', () => {
         },
       },
     };
-    const extensionUrl = await getExtensionUrlByKey();
+    const extensionUrl = 'https://example.com/webhook';
 
     const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
     expect(mollieCreatePaymentParams).toEqual({
@@ -560,7 +555,7 @@ describe('createMollieCreatePaymentParams', () => {
         },
       },
     };
-    const extensionUrl = await getExtensionUrlByKey();
+    const extensionUrl = 'https://example.com/webhook';
 
     const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
     expect(mollieCreatePaymentParams).toEqual({
@@ -621,7 +616,7 @@ describe('createMollieCreatePaymentParams', () => {
         },
       },
     };
-    const extensionUrl = await getExtensionUrlByKey();
+    const extensionUrl = 'https://example.com/webhook';
 
     const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
     expect(mollieCreatePaymentParams).toEqual({
@@ -683,7 +678,7 @@ describe('createMollieCreatePaymentParams', () => {
         },
       },
     };
-    const extensionUrl = await getExtensionUrlByKey();
+    const extensionUrl = 'https://example.com/webhook';
 
     const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
     expect(mollieCreatePaymentParams).toEqual({
