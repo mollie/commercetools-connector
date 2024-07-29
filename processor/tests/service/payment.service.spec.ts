@@ -23,6 +23,7 @@ import CustomError from '../../src/errors/custom.error';
 import { logger } from '../../src/utils/logger.utils';
 import { getPaymentByMolliePaymentId, updatePayment } from '../../src/commercetools/payment.commercetools';
 import { CreateParameters } from '@mollie/api-client/dist/types/src/binders/payments/refunds/parameters';
+
 const uuid = '5c8b0375-305a-4f19-ae8e-07806b101999';
 jest.mock('uuid', () => ({
   v4: () => uuid,
@@ -53,6 +54,10 @@ jest.mock('../../src/mollie/refund.mollie', () => ({
 jest.mock('../../src/utils/map.utils.ts', () => ({
   ...(jest.requireActual('../../src/utils/map.utils.ts') as object),
   createMollieCreatePaymentParams: jest.fn(),
+}));
+
+jest.mock('../../src/commercetools/extensions.commercetools.ts', () => ({
+  getExtensionUrlByKey: jest.fn(),
 }));
 
 describe('Test listPaymentMethodsByPayment', () => {
