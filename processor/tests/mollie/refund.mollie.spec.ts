@@ -64,10 +64,13 @@ describe('createPaymentRefund', () => {
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect(logger.error).toBeCalledTimes(1);
-      expect(logger.error).toBeCalledWith({
-        message: `createMolliePaymentRefund - error: ` + errorMessage,
-        error: mollieApiError,
-      });
+      expect(logger.error).toBeCalledWith(
+        `SCTM - createMolliePaymentRefund - Calling Mollie API - error: ${errorMessage}`,
+        {
+          paymentId: paymentCreateRefund.paymentId,
+          error: mollieApiError,
+        },
+      );
     }
   });
 
@@ -89,10 +92,13 @@ describe('createPaymentRefund', () => {
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect(logger.error).toBeCalledTimes(1);
-      expect(logger.error).toBeCalledWith({
-        message: `createMolliePaymentRefund - Calling Mollie API - Failed to create refund with unknown errors`,
-        error: new Error('Unknown error'),
-      });
+      expect(logger.error).toBeCalledWith(
+        `SCTM - createMolliePaymentRefund - Calling Mollie API - Failed to create refund with unknown errors`,
+        {
+          paymentId: paymentCreateRefund.paymentId,
+          error: new Error('Unknown error'),
+        },
+      );
     }
   });
 });
@@ -190,10 +196,14 @@ describe('cancelPaymentRefund', () => {
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect(logger.error).toBeCalledTimes(1);
-      expect(logger.error).toBeCalledWith({
-        message: `cancelPaymentRefund - error: ` + errorMessage,
-        error: mollieApiError,
-      });
+      expect(logger.error).toBeCalledWith(
+        `SCTM - cancelMolliePaymentRefund - Calling Mollie API - error: ${errorMessage}`,
+        {
+          molliePaymentId: paymentCancelRefund.paymentId,
+          mollieRefundId: 'refund_id_1',
+          error: mollieApiError,
+        },
+      );
     }
   });
 
@@ -213,10 +223,14 @@ describe('cancelPaymentRefund', () => {
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect(logger.error).toBeCalledTimes(1);
-      expect(logger.error).toBeCalledWith({
-        message: `cancelPaymentRefund - Failed to cancel the refund with unknown errors`,
-        error: unexpectedError,
-      });
+      expect(logger.error).toBeCalledWith(
+        `SCTM - cancelMolliePaymentRefund - Calling Mollie API - Failed to cancel the refund with unknown errors`,
+        {
+          molliePaymentId: paymentCancelRefund.paymentId,
+          mollieRefundId: 'refund_id_1',
+          error: new Error('Unknown error'),
+        },
+      );
     }
   });
 });

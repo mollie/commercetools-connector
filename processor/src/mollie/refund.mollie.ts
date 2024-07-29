@@ -16,13 +16,13 @@ export const createPaymentRefund = async (params: CreateParameters): Promise<Ref
     let errorMessage;
 
     if (error instanceof MollieApiError) {
-      errorMessage = `createMolliePaymentRefund - error: ${error.message}`;
+      errorMessage = `SCTM - createMolliePaymentRefund - Calling Mollie API - error: ${error.message}`;
     } else {
-      errorMessage = `createMolliePaymentRefund - Calling Mollie API - Failed to create refund with unknown errors`;
+      errorMessage = `SCTM - createMolliePaymentRefund - Calling Mollie API - Failed to create refund with unknown errors`;
     }
 
-    logger.error({
-      message: errorMessage,
+    logger.error(errorMessage, {
+      paymentId: params.paymentId,
       error,
     });
 
@@ -79,8 +79,9 @@ export const cancelPaymentRefund = async (refundId: string, params: CancelParame
       errorMessage = `cancelPaymentRefund - Failed to cancel the refund with unknown errors`;
     }
 
-    logger.error({
-      message: errorMessage,
+    logger.error(errorMessage, {
+      mollieRefundId: refundId,
+      molliePaymentId: params.paymentId,
       error,
     });
 

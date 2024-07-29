@@ -179,7 +179,7 @@ describe('checkPaymentMethodInput', () => {
     } catch (error: any) {
       expect(error).toBeInstanceOf(CustomError);
       expect(error.message).toBe(
-        'SCTM - PAYMENT PROCESSING - Payment method must be set in order to create a Mollie payment.',
+        `SCTM - PAYMENT PROCESSING - Payment method must be set in order to create a Mollie payment, CommerceTools Payment ID: ${CTPayment.id}.`,
       );
     }
   });
@@ -209,7 +209,7 @@ describe('checkPaymentMethodInput', () => {
     } catch (error: any) {
       expect(error).toBeInstanceOf(CustomError);
       expect(error.message).toBe(
-        `SCTM - PAYMENT PROCESSING - Invalid paymentMethodInfo.method "${CTPayment.paymentMethodInfo.method}".`,
+        `SCTM - PAYMENT PROCESSING - Invalid paymentMethodInfo.method "${CTPayment.paymentMethodInfo.method}", CommerceTools Payment ID: ${CTPayment.id}.`,
       );
     }
   });
@@ -307,7 +307,11 @@ describe('checkPaymentMethodSpecificParameters', () => {
       );
       expect(logger.error).toBeCalledTimes(1);
       expect(logger.error).toBeCalledWith(
-        'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard',
+        `SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard, CommerceTools Payment ID: ${CTPayment.id}`,
+        {
+          cardToken: undefined,
+          commerceToolsPaymentId: CTPayment.id,
+        },
       );
     }
   });
@@ -351,7 +355,11 @@ describe('checkPaymentMethodSpecificParameters', () => {
       );
       expect(logger.error).toBeCalledTimes(1);
       expect(logger.error).toBeCalledWith(
-        'SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard',
+        `SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard, CommerceTools Payment ID: ${CTPayment.id}`,
+        {
+          cardToken: '',
+          commerceToolsPaymentId: CTPayment.id,
+        },
       );
     }
   });
@@ -392,6 +400,9 @@ describe('checkPaymentMethodSpecificParameters', () => {
       expect(logger.error).toBeCalledTimes(1);
       expect(logger.error).toHaveBeenCalledWith(
         'SCTM - PAYMENT PROCESSING - Failed to parse the JSON string from the custom field sctm_create_payment_request.',
+        {
+          commerceToolsId: CTPayment.id,
+        },
       );
     }
   });

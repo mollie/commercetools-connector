@@ -23,9 +23,15 @@ import CustomError from '../../src/errors/custom.error';
 import { logger } from '../../src/utils/logger.utils';
 import { getPaymentByMolliePaymentId, updatePayment } from '../../src/commercetools/payment.commercetools';
 import { CreateParameters } from '@mollie/api-client/dist/types/src/binders/payments/refunds/parameters';
+import { getPaymentExtension } from '../../src/commercetools/extensions.commercetools';
+
 const uuid = '5c8b0375-305a-4f19-ae8e-07806b101999';
 jest.mock('uuid', () => ({
   v4: () => uuid,
+}));
+
+jest.mock('../../src/commercetools/extensions.commercetools', () => ({
+  getPaymentExtension: jest.fn(),
 }));
 
 jest.mock('../../src/commercetools/payment.commercetools', () => ({
@@ -409,6 +415,11 @@ describe('Test createPayment', () => {
     } as molliePayment;
 
     (createMolliePayment as jest.Mock).mockReturnValueOnce(molliePayment);
+    (getPaymentExtension as jest.Mock).mockReturnValueOnce({
+      destination: {
+        url: 'https://example.com',
+      },
+    });
 
     const actual = await handleCreatePayment(CTPayment);
 
@@ -596,6 +607,9 @@ describe('Test getPaymentCancelActions', () => {
       expect(logger.error).toBeCalledTimes(1);
       expect(logger.error).toBeCalledWith(
         `SCTM - handleCancelRefund - Failed to parse the JSON string from the custom field ${transactionCustomFieldName}.`,
+        {
+          commerceToolsId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        },
       );
     }
   });
