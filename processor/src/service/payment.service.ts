@@ -34,6 +34,7 @@ import {
   setTransactionCustomField,
 } from '../commercetools/action.commercetools';
 import { readConfiguration } from '../utils/config.utils';
+import { toBoolean } from 'validator';
 import {
   CancelParameters,
   CreateParameters,
@@ -65,7 +66,12 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
     const hasCardPayment = methods.findIndex((method: Method) => method.id === PaymentMethod.creditcard);
 
     if (hasCardPayment >= 0) {
-      ctUpdateActions.push(setCustomFields(CustomFields.payment.profileId, readConfiguration().mollie.profileId));
+      ctUpdateActions.push(
+        setCustomFields(
+          CustomFields.payment.profileId,
+          toBoolean(readConfiguration().mollie.enableCardComponent, true) ? readConfiguration().mollie.profileId : '',
+        ),
+      );
     }
 
     return {
