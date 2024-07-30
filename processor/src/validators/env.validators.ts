@@ -58,16 +58,29 @@ const envValidators = [
     referencedBy: 'environmentVariables',
   }),
 
-  optional(standardString)(
+  standardString(
     ['mollie', 'debug'],
     {
       code: 'InvalidDebug',
-      message: 'Mollie debug should be a valid string.',
+      message: 'Mollie debug should be a valid string of either "0" or "1".',
       referencedBy: 'environmentVariables',
     },
     {
       min: 1,
-      max: undefined,
+      max: 1,
+    },
+  ),
+
+  standardString(
+    ['mollie', 'cardComponent'],
+    {
+      code: 'InvalidEnableCardComponent',
+      message: 'Enable Mollie card component should be a valid string of either "0" or "1".',
+      referencedBy: 'environmentVariables',
+    },
+    {
+      min: 1,
+      max: 1,
     },
   ),
 ];
