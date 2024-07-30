@@ -45,7 +45,7 @@ Target endpoint: `https://api.mollie.com/v2/payments/{paymentId}/refunds/{id}`
   - If the Refund status is `queued` or `pending`, the connector will perform a call to the [Cancel Refund endpoint](https://docs.mollie.com/reference/cancel-refund) to cancel the refund.
   - And finally, the connector will return a success response with a list of necessary updated actions including: 
     - Change PendingRefund transaction state from `Pending` to `Failure`
-    - Update PendingRefund transaction custom field `sctm_payment_cancel_refund`: store the reason of the cancelling from shop side, and a fixed message to point out that the cancelling was coming from the shop side
+    - Update PendingRefund transaction custom field `sctm_payment_cancel_reason`: store the reason of the cancelling from shop side, and a fixed message to point out that the cancelling was coming from the shop side
 
 ## Representation: CT Payment  
 
@@ -143,4 +143,4 @@ When order is successfully cancelled on Mollie, we update commercetools payment 
 | Action name (CT)                 | Value                                                                      |
 | -------------------------------- | -------------------------------------------------------------------------- |
 | `changeTransactionState`         | `transactionId: <pendingRefundTransactionId>, state: 'Failure'`            |
-| `setTransactionCustomField`     | `transactionId: <pendingRefundTransactionId>, name:sctm_payment_cancel_refund, value: "{\"reasonText\":\"Cancel refund reason\",\"statusText\":\"Cancel refund status\"}"`                                   |
+| `setTransactionCustomField`     | `transactionId: <pendingRefundTransactionId>, name:sctm_payment_cancel_refund, value: "{\"reasonText\":\"Cancel refund reason\",\"statusText\":\"Cancelled from shop side\"}"`                                   |
