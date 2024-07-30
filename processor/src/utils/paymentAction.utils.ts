@@ -48,7 +48,7 @@ const getTransactionGroups = (transactions: Transaction[]) => {
   return groups;
 };
 
-const determineAction = (groups: ReturnType<typeof getTransactionGroups>, key?: string): DeterminePaymentActionType => {
+const determineAction = (groups: ReturnType<typeof getTransactionGroups>): DeterminePaymentActionType => {
   if (groups.initialCharge.length > 1) {
     throw new CustomError(400, 'Only one transaction can be in "Initial" state at any time');
   }
@@ -60,14 +60,7 @@ const determineAction = (groups: ReturnType<typeof getTransactionGroups>, key?: 
     );
   }
 
-  if (groups.pendingCharge.length && !key) {
-    throw new CustomError(
-      400,
-      'Cannot create a Transaction in state "Pending". This state is reserved to indicate the transaction has been accepted by the payment service provider',
-    );
-  }
-
-  if ((key || groups.initialCharge.length === 1) && !groups.successCharge.length && !groups.pendingCharge.length) {
+  if (groups.initialCharge.length === 1 && !groups.successCharge.length && !groups.pendingCharge.length) {
     return ConnectorActions.CreatePayment;
   }
 
@@ -106,8 +99,8 @@ export const determinePaymentAction = (ctPayment?: Payment): DeterminePaymentAct
     return ConnectorActions.GetPaymentMethods;
   }
 
-  const { key, transactions } = ctPayment;
+  const { transactions } = ctPayment;
   const groups = getTransactionGroups(transactions);
 
-  return determineAction(groups, key);
+  return determineAction(groups);
 };

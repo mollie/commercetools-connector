@@ -16,13 +16,13 @@ export const createPaymentRefund = async (params: CreateParameters): Promise<Ref
     let errorMessage;
 
     if (error instanceof MollieApiError) {
-      errorMessage = `SCTM - createMolliePaymentRefund - Calling Mollie API - error: ${error.message}`;
+      errorMessage = `SCTM - createPaymentRefund - Calling Mollie API - error: ${error.message}`;
     } else {
-      errorMessage = `SCTM - createMolliePaymentRefund - Calling Mollie API - Failed to create refund with unknown errors`;
+      errorMessage = `SCTM - createPaymentRefund - Calling Mollie API - Failed to create refund with unknown errors`;
     }
 
     logger.error(errorMessage, {
-      paymentId: params.paymentId,
+      molliePaymentId: params.paymentId,
       error,
     });
 
@@ -45,13 +45,14 @@ export const getPaymentRefund = async (refundId: string, params: GetParameters) 
     let errorMessage;
 
     if (error instanceof MollieApiError) {
-      errorMessage = `getPaymentRefund - error: ${error.message}`;
+      errorMessage = `SCTM - getPaymentRefund - Calling Mollie API - error: ${error.message}`;
     } else {
-      errorMessage = `getPaymentRefund - Failed to cancel the refund with unknown errors`;
+      errorMessage = `SCTM - getPaymentRefund - Calling Mollie API - Failed to cancel the refund with unknown errors`;
     }
 
-    logger.error({
-      message: errorMessage,
+    logger.error(errorMessage, {
+      molliePaymentId: params.paymentId,
+      mollieRefundId: refundId,
       error,
     });
 
@@ -74,9 +75,9 @@ export const cancelPaymentRefund = async (refundId: string, params: CancelParame
     let errorMessage;
 
     if (error instanceof MollieApiError) {
-      errorMessage = `cancelPaymentRefund - error: ${error.message}`;
+      errorMessage = `SCTM - cancelPaymentRefund - Calling Mollie API - error: ${error.message}`;
     } else {
-      errorMessage = `cancelPaymentRefund - Failed to cancel the refund with unknown errors`;
+      errorMessage = `SCTM - cancelPaymentRefund - Calling Mollie API - Failed to cancel the refund with unknown errors`;
     }
 
     logger.error(errorMessage, {

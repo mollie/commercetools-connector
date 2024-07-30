@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals';
-import { CustomFields, ConnectorActions, ErrorMessages, CancelRefundStatusText } from '../../src/utils/constant.utils';
+import { CustomFields, ConnectorActions, ErrorMessages, CancelStatusText } from '../../src/utils/constant.utils';
 
 describe('Test constant.utils.ts', () => {
   test('should return the correct {CustomFields} constant', () => {
@@ -28,8 +28,8 @@ describe('Test constant.utils.ts', () => {
     expect(ConnectorActions?.NoAction).toBe('noAction');
   });
 
-  test('should return the correct {CancelRefundStatusText} constant', () => {
-    expect(CancelRefundStatusText).toBeDefined();
-    expect(CancelRefundStatusText).toBe('Cancelled from shop side');
+  test('should return the correct {CancelStatusText} constant', () => {
+    expect(CancelStatusText).toBeDefined();
+    expect(CancelStatusText).toBe('Cancelled from shop side');
   });
 });

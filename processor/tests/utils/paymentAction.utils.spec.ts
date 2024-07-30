@@ -125,6 +125,7 @@ describe('determinePaymentAction', () => {
     {
       CTPayment: {
         id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        key: 'creating-payment-case',
         version: 1,
         createdAt: '2024-07-04T14:07:35.625Z',
         lastModifiedAt: '2024-07-04T14:07:35.625Z',
@@ -145,15 +146,25 @@ describe('determinePaymentAction', () => {
               centAmount: 1000,
               fractionDigits: 2,
             },
-            state: 'Pending',
+            state: 'Initial',
+          },
+          {
+            id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+            type: 'Charge',
+            amount: {
+              type: 'centPrecision',
+              currencyCode: 'EUR',
+              centAmount: 1000,
+              fractionDigits: 2,
+            },
+            state: 'Success',
           },
         ],
         interfaceInteractions: [],
         paymentMethodInfo: {},
       } as Payment,
       expectedConnectorAction: ConnectorActions.NoAction,
-      expectedErrorMessage:
-        'Cannot create a Transaction in state "Pending". This state is reserved to indicate the transaction has been accepted by the payment service provider',
+      expectedErrorMessage: '',
     },
     {
       CTPayment: {
@@ -186,6 +197,95 @@ describe('determinePaymentAction', () => {
         paymentMethodInfo: {},
       } as Payment,
       expectedConnectorAction: ConnectorActions.CreatePayment,
+      expectedErrorMessage: '',
+    },
+    {
+      CTPayment: {
+        id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        version: 1,
+        createdAt: '2024-07-04T14:07:35.625Z',
+        lastModifiedAt: '2024-07-04T14:07:35.625Z',
+        amountPlanned: {
+          type: 'centPrecision',
+          currencyCode: 'EUR',
+          centAmount: 1000,
+          fractionDigits: 2,
+        },
+        paymentStatus: {},
+        transactions: [
+          {
+            id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+            type: 'Authorization',
+            interactionId: 'tr_123123',
+            amount: {
+              type: 'centPrecision',
+              currencyCode: 'EUR',
+              centAmount: 1000,
+              fractionDigits: 2,
+            },
+            state: 'Pending',
+          },
+          {
+            id: '5c8b0375-305a-4f19-ae8e-07806b102000',
+            type: 'CancelAuthorization',
+            interactionId: 're_4qqhO89gsT',
+            amount: {
+              type: 'centPrecision',
+              currencyCode: 'EUR',
+              centAmount: 1000,
+              fractionDigits: 2,
+            },
+            state: 'Initial',
+          },
+        ],
+        interfaceInteractions: [],
+        paymentMethodInfo: {},
+      } as Payment,
+      expectedConnectorAction: ConnectorActions.CancelPayment,
+      expectedErrorMessage: '',
+    },
+    {
+      CTPayment: {
+        id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        key: 'creating-payment-case',
+        version: 1,
+        createdAt: '2024-07-04T14:07:35.625Z',
+        lastModifiedAt: '2024-07-04T14:07:35.625Z',
+        amountPlanned: {
+          type: 'centPrecision',
+          currencyCode: 'EUR',
+          centAmount: 1000,
+          fractionDigits: 2,
+        },
+        paymentStatus: {},
+        transactions: [
+          {
+            id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+            type: 'Charge',
+            amount: {
+              type: 'centPrecision',
+              currencyCode: 'EUR',
+              centAmount: 1000,
+              fractionDigits: 2,
+            },
+            state: 'Success',
+          },
+          {
+            id: '5c8b0375-305a-4f19-ae8e-07806b102000',
+            type: 'Refund',
+            amount: {
+              type: 'centPrecision',
+              currencyCode: 'EUR',
+              centAmount: 1000,
+              fractionDigits: 2,
+            },
+            state: 'Initial',
+          },
+        ],
+        interfaceInteractions: [],
+        paymentMethodInfo: {},
+      } as Payment,
+      expectedConnectorAction: ConnectorActions.CreateRefund,
       expectedErrorMessage: '',
     },
     {
@@ -250,6 +350,11 @@ describe('determinePaymentAction', () => {
         const action = determinePaymentAction(CTPayment);
         expect(action).toBeDefined();
         expect(action).toBe(expectedConnectorAction);
+
+        if (expectedConnectorAction === ConnectorActions.NoAction && expectedErrorMessage === '') {
+          expect(logger.warn).toBeCalledTimes(1);
+          expect(logger.warn).toBeCalledWith('SCTM - No payment actions matched');
+        }
       }
     },
   );

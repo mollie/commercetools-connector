@@ -34,4 +34,4 @@ export const ErrorMessages = {
 
 export const PAY_LATER_ENUMS = [PaymentMethod.klarnapaylater, PaymentMethod.klarnasliceit];
 
-export const CancelRefundStatusText = 'Cancelled from shop side';
+export const CancelStatusText = 'Cancelled from shop side';

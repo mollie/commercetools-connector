@@ -178,6 +178,31 @@ export const checkValidRefundTransactionForCancel = (ctPayment: CTPayment): bool
 };
 
 /**
+ * Checks if the given Commercetools Payment object has a valid success charge transaction.
+ *
+ * @param {CTPayment} ctPayment - The Commercetools Payment object to check.
+ * @return {true | CustomError} Returns true if the refund transaction is valid, otherwise exception.
+ */
+export const checkValidPendingAuthorizationTransaction = (ctPayment: CTPayment): boolean => {
+  const pendingAuthorizationTransaction = ctPayment.transactions.find(
+    (transaction) =>
+      transaction.type === CTTransactionType.Authorization && transaction.state === CTTransactionState.Pending,
+  );
+
+  if (!pendingAuthorizationTransaction?.interactionId) {
+    logger.error(
+      `SCTM - handleCancelPayment - Cannot get the Mollie payment ID from CommerceTools transaction, CommerceTools Transaction ID: ${pendingAuthorizationTransaction?.id}.`,
+    );
+    throw new CustomError(
+      400,
+      `SCTM - handleCancelPayment - Cannot get the Mollie payment ID from CommerceTools transaction, CommerceTools Transaction ID: ${pendingAuthorizationTransaction?.id}.`,
+    );
+  }
+
+  return true;
+};
+
+/**
  * Checks whether the payment method specific parameters are present in the payment object
  * Currently, only perform the check with two payment methods: applepay and creditcard
  * For applepay: applePayPaymentToken must be exist
@@ -258,6 +283,9 @@ export const validateCommerceToolsPaymentPayload = (
   switch (connectorAction) {
     case ConnectorActions.CreatePayment:
       checkPaymentMethodInput(connectorAction, ctPayment);
+      break;
+    case ConnectorActions.CancelPayment:
+      checkValidPendingAuthorizationTransaction(ctPayment);
       break;
     case ConnectorActions.CreateRefund:
       checkValidSuccessChargeTransaction(ctPayment);

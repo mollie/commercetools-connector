@@ -1,5 +1,5 @@
 import { ControllerResponseType, DeterminePaymentActionType } from '../types/controller.types';
-import { CancelRefundStatusText, ConnectorActions, CustomFields, PAY_LATER_ENUMS } from '../utils/constant.utils';
+import { CancelStatusText, ConnectorActions, CustomFields, PAY_LATER_ENUMS } from '../utils/constant.utils';
 import { List, Method, Payment as MPayment, PaymentMethod } from '@mollie/api-client';
 import { logger } from '../utils/logger.utils';
 import {
@@ -308,23 +308,30 @@ export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<Con
  * Retrieves the payment cancel actions based on the provided pending refund transaction.
  * Would be used for cancel a payment or cancel a refund
  *
- * @param {Transaction} pendingRefundTransaction - The pending refund transaction.
+ * @param {Transaction} transaction - The pending refund transaction.
  * @return {Action[]} An array of actions including updating the transaction state and setting the transaction custom field value.
  * @throws {CustomError} If the JSON string from the custom field cannot be parsed.
  */
 export const getPaymentCancelActions = (transaction: Transaction, action: DeterminePaymentActionType) => {
   const transactionCustomFieldName = CustomFields.paymentCancelReason;
 
+  let errorPrefix;
+  if (action === ConnectorActions.CancelPayment) {
+    errorPrefix = 'SCTM - handleCancelPayment';
+  } else if (action === ConnectorActions.CancelRefund) {
+    errorPrefix = 'SCTM - handleCancelRefund';
+  }
+
   const transactionCustomFieldValue = parseStringToJsonObject(
-    pendingRefundTransaction.custom?.fields[transactionCustomFieldName],
+    transaction.custom?.fields[transactionCustomFieldName],
     transactionCustomFieldName,
-    'SCTM - handleCancelRefund',
-    pendingRefundTransaction.id,
+    errorPrefix,
+    transaction.id,
   );
 
   const newTransactionCustomFieldValue = {
     reasonText: transactionCustomFieldValue.reasonText,
-    statusText: CancelRefundStatusText,
+    statusText: CancelStatusText,
   };
 
   return [
@@ -352,6 +359,11 @@ export const handleCancelPayment = async (ctPayment: Payment): Promise<Controlle
       molliePaymentId: molliePayment.id,
       commerceToolsPaymentId: ctPayment.id,
     });
+
+    throw new CustomError(
+      400,
+      `SCTM - handleCancelPayment - Payment is not cancelable, Mollie Payment ID: ${molliePayment.id}`,
+    );
   }
 
   await cancelPayment(molliePayment.id);
