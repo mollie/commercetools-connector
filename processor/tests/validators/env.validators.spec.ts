@@ -103,7 +103,7 @@ describe('Test env.validators.ts', () => {
       index1: 8,
       index2: 0,
       field1: 'mollie',
-      field2: 'enableCardComponent',
+      field2: 'cardComponent',
       error: {
         code: 'InvalidEnableCardComponent',
         message: 'Enable Mollie card component should be a valid string of either "0" or "1".',

@@ -72,7 +72,7 @@ const envValidators = [
   ),
 
   standardString(
-    ['mollie', 'enableCardComponent'],
+    ['mollie', 'cardComponent'],
     {
       code: 'InvalidEnableCardComponent',
       message: 'Enable Mollie card component should be a valid string of either "0" or "1".',
