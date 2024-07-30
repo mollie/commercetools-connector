@@ -7,8 +7,6 @@ import { Payment } from '@commercetools/platform-sdk';
 import { MethodsListParams, PaymentCreateParams, PaymentMethod } from '@mollie/api-client';
 import { makeMollieAmount } from '../../src/utils/mollie.utils';
 
-const defaultWebhookEndpoint = new URL(process.env.CONNECT_SERVICE_URL ?? '').origin + '/webhook';
-
 describe('Test map.utils.ts', () => {
   let mockCtPayment: Payment;
   let mockMolObject: MethodsListParams;
@@ -56,7 +54,7 @@ describe('Test map.utils.ts', () => {
 });
 
 describe('createMollieCreatePaymentParams', () => {
-  it('should able to create a mollie payment params from CommerceTools payment object for with method as creditcard', () => {
+  it('should able to create a mollie payment params from CommerceTools payment object for with method as creditcard', async () => {
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
       version: 1,
@@ -75,9 +73,9 @@ describe('createMollieCreatePaymentParams', () => {
         method: 'creditcard',
       },
     };
+    const extensionUrl = 'https://example.com/webhook';
 
-    const mollieCreatePaymentParams = createMollieCreatePaymentParams(CTPayment);
-    const defaultWebhookEndpoint = new URL(process.env.CONNECT_SERVICE_URL ?? '').origin + '/webhook';
+    const mollieCreatePaymentParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
     const mollieAmount = makeMollieAmount(CTPayment.amountPlanned);
 
     expect(mollieCreatePaymentParams).toEqual({
@@ -88,7 +86,7 @@ describe('createMollieCreatePaymentParams', () => {
       },
       locale: null,
       redirectUrl: null,
-      webhookUrl: defaultWebhookEndpoint,
+      webhookUrl: extensionUrl,
       description: '',
       applicationFee: {},
       billingAddress: {},
@@ -101,7 +99,7 @@ describe('createMollieCreatePaymentParams', () => {
     });
   });
 
-  it('should able to create a mollie payment params from CommerceTools payment object with method as creditcard which has custom field', () => {
+  it('should able to create a mollie payment params from CommerceTools payment object with method as creditcard which has custom field', async () => {
     const customFieldObject = {
       description: 'Test payment',
       locale: 'en_GB',
@@ -137,8 +135,9 @@ describe('createMollieCreatePaymentParams', () => {
         },
       },
     };
+    const extensionUrl = 'https://example.com/webhook';
 
-    const mollieCreatePaymentParams = createMollieCreatePaymentParams(CTPayment);
+    const mollieCreatePaymentParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
 
     expect(mollieCreatePaymentParams).toEqual({
       method: 'creditcard',
@@ -148,7 +147,7 @@ describe('createMollieCreatePaymentParams', () => {
       },
       locale: customFieldObject.locale,
       redirectUrl: customFieldObject.redirectUrl,
-      webhookUrl: defaultWebhookEndpoint, // Always use our default webhook endpoint
+      webhookUrl: extensionUrl, // Always use our default webhook endpoint
       description: customFieldObject.description,
       applicationFee: {},
       billingAddress: {},
@@ -161,7 +160,7 @@ describe('createMollieCreatePaymentParams', () => {
     });
   });
 
-  it('should able to create a mollie payment params from CommerceTools payment object with method as ideal', () => {
+  it('should able to create a mollie payment params from CommerceTools payment object with method as ideal', async () => {
     const customFieldObject = {
       description: 'Test payment',
       locale: 'en_GB',
@@ -202,8 +201,9 @@ describe('createMollieCreatePaymentParams', () => {
         },
       },
     };
+    const extensionUrl = 'https://example.com/webhook';
 
-    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment);
+    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
     expect(mollieCreatePaymentParams).toEqual({
       method: PaymentMethod.ideal,
       amount: {
@@ -212,7 +212,7 @@ describe('createMollieCreatePaymentParams', () => {
       },
       locale: customFieldObject.locale,
       redirectUrl: customFieldObject.redirectUrl,
-      webhookUrl: defaultWebhookEndpoint,
+      webhookUrl: extensionUrl,
       description: customFieldObject.description,
       issuer: 'ideal_TEST',
       include: customFieldObject.include,
@@ -224,7 +224,7 @@ describe('createMollieCreatePaymentParams', () => {
     });
   });
 
-  it('should able to create a mollie payment params from CommerceTools payment object with method as bancontact', () => {
+  it('should able to create a mollie payment params from CommerceTools payment object with method as bancontact', async () => {
     const customFieldObject = {
       description: 'Test payment',
       locale: 'en_GB',
@@ -266,8 +266,9 @@ describe('createMollieCreatePaymentParams', () => {
         },
       },
     };
+    const extensionUrl = 'https://example.com/webhook';
 
-    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment);
+    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
     expect(mollieCreatePaymentParams).toEqual({
       method: PaymentMethod.bancontact,
       amount: {
@@ -276,7 +277,7 @@ describe('createMollieCreatePaymentParams', () => {
       },
       locale: customFieldObject.locale,
       redirectUrl: customFieldObject.redirectUrl,
-      webhookUrl: defaultWebhookEndpoint,
+      webhookUrl: extensionUrl,
       description: customFieldObject.description,
       include: customFieldObject.include,
       issuer: '',
@@ -288,7 +289,7 @@ describe('createMollieCreatePaymentParams', () => {
     });
   });
 
-  it('should able to create a mollie payment params from CommerceTools payment object with method as banktransfer', () => {
+  it('should able to create a mollie payment params from CommerceTools payment object with method as banktransfer', async () => {
     const customFieldObject = {
       description: 'Test payment',
       locale: 'en_GB',
@@ -325,8 +326,9 @@ describe('createMollieCreatePaymentParams', () => {
         },
       },
     };
+    const extensionUrl = 'https://example.com/webhook';
 
-    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment);
+    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
     expect(mollieCreatePaymentParams).toEqual({
       method: PaymentMethod.banktransfer,
       amount: {
@@ -335,7 +337,7 @@ describe('createMollieCreatePaymentParams', () => {
       },
       locale: customFieldObject.locale,
       redirectUrl: customFieldObject.redirectUrl,
-      webhookUrl: defaultWebhookEndpoint,
+      webhookUrl: extensionUrl,
       description: customFieldObject.description,
       dueDate: customFieldObject.dueDate,
       billingEmail: customFieldObject.billingEmail,
@@ -349,7 +351,7 @@ describe('createMollieCreatePaymentParams', () => {
     });
   });
 
-  it('should able to create a mollie payment params from CommerceTools payment object with method as przelewy24', () => {
+  it('should able to create a mollie payment params from CommerceTools payment object with method as przelewy24', async () => {
     const customFieldObject = {
       description: 'Test payment',
       locale: 'en_GB',
@@ -385,8 +387,9 @@ describe('createMollieCreatePaymentParams', () => {
         },
       },
     };
+    const extensionUrl = 'https://example.com/webhook';
 
-    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment);
+    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
     expect(mollieCreatePaymentParams).toEqual({
       method: PaymentMethod.przelewy24,
       amount: {
@@ -395,7 +398,7 @@ describe('createMollieCreatePaymentParams', () => {
       },
       locale: customFieldObject.locale,
       redirectUrl: customFieldObject.redirectUrl,
-      webhookUrl: defaultWebhookEndpoint,
+      webhookUrl: extensionUrl,
       description: customFieldObject.description,
       billingEmail: customFieldObject.billingEmail,
       include: '',
@@ -408,7 +411,7 @@ describe('createMollieCreatePaymentParams', () => {
     });
   });
 
-  it('should able to create a mollie payment params from CommerceTools payment object with method as kbc', () => {
+  it('should able to create a mollie payment params from CommerceTools payment object with method as kbc', async () => {
     const customFieldObject = {
       description: 'Test payment',
       locale: 'en_GB',
@@ -443,8 +446,9 @@ describe('createMollieCreatePaymentParams', () => {
         },
       },
     };
+    const extensionUrl = 'https://example.com/webhook';
 
-    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment);
+    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
     expect(mollieCreatePaymentParams).toEqual({
       method: PaymentMethod.kbc,
       amount: {
@@ -453,7 +457,7 @@ describe('createMollieCreatePaymentParams', () => {
       },
       locale: customFieldObject.locale,
       redirectUrl: customFieldObject.redirectUrl,
-      webhookUrl: defaultWebhookEndpoint,
+      webhookUrl: extensionUrl,
       description: customFieldObject.description,
       include: '',
       issuer: '',
@@ -515,7 +519,7 @@ describe('createMollieCreatePaymentParams', () => {
   //   });
   // });
 
-  it('should able to create a mollie payment params from CommerceTools payment object with method as applepay', () => {
+  it('should able to create a mollie payment params from CommerceTools payment object with method as applepay', async () => {
     const customFieldObject = {
       description: 'Test payment',
       locale: 'en_GB',
@@ -551,8 +555,9 @@ describe('createMollieCreatePaymentParams', () => {
         },
       },
     };
+    const extensionUrl = 'https://example.com/webhook';
 
-    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment);
+    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
     expect(mollieCreatePaymentParams).toEqual({
       method: PaymentMethod.applepay,
       amount: {
@@ -561,7 +566,7 @@ describe('createMollieCreatePaymentParams', () => {
       },
       locale: customFieldObject.locale,
       redirectUrl: customFieldObject.redirectUrl,
-      webhookUrl: defaultWebhookEndpoint,
+      webhookUrl: extensionUrl,
       description: customFieldObject.description,
       applePayPaymentToken: customFieldObject.applePayPaymentToken,
       include: '',
@@ -574,7 +579,7 @@ describe('createMollieCreatePaymentParams', () => {
     });
   });
 
-  it('should able to create a mollie payment params from CommerceTools payment object with method as paypal', () => {
+  it('should able to create a mollie payment params from CommerceTools payment object with method as paypal', async () => {
     const customFieldObject = {
       description: 'Test payment',
       locale: 'en_GB',
@@ -611,8 +616,9 @@ describe('createMollieCreatePaymentParams', () => {
         },
       },
     };
+    const extensionUrl = 'https://example.com/webhook';
 
-    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment);
+    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
     expect(mollieCreatePaymentParams).toEqual({
       method: PaymentMethod.paypal,
       amount: {
@@ -621,7 +627,7 @@ describe('createMollieCreatePaymentParams', () => {
       },
       locale: customFieldObject.locale,
       redirectUrl: customFieldObject.redirectUrl,
-      webhookUrl: defaultWebhookEndpoint,
+      webhookUrl: extensionUrl,
       description: customFieldObject.description,
       sessionId: customFieldObject.sessionId,
       digitalGoods: customFieldObject.digitalGoods,
@@ -635,7 +641,7 @@ describe('createMollieCreatePaymentParams', () => {
     });
   });
 
-  it('should able to create a mollie payment params from CommerceTools payment object with method as giftcard', () => {
+  it('should able to create a mollie payment params from CommerceTools payment object with method as giftcard', async () => {
     const customFieldObject = {
       description: 'Test payment',
       locale: 'en_GB',
@@ -672,8 +678,9 @@ describe('createMollieCreatePaymentParams', () => {
         },
       },
     };
+    const extensionUrl = 'https://example.com/webhook';
 
-    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment);
+    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
     expect(mollieCreatePaymentParams).toEqual({
       method: PaymentMethod.giftcard,
       amount: {
@@ -682,7 +689,7 @@ describe('createMollieCreatePaymentParams', () => {
       },
       locale: customFieldObject.locale,
       redirectUrl: customFieldObject.redirectUrl,
-      webhookUrl: defaultWebhookEndpoint,
+      webhookUrl: extensionUrl,
       description: customFieldObject.description,
       voucherNumber: customFieldObject.voucherNumber,
       voucherPin: customFieldObject.voucherPin,

@@ -6,6 +6,7 @@ import { logger } from '../utils/logger.utils';
 import { ConnectorActions, CustomFields } from '../utils/constant.utils';
 import { DeterminePaymentActionType } from '../types/controller.types';
 import { CTTransactionState, CTTransactionType } from '../types/commercetools.types';
+import { parseStringToJsonObject } from '../utils/app.utils';
 
 /**
  * Checks if the given action is either 'Create' or 'Update'.
@@ -67,16 +68,29 @@ export const checkPaymentMethodInput = (
   const [method] = CTPaymentMethod.split(',');
 
   if (!method) {
-    logger.error('SCTM - PAYMENT PROCESSING - Payment method must be set in order to create a Mollie payment.');
+    logger.error(
+      `SCTM - PAYMENT PROCESSING - Payment method must be set in order to create a Mollie payment, CommerceTools Payment ID: ${ctPayment.id}.`,
+      {
+        commerceToolsPaymentId: ctPayment.id,
+      },
+    );
     throw new CustomError(
       400,
-      `SCTM - PAYMENT PROCESSING - Payment method must be set in order to create a Mollie payment.`,
+      `SCTM - PAYMENT PROCESSING - Payment method must be set in order to create a Mollie payment, CommerceTools Payment ID: ${ctPayment.id}.`,
     );
   }
 
   if (!hasValidPaymentMethod(ctPayment.paymentMethodInfo?.method)) {
-    logger.error(`SCTM - PAYMENT PROCESSING - Invalid paymentMethodInfo.method "${method}".`);
-    throw new CustomError(400, `SCTM - PAYMENT PROCESSING - Invalid paymentMethodInfo.method "${method}".`);
+    logger.error(
+      `SCTM - PAYMENT PROCESSING - Invalid paymentMethodInfo.method "${method}", CommerceTools Payment ID: ${ctPayment.id}.`,
+      {
+        commerceToolsPaymentId: ctPayment.id,
+      },
+    );
+    throw new CustomError(
+      400,
+      `SCTM - PAYMENT PROCESSING - Invalid paymentMethodInfo.method "${method}", CommerceTools Payment ID: ${ctPayment.id}.`,
+    );
   }
 
   if (method === PaymentMethod.creditcard) {
@@ -98,10 +112,12 @@ export const checkValidSuccessChargeTransaction = (ctPayment: CTPayment): boolea
   );
 
   if (!successChargeTransaction?.interactionId) {
-    logger.error('SCTM - Validating transactions for refund actions - No successful charge transaction found');
+    logger.error(
+      `SCTM - handleCreateRefund - No successful charge transaction found, CommerceTools Transaction ID: ${successChargeTransaction?.id}.`,
+    );
     throw new CustomError(
       400,
-      'SCTM - Validating transactions for refund actions - No successful charge transaction found',
+      `SCTM - handleCreateRefund - No successful charge transaction found, CommerceTools Transaction ID: ${successChargeTransaction?.id}.`,
     );
   }
 
@@ -121,13 +137,18 @@ export const checkValidRefundTransactionForCreate = (ctPayment: CTPayment): bool
   );
 
   if (!initialRefundTransaction) {
-    logger.error('SCTM - handleCreateRefund - No initial refund transaction found');
+    logger.error(`SCTM - handleCreateRefund - No initial refund transaction found.`);
     throw new CustomError(400, 'SCTM - handleCreateRefund - No initial refund transaction found');
   }
 
   if (!initialRefundTransaction?.amount || !initialRefundTransaction?.amount.centAmount) {
-    logger.error('SCTM - handleCreateRefund - No amount found in initial refund transaction');
-    throw new CustomError(400, 'SCTM - handleCreateRefund - No amount found in initial refund transaction');
+    logger.error(
+      `SCTM - handleCreateRefund - No amount found in initial refund transaction, CommerceTools Transaction ID: ${initialRefundTransaction?.id}`,
+    );
+    throw new CustomError(
+      400,
+      `SCTM - handleCreateRefund - No amount found in initial refund transaction, CommerceTools Transaction ID: ${initialRefundTransaction?.id}`,
+    );
   }
 
   return true;
@@ -157,6 +178,31 @@ export const checkValidRefundTransactionForCancel = (ctPayment: CTPayment): bool
 };
 
 /**
+ * Checks if the given Commercetools Payment object has a valid success charge transaction.
+ *
+ * @param {CTPayment} ctPayment - The Commercetools Payment object to check.
+ * @return {true | CustomError} Returns true if the refund transaction is valid, otherwise exception.
+ */
+export const checkValidPendingAuthorizationTransaction = (ctPayment: CTPayment): boolean => {
+  const pendingAuthorizationTransaction = ctPayment.transactions.find(
+    (transaction) =>
+      transaction.type === CTTransactionType.Authorization && transaction.state === CTTransactionState.Pending,
+  );
+
+  if (!pendingAuthorizationTransaction?.interactionId) {
+    logger.error(
+      `SCTM - handleCancelPayment - Cannot get the Mollie payment ID from CommerceTools transaction, CommerceTools Transaction ID: ${pendingAuthorizationTransaction?.id}.`,
+    );
+    throw new CustomError(
+      400,
+      `SCTM - handleCancelPayment - Cannot get the Mollie payment ID from CommerceTools transaction, CommerceTools Transaction ID: ${pendingAuthorizationTransaction?.id}.`,
+    );
+  }
+
+  return true;
+};
+
+/**
  * Checks whether the payment method specific parameters are present in the payment object
  * Currently, only perform the check with two payment methods: applepay and creditcard
  * For applepay: applePayPaymentToken must be exist
@@ -168,30 +214,33 @@ export const checkValidRefundTransactionForCancel = (ctPayment: CTPayment): bool
  * The `errorMessage` property contains the error message if the input is invalid.
  */
 export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment): void => {
-  let paymentCustomFields;
-
-  try {
-    paymentCustomFields = ctPayment.custom?.fields?.[CustomFields.createPayment.request]
-      ? JSON.parse(ctPayment.custom?.fields?.[CustomFields.createPayment.request])
-      : {};
-  } catch (error: unknown) {
-    logger.error(
-      'SCTM - PAYMENT PROCESSING - Failed to parse the JSON string from the custom field sctm_create_payment_request.',
-    );
-    throw new CustomError(
-      400,
-      `SCTM - PAYMENT PROCESSING - Failed to parse the JSON string from the custom field sctm_create_payment_request.`,
-    );
-  }
+  const paymentCustomFields = parseStringToJsonObject(
+    ctPayment.custom?.fields?.[CustomFields.createPayment.request],
+    CustomFields.createPayment.request,
+    'SCTM - PAYMENT PROCESSING',
+    ctPayment.id,
+  );
 
   if (!paymentCustomFields?.cardToken) {
-    logger.error('SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard');
+    logger.error(
+      `SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard, CommerceTools Payment ID: ${ctPayment.id}`,
+      {
+        commerceToolsPaymentId: ctPayment.id,
+        cardToken: paymentCustomFields?.cardToken,
+      },
+    );
 
     throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard');
   }
 
   if (typeof paymentCustomFields?.cardToken !== 'string' || paymentCustomFields?.cardToken.trim() === '') {
-    logger.error('SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard');
+    logger.error(
+      `SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard, CommerceTools Payment ID: ${ctPayment.id}`,
+      {
+        commerceToolsPaymentId: ctPayment.id,
+        cardToken: paymentCustomFields?.cardToken,
+      },
+    );
 
     throw new CustomError(
       400,
@@ -202,7 +251,12 @@ export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment): void
 
 export const checkAmountPlanned = (ctPayment: CTPayment): true | CustomError => {
   if (!ctPayment?.amountPlanned) {
-    logger.error('SCTM - PAYMENT PROCESSING - Payment {amountPlanned} not found.');
+    logger.error(
+      `SCTM - PAYMENT PROCESSING - Payment {amountPlanned} not found, commerceToolsPaymentId: ${ctPayment.id}.`,
+      {
+        commerceToolsPaymentId: ctPayment.id,
+      },
+    );
     throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - Payment {amountPlanned} not found.');
   }
 
@@ -229,6 +283,9 @@ export const validateCommerceToolsPaymentPayload = (
   switch (connectorAction) {
     case ConnectorActions.CreatePayment:
       checkPaymentMethodInput(connectorAction, ctPayment);
+      break;
+    case ConnectorActions.CancelPayment:
+      checkValidPendingAuthorizationTransaction(ctPayment);
       break;
     case ConnectorActions.CreateRefund:
       checkValidSuccessChargeTransaction(ctPayment);
