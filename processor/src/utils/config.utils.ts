@@ -21,6 +21,7 @@ export const readConfiguration = () => {
       apiKey: process.env.MOLLIE_API_KEY as string,
       debug: process.env.DEBUG as string,
       profileId: process.env.MOLLIE_PROFILE_ID as string,
+      enableCardComponent: process.env.ENABLE_MOLLIE_CARD_COMPONENT as string,
     },
   };
 
@@ -29,7 +30,7 @@ export const readConfiguration = () => {
   if (validationErrors.length) {
     throw new CustomError(
       'InvalidEnvironmentVariablesError',
-      'Invalid Environment Variables please check your .env file',
+      'Invalid Environment Variables please check your .env file. Details: ' + JSON.stringify(validationErrors),
     );
   }
 

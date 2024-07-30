@@ -9,11 +9,7 @@ import {
   handlePaymentCancelRefund,
   handleCreateRefund,
 } from '../../src/service/payment.service';
-import {
-  CancelRefundStatusText,
-  ConnectorActions,
-  CustomFields as CustomFieldName,
-} from '../../src/utils/constant.utils';
+import { CancelStatusText, ConnectorActions, CustomFields as CustomFieldName } from '../../src/utils/constant.utils';
 import { validateCommerceToolsPaymentPayload } from '../../src/validators/payment.validators';
 
 jest.mock('../../src/service/payment.service', () => ({
@@ -289,7 +285,7 @@ describe('Test payment.controller.ts', () => {
 
     const transactionCustomFieldValue = JSON.stringify({
       responseText: 'Manually cancelled',
-      statusText: CancelRefundStatusText,
+      statusText: CancelStatusText,
     });
 
     const handlePaymentCancelRefundResponse = {
@@ -303,7 +299,7 @@ describe('Test payment.controller.ts', () => {
         {
           action: 'setTransactionCustomField',
           transactionId: 'tr_123456',
-          name: CustomFieldName.paymentCancelRefund,
+          name: CustomFieldName.paymentCancelReason,
           value: transactionCustomFieldValue,
         },
       ],

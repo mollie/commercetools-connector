@@ -1,13 +1,17 @@
 import { ConnectorActions } from './../../src/utils/constant.utils';
 import { Payment } from '@commercetools/platform-sdk';
 import {
+  checkAmountPlanned,
   checkExtensionAction,
   checkPaymentInterface,
   checkPaymentMethodInput,
-  checkValidRefundTransaction,
+  checkValidSuccessChargeTransaction,
   checkPaymentMethodSpecificParameters,
   hasValidPaymentMethod,
   validateCommerceToolsPaymentPayload,
+  checkValidRefundTransactionForCreate,
+  checkValidRefundTransactionForCancel,
+  checkValidPendingAuthorizationTransaction,
 } from './../../src/validators/payment.validators';
 import { describe, it, expect, jest, afterEach } from '@jest/globals';
 import CustomError from '../../src/errors/custom.error';
@@ -233,6 +237,45 @@ describe('checkPaymentMethodInput', () => {
 
     expect(checkPaymentMethodInput(ConnectorActions.CreatePayment, CTPayment)).toBe(true);
   });
+
+  it('should call checkPaymentMethodSpecificParameters if the payment method is "creditcard', () => {
+    const paymentValidators = require('../../src/validators/payment.validators');
+
+    jest.spyOn(paymentValidators, 'checkPaymentMethodSpecificParameters');
+
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'creditcard',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request:
+            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/","cardToken":"token_12345"}',
+        },
+      },
+    };
+
+    checkPaymentMethodInput(ConnectorActions.CreatePayment, CTPayment);
+
+    expect(checkPaymentMethodSpecificParameters).toBeCalledTimes(1);
+  });
 });
 
 describe('checkPaymentMethodSpecificParameters', () => {
@@ -299,7 +342,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
         },
         fields: {
           sctm_create_payment_request:
-            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/","cardToken":""}',
+            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/","cardToken":123}',
         },
       },
     };
@@ -309,13 +352,13 @@ describe('checkPaymentMethodSpecificParameters', () => {
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect((error as CustomError).message).toBe(
-        'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard',
+        'SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard',
       );
       expect(logger.error).toBeCalledTimes(1);
       expect(logger.error).toBeCalledWith(
-        `SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard, CommerceTools Payment ID: ${CTPayment.id}`,
+        `SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard, CommerceTools Payment ID: ${CTPayment.id}`,
         {
-          cardToken: '',
+          cardToken: 123,
           commerceToolsPaymentId: CTPayment.id,
         },
       );
@@ -399,11 +442,67 @@ describe('checkPaymentMethodSpecificParameters', () => {
   });
 });
 
-import * as paymentValidators from '../../src/validators/payment.validators';
+describe('checkAmountPlanned', () => {
+  it('should throw an error if the amountPlanned is not found', () => {
+    const CTPayment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'dummy',
+      },
+    };
+
+    try {
+      checkAmountPlanned(CTPayment as unknown as Payment);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith(
+        `SCTM - PAYMENT PROCESSING - Payment {amountPlanned} not found, commerceToolsPaymentId: ${CTPayment.id}.`,
+        {
+          commerceToolsPaymentId: CTPayment.id,
+        },
+      );
+    }
+  });
+
+  it('should return true if amountPlanned exists', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'dummy',
+      },
+    };
+
+    expect(checkAmountPlanned(CTPayment)).toBe(true);
+  });
+});
 
 describe('validateCommerceToolsPaymentPayload', () => {
+  const paymentValidators = require('../../src/validators/payment.validators');
+
   jest.spyOn(paymentValidators, 'checkPaymentMethodInput');
-  jest.spyOn(paymentValidators, 'checkValidRefundTransaction');
+  jest.spyOn(paymentValidators, 'checkValidSuccessChargeTransaction');
+  jest.spyOn(paymentValidators, 'checkValidRefundTransactionForCreate');
+  jest.spyOn(paymentValidators, 'checkValidRefundTransactionForCancel');
+  jest.spyOn(paymentValidators, 'checkValidPendingAuthorizationTransaction');
 
   it('should not call the checkPaymentMethodInput when the action is not "CreatePayment"', () => {
     try {
@@ -440,7 +539,7 @@ describe('validateCommerceToolsPaymentPayload', () => {
     }
   });
 
-  it('should call the checkValidRefundTransaction when the action is "CreateRefund"', () => {
+  it('should call the checkValidRefundTransaction and checkValidRefundTransactionForCreate when the action is "CreateRefund"', () => {
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
       version: 1,
@@ -485,7 +584,8 @@ describe('validateCommerceToolsPaymentPayload', () => {
     };
 
     validateCommerceToolsPaymentPayload('Update', ConnectorActions.CreateRefund, CTPayment);
-    expect(checkValidRefundTransaction).toBeCalledTimes(1);
+    expect(checkValidSuccessChargeTransaction).toBeCalledTimes(1);
+    expect(checkValidRefundTransactionForCreate).toBeCalledTimes(1);
   });
 
   const CTPayment: Payment = {
@@ -512,7 +612,8 @@ describe('validateCommerceToolsPaymentPayload', () => {
       CTPayment: {
         ...CTPayment,
       },
-      exception: 'SCTM - handleCreateRefund - No successful charge transaction found',
+      exception:
+        'SCTM - handleCreateRefund - No successful charge transaction found, CommerceTools Transaction ID: undefined.',
     },
     {
       CTPayment: {
@@ -532,7 +633,8 @@ describe('validateCommerceToolsPaymentPayload', () => {
           },
         ],
       },
-      exception: 'SCTM - handleCreateRefund - No successful charge transaction found',
+      exception:
+        'SCTM - handleCreateRefund - No successful charge transaction found, CommerceTools Transaction ID: undefined.',
     },
     {
       CTPayment: {
@@ -622,4 +724,261 @@ describe('validateCommerceToolsPaymentPayload', () => {
       }).toThrow(exception);
     },
   );
+
+  it('should call the checkValidRefundTransaction and checkValidRefundTransactionForCancel when the action is "CancelRefund"', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [
+        {
+          id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          type: 'Charge',
+          amount: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 1000,
+            fractionDigits: 2,
+          },
+          state: 'Success',
+          interactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        },
+        {
+          id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          type: 'Refund',
+          amount: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 1000,
+            fractionDigits: 2,
+          },
+          state: 'Pending',
+          interactionId: '5c8b0375-305a-4f19-ae8e-07806b102000',
+        },
+      ],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        paymentInterface: 'Mollie',
+      },
+    };
+
+    validateCommerceToolsPaymentPayload('Update', ConnectorActions.CancelRefund, CTPayment);
+    expect(checkValidSuccessChargeTransaction).toBeCalledTimes(1);
+    expect(checkValidRefundTransactionForCancel).toBeCalledTimes(1);
+  });
+
+  const dataSetForCancelRefund = [
+    {
+      CTPayment: {
+        ...CTPayment,
+      },
+      exception:
+        'SCTM - handleCreateRefund - No successful charge transaction found, CommerceTools Transaction ID: undefined.',
+    },
+    {
+      CTPayment: {
+        ...CTPayment,
+        transactions: [
+          {
+            id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+            type: 'Charge',
+            amount: {
+              type: 'centPrecision',
+              currencyCode: 'EUR',
+              centAmount: 1000,
+              fractionDigits: 2,
+            },
+            state: 'Pending',
+            interactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          },
+        ],
+      },
+      exception:
+        'SCTM - handleCreateRefund - No successful charge transaction found, CommerceTools Transaction ID: undefined.',
+    },
+    {
+      CTPayment: {
+        ...CTPayment,
+        transactions: [
+          {
+            id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+            type: 'Charge',
+            amount: {
+              type: 'centPrecision',
+              currencyCode: 'EUR',
+              centAmount: 1000,
+              fractionDigits: 2,
+            },
+            state: 'Success',
+            interactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          },
+        ],
+      },
+      exception: 'SCTM - handleCancelRefund - No pending refund transaction found',
+    },
+    {
+      CTPayment: {
+        ...CTPayment,
+        transactions: [
+          {
+            id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+            type: 'Charge',
+            amount: {
+              type: 'centPrecision',
+              currencyCode: 'EUR',
+              centAmount: 1000,
+              fractionDigits: 2,
+            },
+            state: 'Success',
+            interactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          },
+          {
+            id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+            type: 'Refund',
+            state: 'Pending',
+          },
+        ],
+      },
+      exception:
+        'SCTM - handleCancelRefund - Cannot get the Mollie refund ID from CommerceTools transaction, transaction ID: 5c8b0375-305a-4f19-ae8e-07806b101999',
+    },
+    {
+      CTPayment: {
+        ...CTPayment,
+        transactions: [
+          {
+            id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+            type: 'Charge',
+            amount: {
+              type: 'centPrecision',
+              currencyCode: 'EUR',
+              centAmount: 1000,
+              fractionDigits: 2,
+            },
+            state: 'Success',
+            interactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          },
+          {
+            id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+            type: 'Refund',
+            amount: {
+              type: 'centPrecision',
+              currencyCode: 'EUR',
+              centAmount: 0,
+              fractionDigits: 2,
+            },
+            state: 'Pending',
+            interactionId: ' ',
+          },
+        ],
+      },
+      exception:
+        'SCTM - handleCancelRefund - Cannot get the Mollie refund ID from CommerceTools transaction, transaction ID: 5c8b0375-305a-4f19-ae8e-07806b101999',
+    },
+  ];
+
+  it.each(dataSetForCancelRefund)(
+    'should throw exception on checkValidRefundTransaction with invalid "CancelRefund" action',
+    ({ CTPayment, exception }) => {
+      expect(() => {
+        validateCommerceToolsPaymentPayload('Update', ConnectorActions.CancelRefund, CTPayment as Payment);
+      }).toThrow(exception);
+    },
+  );
+
+  it('should call the checkValidPendingAuthorizationTransaction when the action is "CancelPayment" and throw error if the mollie payment id is not found', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [
+        {
+          id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          type: 'Authorization',
+          amount: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 1000,
+            fractionDigits: 2,
+          },
+          state: 'Pending',
+          // interactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        },
+      ],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        paymentInterface: 'Mollie',
+      },
+    };
+
+    try {
+      validateCommerceToolsPaymentPayload('Update', ConnectorActions.CancelPayment, CTPayment);
+    } catch (error: unknown) {
+      expect(checkValidPendingAuthorizationTransaction).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith(
+        `SCTM - handleCancelPayment - Cannot get the Mollie payment ID from CommerceTools transaction, CommerceTools Transaction ID: ${CTPayment.transactions[0].id}.`,
+      );
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).message).toBe(
+        `SCTM - handleCancelPayment - Cannot get the Mollie payment ID from CommerceTools transaction, CommerceTools Transaction ID: ${CTPayment.transactions[0].id}.`,
+      );
+      expect((error as CustomError).statusCode).toBe(400);
+    }
+  });
+
+  it('should call the checkValidPendingAuthorizationTransaction when the action is "CancelPayment" and return true if the mollie payment id is found', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [
+        {
+          id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          type: 'Authorization',
+          amount: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 1000,
+            fractionDigits: 2,
+          },
+          state: 'Pending',
+          interactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        },
+      ],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        paymentInterface: 'Mollie',
+      },
+    };
+
+    validateCommerceToolsPaymentPayload('Update', ConnectorActions.CancelPayment, CTPayment);
+    expect(checkValidPendingAuthorizationTransaction).toBeCalledTimes(1);
+    expect(checkValidPendingAuthorizationTransaction).toBeCalledWith(CTPayment);
+    expect(checkValidPendingAuthorizationTransaction).toReturnWith(true);
+  });
 });

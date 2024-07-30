@@ -13,6 +13,8 @@ const getTransactionGroups = (transactions: Transaction[]) => {
     successCharge: [] as Transaction[],
     initialRefund: [] as Transaction[],
     pendingRefund: [] as Transaction[],
+    initialCancelAuthorization: [] as Transaction[],
+    pendingAuthorization: [] as Transaction[],
   };
 
   transactions?.forEach((transaction) => {
@@ -22,6 +24,8 @@ const getTransactionGroups = (transactions: Transaction[]) => {
           groups.initialCharge.push(transaction);
         } else if (transaction.type === CTTransactionType.Refund) {
           groups.initialRefund.push(transaction);
+        } else if (transaction.type === CTTransactionType.CancelAuthorization) {
+          groups.initialCancelAuthorization.push(transaction);
         }
         break;
       case CTTransactionState.Pending:
@@ -29,6 +33,8 @@ const getTransactionGroups = (transactions: Transaction[]) => {
           groups.pendingCharge.push(transaction);
         } else if (transaction.type === CTTransactionType.Refund) {
           groups.pendingRefund.push(transaction);
+        } else if (transaction.type === CTTransactionType.Authorization) {
+          groups.pendingAuthorization.push(transaction);
         }
         break;
       case CTTransactionState.Success:
@@ -42,7 +48,7 @@ const getTransactionGroups = (transactions: Transaction[]) => {
   return groups;
 };
 
-const determineAction = (groups: ReturnType<typeof getTransactionGroups>, key?: string): DeterminePaymentActionType => {
+const determineAction = (groups: ReturnType<typeof getTransactionGroups>): DeterminePaymentActionType => {
   if (groups.initialCharge.length > 1) {
     throw new CustomError(400, 'Only one transaction can be in "Initial" state at any time');
   }
@@ -54,22 +60,23 @@ const determineAction = (groups: ReturnType<typeof getTransactionGroups>, key?: 
     );
   }
 
-  if (groups.pendingCharge.length && !key) {
-    throw new CustomError(
-      400,
-      'Cannot create a Transaction in state "Pending". This state is reserved to indicate the transaction has been accepted by the payment service provider',
-    );
+  if (groups.initialCharge.length === 1 && !groups.successCharge.length && !groups.pendingCharge.length) {
+    return ConnectorActions.CreatePayment;
   }
 
-  if ((key || groups.initialCharge.length === 1) && !groups.successCharge.length && !groups.pendingCharge.length) {
-    return ConnectorActions.CreatePayment;
+  if (groups.pendingAuthorization.length === 1 && groups.initialCancelAuthorization.length === 1) {
+    return ConnectorActions.CancelPayment;
   }
 
   if (groups.successCharge.length === 1 && groups.initialRefund.length) {
     return ConnectorActions.CreateRefund;
   }
 
-  if (groups.successCharge.length === 1 && groups.pendingRefund.length === 1) {
+  if (
+    groups.successCharge.length === 1 &&
+    groups.pendingRefund.length === 1 &&
+    groups.initialCancelAuthorization.length === 1
+  ) {
     return ConnectorActions.CancelRefund;
   }
 
@@ -92,8 +99,8 @@ export const determinePaymentAction = (ctPayment?: Payment): DeterminePaymentAct
     return ConnectorActions.GetPaymentMethods;
   }
 
-  const { key, transactions } = ctPayment;
+  const { transactions } = ctPayment;
   const groups = getTransactionGroups(transactions);
 
-  return determineAction(groups, key);
+  return determineAction(groups);
 };

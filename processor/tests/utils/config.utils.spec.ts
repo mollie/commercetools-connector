@@ -3,7 +3,7 @@ import CustomError from '../../src/errors/custom.error';
 import { describe, expect, test } from '@jest/globals';
 
 describe('Test src/utils/config.utils.ts', () => {
-  it('should return the correct configuration when all env vars are valid', () => {
+  test('should return the correct configuration when all env vars are valid', () => {
     const config = readConfiguration();
     expect(config).toEqual({
       commerceTools: {
@@ -17,6 +17,7 @@ describe('Test src/utils/config.utils.ts', () => {
         apiKey: process.env.MOLLIE_API_KEY,
         debug: process.env.DEBUG,
         profileId: process.env.MOLLIE_PROFILE_ID,
+        enableCardComponent: process.env.ENABLE_MOLLIE_CARD_COMPONENT,
       },
     });
   });
@@ -53,6 +54,11 @@ describe('Test src/utils/config.utils.ts', () => {
 
   test('should throw an error when DEBUG is not defined', () => {
     delete process.env.DEBUG;
+    expect(() => readConfiguration()).toThrow(CustomError);
+  });
+
+  test('should throw an error when ENABLE_MOLLIE_CARD_COMPONENT is not defined', () => {
+    delete process.env.ENABLE_MOLLIE_CARD_COMPONENT;
     expect(() => readConfiguration()).toThrow(CustomError);
   });
 });

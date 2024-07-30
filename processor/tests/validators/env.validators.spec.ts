@@ -94,10 +94,22 @@ describe('Test env.validators.ts', () => {
       field2: 'debug',
       error: {
         code: 'InvalidDebug',
-        message: 'Mollie debug should be a valid string.',
+        message: 'Mollie debug should be a valid string of either "0" or "1".',
         referencedBy: 'environmentVariables',
       },
-      condition: { min: 1, max: undefined },
+      condition: { min: 1, max: 1 },
+    },
+    {
+      index1: 8,
+      index2: 0,
+      field1: 'mollie',
+      field2: 'enableCardComponent',
+      error: {
+        code: 'InvalidEnableCardComponent',
+        message: 'Enable Mollie card component should be a valid string of either "0" or "1".',
+        referencedBy: 'environmentVariables',
+      },
+      condition: { min: 1, max: 1 },
     },
   ])(
     'should return the correct validation array contains [%s, %s]',
