@@ -1,17 +1,25 @@
 import { jest, expect, describe, it, afterEach } from '@jest/globals';
-import { createMolliePayment, getPaymentById, listPaymentMethods } from '../../src/mollie/payment.mollie';
+import {
+  cancelPayment,
+  createMolliePayment,
+  getPaymentById,
+  listPaymentMethods,
+} from '../../src/mollie/payment.mollie';
 import { MollieApiError, PaymentCreateParams } from '@mollie/api-client';
 import { logger } from '../../src/utils/logger.utils';
+import CustomError from '../../src/errors/custom.error';
 
 const mockPaymentsCreate = jest.fn();
 const mockPaymentsGet = jest.fn();
 const mockPaymentsList = jest.fn();
+const mockPaymentCancel = jest.fn();
 
 jest.mock('../../src/client/mollie.client', () => ({
   initMollieClient: jest.fn(() => ({
     payments: {
       create: mockPaymentsCreate,
       get: mockPaymentsGet,
+      cancel: mockPaymentCancel,
     },
     methods: {
       list: mockPaymentsList,
@@ -87,7 +95,7 @@ describe('createMolliePayment', () => {
       expect(mockPaymentsCreate).toHaveBeenCalledWith(paymentParams);
       expect(logger.error).toHaveBeenCalledTimes(1);
       expect(logger.error).toHaveBeenCalledWith(
-        `SCTM - createMolliePayment - Failed to create payment with unknown errors`,
+        'SCTM - createMolliePayment - Failed to create payment with unknown errors',
         {
           error: new Error('Unknown error'),
         },
@@ -149,7 +157,7 @@ describe('listPaymentMethods', () => {
       expect(mockPaymentsList).toHaveBeenCalledTimes(1);
       expect(mockPaymentsList).toHaveBeenCalledWith(mockOption);
       expect(logger.error).toHaveBeenCalledTimes(1);
-      expect(logger.error).toHaveBeenCalledWith(`SCTM - listPaymentMethods - error: Bad request, field: Test`, {
+      expect(logger.error).toHaveBeenCalledWith('SCTM - listPaymentMethods - error: Bad request, field: Test', {
         error: new MollieApiError('Bad request', { statusCode: 400, field: 'Test' }),
       });
     }
@@ -177,11 +185,61 @@ describe('listPaymentMethods', () => {
       expect(mockPaymentsList).toHaveBeenCalledWith(mockOption);
       expect(logger.error).toHaveBeenCalledTimes(1);
       expect(logger.error).toHaveBeenCalledWith(
-        `SCTM - listPaymentMethods - Failed to list payments with unknown errors`,
+        'SCTM - listPaymentMethods - Failed to list payments with unknown errors',
         {
           error: new Error('Unknown error'),
         },
       );
+    }
+  });
+});
+
+describe('cancelPayment', () => {
+  afterEach(() => {
+    jest.clearAllMocks(); // Clear all mocks after each test
+  });
+
+  it('should call cancel payment with the correct parameters', async () => {
+    await cancelPayment('tr_WDqYK6vllg');
+
+    expect(mockPaymentCancel).toHaveBeenCalledTimes(1);
+    expect(mockPaymentCancel).toHaveBeenCalledWith('tr_WDqYK6vllg');
+  });
+
+  it('should be able to return a proper error message when error which is an instance of MollieApiError occurred', async () => {
+    const errorMessage = 'Something wrong happened';
+    const mollieApiError = new MollieApiError(errorMessage, { field: 'paymentId' });
+
+    (mockPaymentCancel as jest.Mock).mockImplementation(() => {
+      throw mollieApiError;
+    });
+
+    try {
+      await cancelPayment('tr_WDqYK6vllg');
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith(`SCTM - cancelPayment - error: ${errorMessage}, field: paymentId`, {
+        error: mollieApiError,
+      });
+    }
+  });
+
+  it('should be able to return a proper error message when error which is not an instance of MollieApiError occurred', async () => {
+    const unexpectedError = new CustomError(400, 'dummy message');
+
+    (mockPaymentCancel as jest.Mock).mockImplementation(() => {
+      throw unexpectedError;
+    });
+
+    try {
+      await cancelPayment('tr_WDqYK6vllg');
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith('SCTM - cancelPayment - Failed to cancel payments with unknown errors', {
+        error: unexpectedError,
+      });
     }
   });
 });

@@ -1,6 +1,7 @@
 import { determinePaymentAction } from '../utils/paymentAction.utils';
 import { ControllerResponseType } from '../types/controller.types';
 import {
+  handleCancelPayment,
   handleCreatePayment,
   handleCreateRefund,
   handleListPaymentMethodsByPayment,
@@ -47,6 +48,8 @@ export const paymentController = async (
     case ConnectorActions.CreatePayment:
       logger.debug('SCTM - payment processing - paymentController - handleCreatePayment');
       return await handleCreatePayment(ctPayment);
+    case ConnectorActions.CancelPayment:
+      return await handleCancelPayment(ctPayment);
     case ConnectorActions.CreateRefund:
       logger.debug('SCTM - payment processing - paymentController - handleCreateRefund');
       return await handleCreateRefund(ctPayment);

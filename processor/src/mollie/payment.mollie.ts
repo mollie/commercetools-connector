@@ -71,3 +71,21 @@ export const listPaymentMethods = async (options: MethodsListParams): Promise<Li
     throw new CustomError(400, errorMessage);
   }
 };
+
+export const cancelPayment = async (paymentId: string): Promise<Payment> => {
+  try {
+    return await initMollieClient().payments.cancel(paymentId);
+  } catch (error: unknown) {
+    let errorMessage;
+    if (error instanceof MollieApiError) {
+      errorMessage = `SCTM - cancelPayment - error: ${error.message}, field: ${error.field}`;
+    } else {
+      errorMessage = `SCTM - cancelPayment - Failed to cancel payments with unknown errors`;
+    }
+
+    logger.error(errorMessage, {
+      error,
+    });
+    throw new CustomError(400, errorMessage);
+  }
+};

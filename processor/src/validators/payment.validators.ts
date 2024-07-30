@@ -101,12 +101,12 @@ export const checkPaymentMethodInput = (
 };
 
 /**
- * Checks if the given Commercetools Payment object has a valid refund transaction.
+ * Checks if the given Commercetools Payment object has a valid success charge transaction.
  *
  * @param {CTPayment} ctPayment - The Commercetools Payment object to check.
  * @return {true | CustomError} Returns true if the refund transaction is valid, otherwise exception.
  */
-export const checkValidRefundTransaction = (ctPayment: CTPayment): boolean => {
+export const checkValidSuccessChargeTransaction = (ctPayment: CTPayment): boolean => {
   const successChargeTransaction = ctPayment.transactions.find(
     (transaction) => transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Success,
   );
@@ -121,6 +121,17 @@ export const checkValidRefundTransaction = (ctPayment: CTPayment): boolean => {
     );
   }
 
+  return true;
+};
+
+/**
+ * Checks if the given Commercetools Payment object has a valid initial refund transaction for create.
+ *
+ * @param {CTPayment} ctPayment - The Commercetools Payment object to check.
+ * @return {boolean} Returns true if the refund transaction is valid, otherwise throws an exception.
+ * @throws {CustomError} Throws a CustomError with status code 400 if the initial refund transaction is not found or does not have an amount.
+ */
+export const checkValidRefundTransactionForCreate = (ctPayment: CTPayment): boolean => {
   const initialRefundTransaction = ctPayment.transactions.find(
     (transaction) => transaction.type === CTTransactionType.Refund && transaction.state === CTTransactionState.Initial,
   );
@@ -137,6 +148,54 @@ export const checkValidRefundTransaction = (ctPayment: CTPayment): boolean => {
     throw new CustomError(
       400,
       `SCTM - handleCreateRefund - No amount found in initial refund transaction, CommerceTools Transaction ID: ${initialRefundTransaction?.id}`,
+    );
+  }
+
+  return true;
+};
+
+export const checkValidRefundTransactionForCancel = (ctPayment: CTPayment): boolean => {
+  const pendingRefundTransaction = ctPayment.transactions.find(
+    (transaction) => transaction.type === CTTransactionType.Refund && transaction.state === CTTransactionState.Pending,
+  );
+
+  if (!pendingRefundTransaction) {
+    logger.error('SCTM - handleCancelRefund - No pending refund transaction found');
+    throw new CustomError(400, 'SCTM - handleCancelRefund - No pending refund transaction found');
+  }
+
+  if (!pendingRefundTransaction?.interactionId || pendingRefundTransaction?.interactionId.trim() === '') {
+    logger.error(
+      `SCTM - handleCancelRefund - Cannot get the Mollie refund ID from CommerceTools transaction, transaction ID: ${pendingRefundTransaction?.id}`,
+    );
+    throw new CustomError(
+      400,
+      `SCTM - handleCancelRefund - Cannot get the Mollie refund ID from CommerceTools transaction, transaction ID: ${pendingRefundTransaction?.id}`,
+    );
+  }
+
+  return true;
+};
+
+/**
+ * Checks if the given Commercetools Payment object has a valid success charge transaction.
+ *
+ * @param {CTPayment} ctPayment - The Commercetools Payment object to check.
+ * @return {true | CustomError} Returns true if the refund transaction is valid, otherwise exception.
+ */
+export const checkValidPendingAuthorizationTransaction = (ctPayment: CTPayment): boolean => {
+  const pendingAuthorizationTransaction = ctPayment.transactions.find(
+    (transaction) =>
+      transaction.type === CTTransactionType.Authorization && transaction.state === CTTransactionState.Pending,
+  );
+
+  if (!pendingAuthorizationTransaction?.interactionId) {
+    logger.error(
+      `SCTM - handleCancelPayment - Cannot get the Mollie payment ID from CommerceTools transaction, CommerceTools Transaction ID: ${pendingAuthorizationTransaction?.id}.`,
+    );
+    throw new CustomError(
+      400,
+      `SCTM - handleCancelPayment - Cannot get the Mollie payment ID from CommerceTools transaction, CommerceTools Transaction ID: ${pendingAuthorizationTransaction?.id}.`,
     );
   }
 
@@ -225,8 +284,16 @@ export const validateCommerceToolsPaymentPayload = (
     case ConnectorActions.CreatePayment:
       checkPaymentMethodInput(connectorAction, ctPayment);
       break;
+    case ConnectorActions.CancelPayment:
+      checkValidPendingAuthorizationTransaction(ctPayment);
+      break;
     case ConnectorActions.CreateRefund:
-      checkValidRefundTransaction(ctPayment);
+      checkValidSuccessChargeTransaction(ctPayment);
+      checkValidRefundTransactionForCreate(ctPayment);
+      break;
+    case ConnectorActions.CancelRefund:
+      checkValidSuccessChargeTransaction(ctPayment);
+      checkValidRefundTransactionForCancel(ctPayment);
       break;
   }
 
