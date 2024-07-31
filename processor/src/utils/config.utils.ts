@@ -21,7 +21,7 @@ export const readConfiguration = () => {
       apiKey: process.env.MOLLIE_API_KEY as string,
       debug: process.env.DEBUG as string,
       profileId: process.env.MOLLIE_PROFILE_ID as string,
-      enableCardComponent: process.env.ENABLE_MOLLIE_CARD_COMPONENT as string,
+      cardComponent: process.env.MOLLIE_CARD_COMPONENT as string,
     },
   };
 

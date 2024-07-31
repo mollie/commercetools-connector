@@ -69,7 +69,7 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
       ctUpdateActions.push(
         setCustomFields(
           CustomFields.payment.profileId,
-          toBoolean(readConfiguration().mollie.enableCardComponent, true) ? readConfiguration().mollie.profileId : '',
+          toBoolean(readConfiguration().mollie.cardComponent, true) ? readConfiguration().mollie.profileId : '',
         ),
       );
     }

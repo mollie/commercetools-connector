@@ -26,6 +26,6 @@ export type ConnectorEnvVars = {
     apiKey: string;
     profileId: string;
     debug: string;
-    enableCardComponent: string;
+    cardComponent: string;
   };
 };

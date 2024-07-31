@@ -17,7 +17,7 @@ describe('Test src/utils/config.utils.ts', () => {
         apiKey: process.env.MOLLIE_API_KEY,
         debug: process.env.DEBUG,
         profileId: process.env.MOLLIE_PROFILE_ID,
-        enableCardComponent: process.env.ENABLE_MOLLIE_CARD_COMPONENT,
+        cardComponent: process.env.MOLLIE_CARD_COMPONENT,
       },
     });
   });
@@ -57,8 +57,8 @@ describe('Test src/utils/config.utils.ts', () => {
     expect(() => readConfiguration()).toThrow(CustomError);
   });
 
-  test('should throw an error when ENABLE_MOLLIE_CARD_COMPONENT is not defined', () => {
-    delete process.env.ENABLE_MOLLIE_CARD_COMPONENT;
+  test('should throw an error when MOLLIE_CARD_COMPONENT is not defined', () => {
+    delete process.env.MOLLIE_CARD_COMPONENT;
     expect(() => readConfiguration()).toThrow(CustomError);
   });
 });
