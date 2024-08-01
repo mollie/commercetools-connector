@@ -1,4 +1,4 @@
-import { describe, test, expect, jest, beforeEach, afterEach, it } from '@jest/globals';
+import { describe, test, jest, beforeEach, afterEach, expect, it } from '@jest/globals';
 import { CustomFields, Payment } from '@commercetools/platform-sdk';
 import {
   handlePaymentWebhook,
@@ -76,6 +76,8 @@ describe('Test listPaymentMethodsByPayment', () => {
   });
 
   let mockResource: Payment;
+  let mockResponse: Record<string, any>;
+
   test('call listPaymentMethodsByPayment with valid object reference', async () => {
     (listPaymentMethods as jest.Mock).mockReturnValueOnce([
       {
@@ -169,6 +171,192 @@ describe('Test listPaymentMethodsByPayment', () => {
     expect(response?.statusCode).toBe(200);
     expect(response?.actions?.length).toBeGreaterThan(0);
     expect(response?.actions?.[0]?.action).toBe('setCustomField');
+  });
+
+  test('call listPaymentMethodsByPayment with failure result', async () => {
+    mockResource = {
+      id: 'RANDOMID_12345',
+      paymentMethodInfo: {
+        paymentInterface: 'mollie',
+        method: 'card',
+      },
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'VND',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      custom: {
+        fields: {
+          sctm_payment_methods_request: {
+            locale: 'de_DE',
+          },
+        },
+      } as unknown as CustomFields,
+    } as unknown as Payment;
+
+    mockResponse = {
+      statusCode: 200,
+      actions: [
+        {
+          action: 'setCustomField',
+          name: 'sctm_payment_methods_response',
+          value: '{"methods":[]}',
+        },
+      ],
+    };
+
+    const response = await handleListPaymentMethodsByPayment(mockResource);
+
+    expect(response).toBeDefined();
+    expect(response.statusCode).toBe(200);
+    expect(response?.actions?.length).toEqual(0);
+    expect(response?.actions?.[0]?.action).toBe(undefined);
+    expect(JSON.stringify(response)).not.toContain('count');
+  });
+
+  test('call listPaymentMethodsByPayment with cardComponent deactivated', async () => {
+    (listPaymentMethods as jest.Mock).mockReturnValueOnce([
+      {
+        resource: 'method',
+        id: 'creditcard',
+        description: 'creditcard',
+        minimumAmount: { value: '0.01', currency: 'EUR' },
+        maximumAmount: null,
+        image: {
+          size1x: 'https://www.mollie.com/external/icons/payment-methods/creditcard.png',
+          size2x: 'https://www.mollie.com/external/icons/payment-methods/creditcard%402x.png',
+          svg: 'https://www.mollie.com/external/icons/payment-methods/creditcard.svg',
+        },
+        status: 'activated',
+        _links: {
+          self: {
+            href: 'https://api.mollie.com/v2/methods/creditcard',
+            type: 'application/hal+json',
+          },
+        },
+      },
+      {
+        resource: 'method',
+        id: 'giftcard',
+        description: 'Geschenkkarten',
+        minimumAmount: { value: '0.01', currency: 'EUR' },
+        maximumAmount: null,
+        image: {
+          size1x: 'https://www.mollie.com/external/icons/payment-methods/giftcard.png',
+          size2x: 'https://www.mollie.com/external/icons/payment-methods/giftcard%402x.png',
+          svg: 'https://www.mollie.com/external/icons/payment-methods/giftcard.svg',
+        },
+        status: 'activated',
+        _links: {
+          self: {
+            href: 'https://api.mollie.com/v2/methods/giftcard',
+            type: 'application/hal+json',
+          },
+        },
+      },
+    ]);
+
+    mockResource = {
+      id: 'RANDOMID_12345',
+      paymentMethodInfo: {
+        paymentInterface: 'mollie',
+        method: 'card',
+      },
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      custom: {
+        fields: {
+          sctm_payment_methods_request: {
+            locale: 'de_DE',
+          },
+        },
+      } as unknown as CustomFields,
+    } as unknown as Payment;
+
+    const response = await handleListPaymentMethodsByPayment(mockResource);
+    expect(response).toBeDefined();
+    expect(response.statusCode).toBe(200);
+    expect(response?.actions?.length).toBeGreaterThan(0);
+    expect(response?.actions?.[0]?.action).toBe('setCustomField');
+    expect(JSON.stringify(response)).toContain('creditcard');
+  });
+
+  test('call listPaymentMethodsByPayment with cardComponent activated', async () => {
+    (listPaymentMethods as jest.Mock).mockReturnValueOnce([
+      {
+        resource: 'method',
+        id: 'creditcard',
+        description: 'creditcard',
+        minimumAmount: { value: '0.01', currency: 'EUR' },
+        maximumAmount: null,
+        image: {
+          size1x: 'https://www.mollie.com/external/icons/payment-methods/creditcard.png',
+          size2x: 'https://www.mollie.com/external/icons/payment-methods/creditcard%402x.png',
+          svg: 'https://www.mollie.com/external/icons/payment-methods/creditcard.svg',
+        },
+        status: 'activated',
+        _links: {
+          self: {
+            href: 'https://api.mollie.com/v2/methods/creditcard',
+            type: 'application/hal+json',
+          },
+        },
+      },
+      {
+        resource: 'method',
+        id: 'giftcard',
+        description: 'Geschenkkarten',
+        minimumAmount: { value: '0.01', currency: 'EUR' },
+        maximumAmount: null,
+        image: {
+          size1x: 'https://www.mollie.com/external/icons/payment-methods/giftcard.png',
+          size2x: 'https://www.mollie.com/external/icons/payment-methods/giftcard%402x.png',
+          svg: 'https://www.mollie.com/external/icons/payment-methods/giftcard.svg',
+        },
+        status: 'activated',
+        _links: {
+          self: {
+            href: 'https://api.mollie.com/v2/methods/giftcard',
+            type: 'application/hal+json',
+          },
+        },
+      },
+    ]);
+
+    mockResource = {
+      id: 'RANDOMID_12345',
+      paymentMethodInfo: {
+        paymentInterface: 'mollie',
+        method: 'card',
+      },
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      custom: {
+        fields: {
+          sctm_payment_methods_request: {
+            locale: 'de_DE',
+          },
+        },
+      } as unknown as CustomFields,
+    } as unknown as Payment;
+
+    process.env.MOLLIE_CARD_COMPONENT = '1';
+
+    const response = await handleListPaymentMethodsByPayment(mockResource);
+    expect(response).toBeDefined();
+    expect(response.statusCode).toBe(200);
+    expect(response?.actions?.length).toBeGreaterThan(0);
+    expect(response?.actions?.[0]?.action).toBe('setCustomField');
+    expect(JSON.stringify(response)).not.toContain('creditcard');
   });
 });
 
