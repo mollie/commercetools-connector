@@ -76,7 +76,6 @@ describe('Test listPaymentMethodsByPayment', () => {
   });
 
   let mockResource: Payment;
-  let mockResponse: Record<string, any>;
 
   test('call listPaymentMethodsByPayment with valid object reference', async () => {
     (listPaymentMethods as jest.Mock).mockReturnValueOnce([
@@ -194,17 +193,6 @@ describe('Test listPaymentMethodsByPayment', () => {
         },
       } as unknown as CustomFields,
     } as unknown as Payment;
-
-    mockResponse = {
-      statusCode: 200,
-      actions: [
-        {
-          action: 'setCustomField',
-          name: 'sctm_payment_methods_response',
-          value: '{"methods":[]}',
-        },
-      ],
-    };
 
     const response = await handleListPaymentMethodsByPayment(mockResource);
 
