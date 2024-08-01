@@ -426,7 +426,7 @@ describe('Test createPayment', () => {
     });
 
     (createMollieCreatePaymentParams as jest.Mock).mockReturnValueOnce({
-      method: 'creditcard'
+      method: 'creditcard',
     });
 
     const actual = await handleCreatePayment(CTPayment);
@@ -615,10 +615,18 @@ describe('Test getPaymentCancelActions', () => {
       const paymentService = jest.requireActual(
         '../../src/service/payment.service.ts',
       ) as typeof import('../../src/service/payment.service.ts');
-      return paymentService.getPaymentCancelActions(CTPayment.transactions[0], CTPayment.transactions[1], ConnectorActions.CancelRefund);
+      return paymentService.getPaymentCancelActions(
+        CTPayment.transactions[0],
+        CTPayment.transactions[1],
+        ConnectorActions.CancelRefund,
+      );
     });
 
-    const actual = getPaymentCancelActions(CTPayment.transactions[0], CTPayment.transactions[1], ConnectorActions.CancelRefund);
+    const actual = getPaymentCancelActions(
+      CTPayment.transactions[0],
+      CTPayment.transactions[1],
+      ConnectorActions.CancelRefund,
+    );
     expect(actual).toHaveLength(3);
 
     expect(actual[0]).toEqual({
@@ -636,7 +644,7 @@ describe('Test getPaymentCancelActions', () => {
     expect(actual[2]).toEqual({
       action: 'setTransactionCustomType',
       type: {
-        key: CustomFieldName.paymentCancelReason
+        key: CustomFieldName.paymentCancelReason,
       },
       transactionId: CTPayment.transactions[0].id,
       fields: {
@@ -702,7 +710,7 @@ describe('Test handlePaymentCancelRefund', () => {
             id: 'sctm_payment_cancel_reason',
           },
           fields: {
-            reasonText: "dummy reason",
+            reasonText: 'dummy reason',
           },
         },
       },
@@ -845,7 +853,7 @@ describe('Test handlePaymentWebhook', () => {
         currency: 'EUR',
         value: '10.00',
       },
-      captureMode: 'manual'
+      captureMode: 'manual',
     });
     const ctPayment = {
       transactions: [],
@@ -1103,12 +1111,12 @@ describe('Test handleCancelPayment', () => {
         {
           action: 'setTransactionCustomType',
           type: {
-            key: 'sctm_payment_cancel_reason'
+            key: 'sctm_payment_cancel_reason',
           },
           transactionId: CTPayment.transactions[1].id,
           fields: {
             reasonText: customFieldReason.reasonText,
-            statusText: CancelStatusText
+            statusText: CancelStatusText,
           },
         },
       ],
