@@ -26,6 +26,7 @@ import { logger } from '../../src/utils/logger.utils';
 import { getPaymentByMolliePaymentId, updatePayment } from '../../src/commercetools/payment.commercetools';
 import { CreateParameters } from '@mollie/api-client/dist/types/src/binders/payments/refunds/parameters';
 import { getPaymentExtension } from '../../src/commercetools/extensions.commercetools';
+import { createMollieCreatePaymentParams } from '../../src/utils/map.utils';
 
 const uuid = '5c8b0375-305a-4f19-ae8e-07806b101999';
 jest.mock('uuid', () => ({
@@ -424,6 +425,10 @@ describe('Test createPayment', () => {
       },
     });
 
+    (createMollieCreatePaymentParams as jest.Mock).mockReturnValueOnce({
+      method: 'creditcard'
+    });
+
     const actual = await handleCreatePayment(CTPayment);
 
     const ctActions = [
@@ -549,8 +554,11 @@ describe('Test getPaymentCancelActions', () => {
     jest.clearAllMocks();
   });
 
-  test('should throw an error if the custom field is not able to be parsed', () => {
-    const transactionCustomFieldName = CustomFieldName.paymentCancelReason;
+  test('should return an array of actions', async () => {
+    const customFieldValue = {
+      reasonText: 'dummy1',
+      test: 'test123',
+    };
 
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
@@ -574,71 +582,11 @@ describe('Test getPaymentCancelActions', () => {
             centAmount: 1000,
             fractionDigits: 2,
           },
-          state: 'Failure',
-          custom: {
-            type: {
-              typeId: 'type',
-              id: 'custom-field-1',
-            },
-            fields: {
-              sctm_payment_cancel_refund: 'asdasdasd',
-            },
-          },
+          state: 'Pending',
         },
-      ],
-      interfaceInteractions: [],
-      paymentMethodInfo: {
-        method: 'creditcard',
-      },
-    };
-
-    (getPaymentCancelActions as jest.Mock).mockImplementationOnce(() => {
-      const paymentService = jest.requireActual(
-        '../../src/service/payment.service.ts',
-      ) as typeof import('../../src/service/payment.service.ts');
-      return paymentService.getPaymentCancelActions(CTPayment.transactions[0], ConnectorActions.CancelRefund);
-    });
-
-    try {
-      getPaymentCancelActions(CTPayment.transactions[0], ConnectorActions.CancelRefund);
-    } catch (error: unknown) {
-      expect(getPaymentCancelActions).toBeCalledTimes(1);
-      expect(error).toBeInstanceOf(CustomError);
-      expect((error as CustomError).message).toBe(
-        `SCTM - handleCancelRefund - Failed to parse the JSON string from the custom field ${transactionCustomFieldName}.`,
-      );
-      expect(logger.error).toBeCalledTimes(1);
-      expect(logger.error).toBeCalledWith(
-        `SCTM - handleCancelRefund - Failed to parse the JSON string from the custom field ${transactionCustomFieldName}.`,
         {
-          commerceToolsId: '5c8b0375-305a-4f19-ae8e-07806b101999',
-        },
-      );
-    }
-  });
-
-  test('should return an array of actions', async () => {
-    const customFieldValue = {
-      reasonText: 'dummy1',
-      test: 'test123',
-    };
-
-    const CTPayment: Payment = {
-      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
-      version: 1,
-      createdAt: '2024-07-04T14:07:35.625Z',
-      lastModifiedAt: '2024-07-04T14:07:35.625Z',
-      amountPlanned: {
-        type: 'centPrecision',
-        currencyCode: 'EUR',
-        centAmount: 1000,
-        fractionDigits: 2,
-      },
-      paymentStatus: {},
-      transactions: [
-        {
-          id: '5c8b0375-305a-4f19-ae8e-07806b101999',
-          type: 'Authorization',
+          id: '5c8b0375-305a-4f19-ae8e-07806b101929',
+          type: 'CancelAuthorization',
           amount: {
             type: 'centPrecision',
             currencyCode: 'EUR',
@@ -649,10 +597,10 @@ describe('Test getPaymentCancelActions', () => {
           custom: {
             type: {
               typeId: 'type',
-              id: 'custom-field-1',
+              id: 'sctm_payment_cancel_reason',
             },
             fields: {
-              sctm_payment_cancel_reason: JSON.stringify(customFieldValue),
+              reasonText: customFieldValue.reasonText,
             },
           },
         },
@@ -667,11 +615,11 @@ describe('Test getPaymentCancelActions', () => {
       const paymentService = jest.requireActual(
         '../../src/service/payment.service.ts',
       ) as typeof import('../../src/service/payment.service.ts');
-      return paymentService.getPaymentCancelActions(CTPayment.transactions[0], ConnectorActions.CancelRefund);
+      return paymentService.getPaymentCancelActions(CTPayment.transactions[0], CTPayment.transactions[1], ConnectorActions.CancelRefund);
     });
 
-    const actual = getPaymentCancelActions(CTPayment.transactions[0], ConnectorActions.CancelRefund);
-    expect(actual).toHaveLength(2);
+    const actual = getPaymentCancelActions(CTPayment.transactions[0], CTPayment.transactions[1], ConnectorActions.CancelRefund);
+    expect(actual).toHaveLength(3);
 
     expect(actual[0]).toEqual({
       action: 'changeTransactionState',
@@ -680,13 +628,21 @@ describe('Test getPaymentCancelActions', () => {
     });
 
     expect(actual[1]).toEqual({
-      action: 'setTransactionCustomField',
+      action: 'changeTransactionState',
+      transactionId: CTPayment.transactions[1].id,
+      state: CTTransactionState.Success,
+    });
+
+    expect(actual[2]).toEqual({
+      action: 'setTransactionCustomType',
+      type: {
+        key: CustomFieldName.paymentCancelReason
+      },
       transactionId: CTPayment.transactions[0].id,
-      name: CustomFieldName.paymentCancelReason,
-      value: JSON.stringify({
+      fields: {
         reasonText: customFieldValue.reasonText,
         statusText: CancelStatusText,
-      }),
+      },
     });
   });
 });
@@ -728,6 +684,27 @@ describe('Test handlePaymentCancelRefund', () => {
           fractionDigits: 2,
         },
         state: 'Pending',
+      },
+      {
+        id: '5c8b0375-305a-4f19-ae8e-07806b102000',
+        type: 'CancelAuthorization',
+        interactionId: 're_4qqhO89gsT',
+        amount: {
+          type: 'centPrecision',
+          currencyCode: 'EUR',
+          centAmount: 1000,
+          fractionDigits: 2,
+        },
+        state: 'Initial',
+        custom: {
+          type: {
+            typeId: 'type',
+            id: 'sctm_payment_cancel_reason',
+          },
+          fields: {
+            reasonText: "dummy reason",
+          },
+        },
       },
     ],
     interfaceInteractions: [],
@@ -859,6 +836,36 @@ describe('Test handlePaymentWebhook', () => {
     expect(logger.debug).toBeCalledWith(`handlePaymentWebhook - No actions needed`);
   });
 
+  it('should handle for manual capture payment', async () => {
+    const fakePaymentId = 'tr_XXXX';
+    (getPaymentById as jest.Mock).mockReturnValue({
+      id: fakePaymentId,
+      status: 'authorized',
+      amount: {
+        currency: 'EUR',
+        value: '10.00',
+      },
+      captureMode: 'manual'
+    });
+    const ctPayment = {
+      transactions: [],
+    };
+    (getPaymentByMolliePaymentId as jest.Mock).mockReturnValue(ctPayment);
+    await handlePaymentWebhook(fakePaymentId);
+    expect(updatePayment as jest.Mock).toBeCalledTimes(1);
+    expect(updatePayment as jest.Mock).toBeCalledWith(ctPayment, [
+      {
+        action: 'addTransaction',
+        transaction: {
+          amount: { centAmount: 1000, currencyCode: 'EUR', fractionDigits: 2, type: 'centPrecision' },
+          interactionId: 'tr_XXXX',
+          state: 'Success',
+          type: 'Authorization',
+        },
+      },
+    ]);
+  });
+
   it('should handle with add action', async () => {
     const fakePaymentId = 'tr_XXXX';
     (getPaymentById as jest.Mock).mockReturnValue({
@@ -939,6 +946,18 @@ describe('Test handleCancelPayment', () => {
     transactions: [
       {
         id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        type: 'Charge',
+        interactionId: 'tr_123123',
+        amount: {
+          type: 'centPrecision',
+          currencyCode: 'EUR',
+          centAmount: 1000,
+          fractionDigits: 2,
+        },
+        state: 'Success',
+      },
+      {
+        id: '5c8b0375-305a-4f19-ae8e-07806b101999',
         type: 'Authorization',
         interactionId: 'tr_123123',
         amount: {
@@ -947,16 +966,7 @@ describe('Test handleCancelPayment', () => {
           centAmount: 1000,
           fractionDigits: 2,
         },
-        state: 'Pending',
-        custom: {
-          type: {
-            typeId: 'type',
-            id: 'sctm_payment_cancel_reason',
-          },
-          fields: {
-            sctm_payment_cancel_reason: JSON.stringify(customFieldReason),
-          },
-        },
+        state: 'Success',
       },
       {
         id: '5c8b0375-305a-4f19-ae8e-07806b102000',
@@ -969,6 +979,15 @@ describe('Test handleCancelPayment', () => {
           fractionDigits: 2,
         },
         state: 'Initial',
+        custom: {
+          type: {
+            typeId: 'type',
+            id: 'sctm_payment_cancel_reason',
+          },
+          fields: {
+            reasonText: customFieldReason.reasonText,
+          },
+        },
       },
     ],
     interfaceInteractions: [],
@@ -1073,17 +1092,24 @@ describe('Test handleCancelPayment', () => {
       actions: [
         {
           action: 'changeTransactionState',
-          transactionId: CTPayment.transactions[0].id,
+          transactionId: CTPayment.transactions[1].id,
           state: CTTransactionState.Failure,
         },
         {
-          action: 'setTransactionCustomField',
-          transactionId: CTPayment.transactions[0].id,
-          name: 'sctm_payment_cancel_reason',
-          value: JSON.stringify({
-            ...customFieldReason,
-            statusText: CancelStatusText,
-          }),
+          action: 'changeTransactionState',
+          transactionId: CTPayment.transactions[2].id,
+          state: CTTransactionState.Success,
+        },
+        {
+          action: 'setTransactionCustomType',
+          type: {
+            key: 'sctm_payment_cancel_reason'
+          },
+          transactionId: CTPayment.transactions[1].id,
+          fields: {
+            reasonText: customFieldReason.reasonText,
+            statusText: CancelStatusText
+          },
         },
       ],
     });

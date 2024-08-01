@@ -10,6 +10,9 @@ import {
 import { initMollieClient } from '../client/mollie.client';
 import CustomError from '../errors/custom.error';
 import { logger } from '../utils/logger.utils';
+import axios, { AxiosError } from 'axios';
+import { readConfiguration } from '../utils/config.utils';
+import { LIBRARY_NAME, LIBRARY_VERSION } from '../utils/constant.utils';
 
 /**
  * Creates a Mollie payment using the provided payment parameters.
@@ -72,13 +75,23 @@ export const listPaymentMethods = async (options: MethodsListParams): Promise<Li
   }
 };
 
-export const cancelPayment = async (paymentId: string): Promise<Payment> => {
+export const cancelPayment = async (paymentId: string): Promise<void> => {
   try {
-    return await initMollieClient().payments.cancel(paymentId);
+    // const response = await initMollieClient().payments.cancel(paymentId);
+    // console.log('cancelled payment', response);
+    await initMollieClient().payments.cancel(paymentId);
   } catch (error: unknown) {
     let errorMessage;
     if (error instanceof MollieApiError) {
       errorMessage = `SCTM - cancelPayment - error: ${error.message}, field: ${error.field}`;
+    } else if (
+      // TODO: This is just a temporary fix while waiting Mollie to update the Client
+      // Currently this call returned with status code 202 and an empty response body
+      // While the Client expecting some resource there, that's why it failed and throw exception
+      error instanceof Error &&
+      error.message === 'Received unexpected response from the server with resource undefined'
+    ) {
+      return;
     } else {
       errorMessage = `SCTM - cancelPayment - Failed to cancel payments with unknown errors`;
     }
@@ -86,6 +99,38 @@ export const cancelPayment = async (paymentId: string): Promise<Payment> => {
     logger.error(errorMessage, {
       error,
     });
+
+    throw new CustomError(400, errorMessage);
+  }
+};
+
+export const createPaymentWithCustomMethod = async (paymentParams: PaymentCreateParams) => {
+  try {
+    const { mollie } = readConfiguration();
+
+    const headers = {
+      Authorization: `Bearer ${mollie.apiKey}`,
+      versionStrings: `${LIBRARY_NAME}/${LIBRARY_VERSION}`,
+    };
+
+    // `include` is a query param, not a key-value of the payload
+    // And with method `blik`, `include` is not needed
+    delete paymentParams.include;
+
+    return await axios.post('https://api.mollie.com/v2/payments', paymentParams, { headers });
+  } catch (error: unknown) {
+    let errorMessage;
+
+    if (error instanceof AxiosError) {
+      errorMessage = `SCTM - createPaymentWithCustomMethod - error: ${error.response?.data?.detail}, field: ${error.response?.data?.field}`;
+    } else {
+      errorMessage = `SCTM - cancelPayment - Failed to cancel payments with unknown errors`;
+    }
+
+    logger.error(errorMessage, {
+      error,
+    });
+
     throw new CustomError(400, errorMessage);
   }
 };

@@ -50,7 +50,7 @@ Target endpoint: `https://api.mollie.com/v2/payments/{paymentId}/refunds/{id}`
 ## Representation: CT Payment  
 
 <details>
-  <summary>Example Payment with initial CancelAuthorization transaction</summary>
+  <summary>Example Payment object to trigger cancelling the refund</summary>
 
 ```json
 {
@@ -143,4 +143,5 @@ When order is successfully cancelled on Mollie, we update commercetools payment 
 | Action name (CT)                 | Value                                                                      |
 | -------------------------------- | -------------------------------------------------------------------------- |
 | `changeTransactionState`         | `transactionId: <pendingRefundTransactionId>, state: 'Failure'`            |
-| `setTransactionCustomField`     | `transactionId: <pendingRefundTransactionId>, name:sctm_payment_cancel_refund, value: "{\"reasonText\":\"Cancel refund reason\",\"statusText\":\"Cancelled from shop side\"}"`                                   |
+| `changeTransactionState`         | `transactionId: <initialCancelAuthorizationTransactionId>, state: 'Success'`            |
+| `setTransactionCustomType`     | `transactionId: <pendingRefundTransactionId>, type.key:sctm_payment_cancel_refund, fields: {reasonText: "cancellation reason", statusText: "cancelled from shop side"}`                                   |

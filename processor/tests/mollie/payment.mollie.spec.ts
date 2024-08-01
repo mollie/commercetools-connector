@@ -206,7 +206,7 @@ describe('cancelPayment', () => {
     expect(mockPaymentCancel).toHaveBeenCalledWith('tr_WDqYK6vllg');
   });
 
-  it('should be able to return a proper error message when error which is an instance of MollieApiError occurred', async () => {
+  it('should be able to return a proper error message when error is an instance of MollieApiError occurred', async () => {
     const errorMessage = 'Something wrong happened';
     const mollieApiError = new MollieApiError(errorMessage, { field: 'paymentId' });
 
@@ -225,7 +225,7 @@ describe('cancelPayment', () => {
     }
   });
 
-  it('should be able to return a proper error message when error which is not an instance of MollieApiError occurred', async () => {
+  it('should be able to return a proper error message when error is not an instance of MollieApiError occurred', async () => {
     const unexpectedError = new CustomError(400, 'dummy message');
 
     (mockPaymentCancel as jest.Mock).mockImplementation(() => {
@@ -241,5 +241,18 @@ describe('cancelPayment', () => {
         error: unexpectedError,
       });
     }
+  });
+
+  // TODO: Relate to Mollie Client issue
+  it('should not throw any error or terminate the process if the Mollie API returns an unexpected error with specific message', async () => {
+    const unexpectedError = new Error('Received unexpected response from the server with resource undefined');
+
+    (mockPaymentCancel as jest.Mock).mockImplementation(() => {
+      throw unexpectedError;
+    });
+
+    const response = await cancelPayment('tr_WDqYK6vllg');
+    expect(response).toBe(undefined);
+    expect(logger.error).toBeCalledTimes(0);
   });
 });

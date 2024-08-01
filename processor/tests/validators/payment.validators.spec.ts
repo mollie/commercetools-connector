@@ -11,7 +11,7 @@ import {
   validateCommerceToolsPaymentPayload,
   checkValidRefundTransactionForCreate,
   checkValidRefundTransactionForCancel,
-  checkValidPendingAuthorizationTransaction,
+  checkValidSuccessAuthorizationTransaction,
 } from './../../src/validators/payment.validators';
 import { describe, it, expect, jest, afterEach } from '@jest/globals';
 import CustomError from '../../src/errors/custom.error';
@@ -502,7 +502,7 @@ describe('validateCommerceToolsPaymentPayload', () => {
   jest.spyOn(paymentValidators, 'checkValidSuccessChargeTransaction');
   jest.spyOn(paymentValidators, 'checkValidRefundTransactionForCreate');
   jest.spyOn(paymentValidators, 'checkValidRefundTransactionForCancel');
-  jest.spyOn(paymentValidators, 'checkValidPendingAuthorizationTransaction');
+  jest.spyOn(paymentValidators, 'checkValidSuccessAuthorizationTransaction');
 
   it('should not call the checkPaymentMethodInput when the action is not "CreatePayment"', () => {
     try {
@@ -894,7 +894,7 @@ describe('validateCommerceToolsPaymentPayload', () => {
     },
   );
 
-  it('should call the checkValidPendingAuthorizationTransaction when the action is "CancelPayment" and throw error if the mollie payment id is not found', () => {
+  it('should call the checkValidSuccessAuthorizationTransaction when the action is "CancelPayment" and throw error if the mollie payment id is not found', () => {
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
       version: 1,
@@ -917,7 +917,7 @@ describe('validateCommerceToolsPaymentPayload', () => {
             centAmount: 1000,
             fractionDigits: 2,
           },
-          state: 'Pending',
+          state: 'Success',
           // interactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
         },
       ],
@@ -930,7 +930,7 @@ describe('validateCommerceToolsPaymentPayload', () => {
     try {
       validateCommerceToolsPaymentPayload('Update', ConnectorActions.CancelPayment, CTPayment);
     } catch (error: unknown) {
-      expect(checkValidPendingAuthorizationTransaction).toBeCalledTimes(1);
+      expect(checkValidSuccessAuthorizationTransaction).toBeCalledTimes(1);
       expect(logger.error).toBeCalledTimes(1);
       expect(logger.error).toBeCalledWith(
         `SCTM - handleCancelPayment - Cannot get the Mollie payment ID from CommerceTools transaction, CommerceTools Transaction ID: ${CTPayment.transactions[0].id}.`,
@@ -943,7 +943,7 @@ describe('validateCommerceToolsPaymentPayload', () => {
     }
   });
 
-  it('should call the checkValidPendingAuthorizationTransaction when the action is "CancelPayment" and return true if the mollie payment id is found', () => {
+  it('should call the checkValidSuccessAuthorizationTransaction when the action is "CancelPayment" and return true if the mollie payment id is found', () => {
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
       version: 1,
@@ -966,7 +966,7 @@ describe('validateCommerceToolsPaymentPayload', () => {
             centAmount: 1000,
             fractionDigits: 2,
           },
-          state: 'Pending',
+          state: 'Success',
           interactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
         },
       ],
@@ -977,8 +977,8 @@ describe('validateCommerceToolsPaymentPayload', () => {
     };
 
     validateCommerceToolsPaymentPayload('Update', ConnectorActions.CancelPayment, CTPayment);
-    expect(checkValidPendingAuthorizationTransaction).toBeCalledTimes(1);
-    expect(checkValidPendingAuthorizationTransaction).toBeCalledWith(CTPayment);
-    expect(checkValidPendingAuthorizationTransaction).toReturnWith(true);
+    expect(checkValidSuccessAuthorizationTransaction).toBeCalledTimes(1);
+    expect(checkValidSuccessAuthorizationTransaction).toBeCalledWith(CTPayment);
+    expect(checkValidSuccessAuthorizationTransaction).toReturnWith(true);
   });
 });

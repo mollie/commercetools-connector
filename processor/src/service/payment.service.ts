@@ -8,7 +8,13 @@ import {
 } from '../utils/map.utils';
 import { CentPrecisionMoney, Extension, Payment, UpdateAction } from '@commercetools/platform-sdk';
 import CustomError from '../errors/custom.error';
-import { cancelPayment, createMolliePayment, getPaymentById, listPaymentMethods } from '../mollie/payment.mollie';
+import {
+  cancelPayment,
+  createMolliePayment,
+  createPaymentWithCustomMethod,
+  getPaymentById,
+  listPaymentMethods,
+} from '../mollie/payment.mollie';
 import {
   AddTransaction,
   ChangeTransactionState,
@@ -31,7 +37,7 @@ import {
   changeTransactionState,
   changeTransactionTimestamp,
   setCustomFields,
-  setTransactionCustomField,
+  setTransactionCustomType,
 } from '../commercetools/action.commercetools';
 import { readConfiguration } from '../utils/config.utils';
 import { toBoolean } from 'validator';
@@ -126,8 +132,22 @@ const getPaymentStatusUpdateAction = (
   const { id: molliePaymentId, status: molliePaymentStatus, method: paymentMethod } = molliePayment;
 
   // Determine if paynow or paylater method
-  const isPayLater = PAY_LATER_ENUMS.includes(paymentMethod as PaymentMethod);
+  const manualCapture =
+    PAY_LATER_ENUMS.includes(paymentMethod as PaymentMethod) ||
+    ('captureMode' in molliePayment && molliePayment.captureMode === 'manual');
   const matchingTransaction = ctTransactions.find((transaction) => transaction.interactionId === molliePaymentId);
+
+  if (manualCapture) {
+    return {
+      action: UpdateActionKey.AddTransaction,
+      transaction: {
+        amount: makeCTMoney(molliePayment.amount),
+        state: molliePaymentToCTStatusMap[molliePaymentStatus],
+        type: CTTransactionType.Authorization,
+        interactionId: molliePaymentId,
+      },
+    };
+  }
 
   // If no corresponding CT Transaction, create it
   if (matchingTransaction === undefined) {
@@ -136,7 +156,7 @@ const getPaymentStatusUpdateAction = (
       transaction: {
         amount: makeCTMoney(molliePayment.amount),
         state: molliePaymentToCTStatusMap[molliePaymentStatus],
-        type: isPayLater ? CTTransactionType.Authorization : CTTransactionType.Charge,
+        type: manualCapture ? CTTransactionType.Authorization : CTTransactionType.Charge,
         interactionId: molliePaymentId,
       },
     };
@@ -163,7 +183,18 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
 
   const paymentParams = createMollieCreatePaymentParams(ctPayment, extensionUrl);
 
-  const molliePayment = await createMolliePayment(paymentParams);
+  let molliePayment;
+  if (PaymentMethod[paymentParams.method as PaymentMethod]) {
+    logger.debug('SCTM - handleCreatePayment - Attempt creating a payment with method defined in Mollie NodeJS Client');
+
+    molliePayment = await createMolliePayment(paymentParams);
+  } else {
+    logger.debug(
+      'SCTM - handleCreatePayment - Attempt creating a payment with method undefined in Mollie NodeJS Client but still supported by Mollie',
+    );
+
+    molliePayment = await createPaymentWithCustomMethod(paymentParams);
+  }
 
   const ctActions = await getCreatePaymentUpdateAction(molliePayment, ctPayment);
 
@@ -181,7 +212,7 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
  * @return {Promise<UpdateAction[]>} A promise that resolves to an array of update actions.
  * @throws {Error} If the original transaction is not found.
  */
-export const getCreatePaymentUpdateAction = async (molliePayment: MPayment, CTPayment: Payment) => {
+export const getCreatePaymentUpdateAction = async (molliePayment: MPayment | any, CTPayment: Payment) => {
   try {
     // Find the original transaction which triggered create order
     const originalTransaction = CTPayment.transactions?.find((transaction) => {
@@ -274,6 +305,11 @@ export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<Con
     (transaction) => transaction.type === CTTransactionType.Refund && transaction.state === CTTransactionState.Pending,
   );
 
+  const initialCancelAuthorization = ctPayment.transactions.find(
+    (transaction) =>
+      transaction.type === CTTransactionType.CancelAuthorization && transaction.state === CTTransactionState.Initial,
+  );
+
   const paymentGetRefundParams: CancelParameters = {
     paymentId: successChargeTransaction?.interactionId as string,
   };
@@ -301,6 +337,7 @@ export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<Con
 
   const ctActions: UpdateAction[] = getPaymentCancelActions(
     pendingRefundTransaction as Transaction,
+    initialCancelAuthorization as Transaction,
     ConnectorActions.CancelRefund,
   );
 
@@ -318,7 +355,11 @@ export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<Con
  * @return {Action[]} An array of actions including updating the transaction state and setting the transaction custom field value.
  * @throws {CustomError} If the JSON string from the custom field cannot be parsed.
  */
-export const getPaymentCancelActions = (transaction: Transaction, action: DeterminePaymentActionType) => {
+export const getPaymentCancelActions = (
+  targetTransaction: Transaction,
+  triggerTransaction: Transaction,
+  action: DeterminePaymentActionType,
+) => {
   const transactionCustomFieldName = CustomFields.paymentCancelReason;
 
   let errorPrefix;
@@ -328,37 +369,36 @@ export const getPaymentCancelActions = (transaction: Transaction, action: Determ
     errorPrefix = 'SCTM - handleCancelRefund';
   }
 
-  const transactionCustomFieldValue = parseStringToJsonObject(
-    transaction.custom?.fields[transactionCustomFieldName],
-    transactionCustomFieldName,
-    errorPrefix,
-    transaction.id,
-  );
-
   const newTransactionCustomFieldValue = {
-    reasonText: transactionCustomFieldValue.reasonText,
+    reasonText: triggerTransaction.custom?.fields?.reasonText,
     statusText: CancelStatusText,
   };
 
   return [
-    // Update transaction state
-    changeTransactionState(transaction.id, CTTransactionState.Failure),
+    // Update transaction state to failure
+    // For cancelling payment, it will be the successAuthorization
+    // For cancelling refund, it will be the pendingRefundTransaction
+    changeTransactionState(targetTransaction.id, CTTransactionState.Failure),
+    // Update transaction state to success
+    // For both cancelling payment and cancelling refund, it will be the InitialCancelAuthorization
+    changeTransactionState(triggerTransaction.id, CTTransactionState.Success),
     // Set transaction custom field value
-    setTransactionCustomField(
-      transaction.id,
-      transactionCustomFieldName,
-      JSON.stringify(newTransactionCustomFieldValue),
-    ),
+    setTransactionCustomType(targetTransaction.id, transactionCustomFieldName, newTransactionCustomFieldValue),
   ];
 };
 
 export const handleCancelPayment = async (ctPayment: Payment): Promise<ControllerResponseType> => {
-  const pendingAuthorizationTransaction = ctPayment.transactions.find(
+  const successAuthorizationTransaction = ctPayment.transactions.find(
     (transaction) =>
-      transaction.type === CTTransactionType.Authorization && transaction.state === CTTransactionState.Pending,
+      transaction.type === CTTransactionType.Authorization && transaction.state === CTTransactionState.Success,
   );
 
-  const molliePayment = await getPaymentById(pendingAuthorizationTransaction?.interactionId as string);
+  const initialCancelAuthorizationTransaction = ctPayment.transactions.find(
+    (transaction) =>
+      transaction.type === CTTransactionType.CancelAuthorization && transaction.state === CTTransactionState.Initial,
+  );
+
+  const molliePayment = await getPaymentById(successAuthorizationTransaction?.interactionId as string);
 
   if (molliePayment.isCancelable === false) {
     logger.error(`SCTM - handleCancelPayment - Payment is not cancelable, Mollie Payment ID: ${molliePayment.id}`, {
@@ -375,7 +415,8 @@ export const handleCancelPayment = async (ctPayment: Payment): Promise<Controlle
   await cancelPayment(molliePayment.id);
 
   const ctActions: UpdateAction[] = getPaymentCancelActions(
-    pendingAuthorizationTransaction as Transaction,
+    successAuthorizationTransaction as Transaction,
+    initialCancelAuthorizationTransaction as Transaction,
     ConnectorActions.CancelPayment,
   );
 

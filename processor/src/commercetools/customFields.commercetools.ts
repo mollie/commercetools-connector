@@ -200,8 +200,8 @@ export async function createCustomPaymentTransactionCancelReasonType(): Promise<
         body: {
           key: customFieldName,
           name: {
-            en: 'SCTM - Payment Cancel Refund on Transaction custom fields',
-            de: 'SCTM - Zahlung stornieren Rückerstattung bei benutzerdefinierten Transaktionsfeldern',
+            en: 'SCTM - Payment cancel reason on Transaction custom fields',
+            de: 'SCTM - Grund für Zahlungsstornierung in benutzerdefinierten Transaktionsfeldern',
           },
           description: {
             en: 'Showing the reason of cancelling and identifying if the cancel action came from CommerceTools or Mollie',
