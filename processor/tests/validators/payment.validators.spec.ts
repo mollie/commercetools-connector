@@ -279,7 +279,9 @@ describe('checkPaymentMethodInput', () => {
 });
 
 describe('checkPaymentMethodSpecificParameters', () => {
-  it('should return false if the payment method is creditcard and cardToken is not defined in Custom Field', () => {
+  it('should return false if the payment method is creditcard and card component is enabled and cardToken is not defined in Custom Field', () => {
+    process.env.MOLLIE_CARD_COMPONENT = '1';
+    
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
       version: 1,

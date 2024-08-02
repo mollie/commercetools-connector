@@ -7,6 +7,8 @@ import { ConnectorActions, CustomFields } from '../utils/constant.utils';
 import { DeterminePaymentActionType } from '../types/controller.types';
 import { CTTransactionState, CTTransactionType } from '../types/commercetools.types';
 import { parseStringToJsonObject } from '../utils/app.utils';
+import { readConfiguration } from '../utils/config.utils';
+import { toBoolean } from 'validator';
 
 /**
  * Checks if the given action is either 'Create' or 'Update'.
@@ -221,33 +223,36 @@ export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment): void
     ctPayment.id,
   );
 
-  // TODO: Temporary comment out to test the Cancel Payment flow
-  // if (!paymentCustomFields?.cardToken) {
-  //   logger.error(
-  //     `SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard, CommerceTools Payment ID: ${ctPayment.id}`,
-  //     {
-  //       commerceToolsPaymentId: ctPayment.id,
-  //       cardToken: paymentCustomFields?.cardToken,
-  //     },
-  //   );
+  const cardComponentEnabled = toBoolean(readConfiguration().mollie.cardComponent, true);
 
-  //   throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard');
-  // }
-
-  // if (typeof paymentCustomFields?.cardToken !== 'string' || paymentCustomFields?.cardToken.trim() === '') {
-  //   logger.error(
-  //     `SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard, CommerceTools Payment ID: ${ctPayment.id}`,
-  //     {
-  //       commerceToolsPaymentId: ctPayment.id,
-  //       cardToken: paymentCustomFields?.cardToken,
-  //     },
-  //   );
-
-  //   throw new CustomError(
-  //     400,
-  //     'SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard',
-  //   );
-  // }
+  if (cardComponentEnabled) {
+    if (!paymentCustomFields?.cardToken) {
+      logger.error(
+        `SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard, CommerceTools Payment ID: ${ctPayment.id}`,
+        {
+          commerceToolsPaymentId: ctPayment.id,
+          cardToken: paymentCustomFields?.cardToken,
+        },
+      );
+  
+      throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard');
+    }
+  
+    if (typeof paymentCustomFields?.cardToken !== 'string' || paymentCustomFields?.cardToken.trim() === '') {
+      logger.error(
+        `SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard, CommerceTools Payment ID: ${ctPayment.id}`,
+        {
+          commerceToolsPaymentId: ctPayment.id,
+          cardToken: paymentCustomFields?.cardToken,
+        },
+      );
+  
+      throw new CustomError(
+        400,
+        'SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard',
+      );
+    }
+  }
 };
 
 export const checkAmountPlanned = (ctPayment: CTPayment): true | CustomError => {
