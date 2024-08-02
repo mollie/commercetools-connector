@@ -8,7 +8,13 @@ import {
 } from '../utils/map.utils';
 import { CentPrecisionMoney, Extension, Payment, UpdateAction } from '@commercetools/platform-sdk';
 import CustomError from '../errors/custom.error';
-import { cancelPayment, createMolliePayment, getPaymentById, listPaymentMethods } from '../mollie/payment.mollie';
+import {
+  cancelPayment,
+  createMolliePayment,
+  getApplePaySession,
+  getPaymentById,
+  listPaymentMethods,
+} from '../mollie/payment.mollie';
 import {
   AddTransaction,
   ChangeTransactionState,
@@ -43,6 +49,8 @@ import { parseStringToJsonObject } from '../utils/app.utils';
 import { getPaymentExtension } from '../commercetools/extensions.commercetools';
 import { HttpDestination } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/extension';
 import { cancelPaymentRefund, createPaymentRefund, getPaymentRefund } from '../mollie/refund.mollie';
+import { ApplePaySessionRequest } from '../types/mollie.types';
+import ApplePaySession from '@mollie/api-client/dist/types/src/data/applePaySession/ApplePaySession';
 
 /**
  * Handles listing payment methods by payment.
@@ -379,6 +387,24 @@ export const handleCancelPayment = async (ctPayment: Payment): Promise<Controlle
     pendingAuthorizationTransaction as Transaction,
     ConnectorActions.CancelPayment,
   );
+
+  return {
+    statusCode: 200,
+    actions: ctActions,
+  };
+};
+
+export const handleGetApplePaySession = async (ctPayment: Payment): Promise<ControllerResponseType> => {
+  const requestOptions: ApplePaySessionRequest = parseStringToJsonObject(
+    ctPayment.custom?.fields[CustomFields.applePay.session.request],
+    CustomFields.applePay.session.request,
+    'SCTM - handleGetApplePaySession',
+    ctPayment.id,
+  );
+
+  const session: ApplePaySession = await getApplePaySession(requestOptions);
+
+  const ctActions: UpdateAction[] = [setCustomFields(CustomFields.applePay.session.response, JSON.stringify(session))];
 
   return {
     statusCode: 200,

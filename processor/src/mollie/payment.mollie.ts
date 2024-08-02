@@ -10,6 +10,8 @@ import {
 import { initMollieClient } from '../client/mollie.client';
 import CustomError from '../errors/custom.error';
 import { logger } from '../utils/logger.utils';
+import { ApplePaySessionRequest } from '../types/mollie.types';
+import ApplePaySession from '@mollie/api-client/dist/types/src/data/applePaySession/ApplePaySession';
 
 /**
  * Creates a Mollie payment using the provided payment parameters.
@@ -81,6 +83,24 @@ export const cancelPayment = async (paymentId: string): Promise<Payment> => {
       errorMessage = `SCTM - cancelPayment - error: ${error.message}, field: ${error.field}`;
     } else {
       errorMessage = `SCTM - cancelPayment - Failed to cancel payments with unknown errors`;
+    }
+
+    logger.error(errorMessage, {
+      error,
+    });
+    throw new CustomError(400, errorMessage);
+  }
+};
+
+export const getApplePaySession = async (options: ApplePaySessionRequest): Promise<ApplePaySession> => {
+  try {
+    return await initMollieClient().applePay.requestPaymentSession(options);
+  } catch (error: unknown) {
+    let errorMessage;
+    if (error instanceof MollieApiError) {
+      errorMessage = `SCTM - getApplePaySession - error: ${error.message}, field: ${error.field}`;
+    } else {
+      errorMessage = `SCTM - getApplePaySession - Failed to cancel payments with unknown errors`;
     }
 
     logger.error(errorMessage, {

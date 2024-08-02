@@ -77,6 +77,30 @@ export async function createCustomPaymentType(): Promise<void> {
               },
               inputHint: 'MultiLine',
             },
+            {
+              name: CustomFields.applePay.session.request,
+              label: {
+                en: 'The request object for inquiring the Apple Pay payment session',
+                de: 'Das Anfrageobjekt für die Abfrage der Apple Pay-Zahlungssitzung',
+              },
+              required: false,
+              type: {
+                name: 'String',
+              },
+              inputHint: 'MultiLine',
+            },
+            {
+              name: CustomFields.applePay.session.response,
+              label: {
+                en: 'The response object holding the Apple Pay payment session',
+                de: 'Das Antwortobjekt zur Speicherung der Apple Pay-Zahlungssitzung',
+              },
+              required: false,
+              type: {
+                name: 'String',
+              },
+              inputHint: 'MultiLine',
+            },
           ],
         },
       })

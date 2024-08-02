@@ -7,3 +7,8 @@ export type ParsedMethodsRequestType = {
   pricing?: string;
   sequenceType?: string;
 };
+
+export type ApplePaySessionRequest = {
+  domain: string;
+  validationUrl: string;
+};
