@@ -189,7 +189,7 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
     molliePayment = await createMolliePayment(paymentParams);
   } else {
     logger.debug(
-      'SCTM - handleCreatePayment - Attempt creating a payment with method undefined in Mollie NodeJS Client but still supported by Mollie',
+      'SCTM - handleCreatePayment - Attempt creating a payment with an unknown method in Mollie NodeJS Client but still supported by Mollie',
     );
 
     molliePayment = await createPaymentWithCustomMethod(paymentParams);
@@ -360,13 +360,6 @@ export const getPaymentCancelActions = (
   action: DeterminePaymentActionType,
 ) => {
   const transactionCustomFieldName = CustomFields.paymentCancelReason;
-
-  let errorPrefix;
-  if (action === ConnectorActions.CancelPayment) {
-    errorPrefix = 'SCTM - handleCancelPayment';
-  } else if (action === ConnectorActions.CancelRefund) {
-    errorPrefix = 'SCTM - handleCancelRefund';
-  }
 
   const newTransactionCustomFieldValue = {
     reasonText: triggerTransaction.custom?.fields?.reasonText,

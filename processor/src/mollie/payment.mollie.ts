@@ -113,10 +113,6 @@ export const createPaymentWithCustomMethod = async (paymentParams: PaymentCreate
       versionStrings: `${LIBRARY_NAME}/${LIBRARY_VERSION}`,
     };
 
-    // `include` is a query param, not a key-value of the payload
-    // And with method `blik`, `include` is not needed
-    delete paymentParams.include;
-
     return await axios.post('https://api.mollie.com/v2/payments', paymentParams, { headers });
   } catch (error: unknown) {
     let errorMessage;
@@ -124,7 +120,7 @@ export const createPaymentWithCustomMethod = async (paymentParams: PaymentCreate
     if (error instanceof AxiosError) {
       errorMessage = `SCTM - createPaymentWithCustomMethod - error: ${error.response?.data?.detail}, field: ${error.response?.data?.field}`;
     } else {
-      errorMessage = `SCTM - cancelPayment - Failed to cancel payments with unknown errors`;
+      errorMessage = `SCTM - createPaymentWithCustomMethod - Failed to create a payment with unknown errors`;
     }
 
     logger.error(errorMessage, {
