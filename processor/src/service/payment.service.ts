@@ -60,24 +60,25 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
   try {
     const mollieOptions = await mapCommercetoolsPaymentCustomFieldsToMollieListParams(ctPayment);
     const methods: List<Method> = await listPaymentMethods(mollieOptions);
+    const enableCardComponent = toBoolean(readConfiguration().mollie.cardComponent, true);
+    const ctUpdateActions: UpdateAction[] = [];
+
+    if (enableCardComponent) {
+      methods.splice(
+        methods.findIndex((method: Method) => method.id === PaymentMethod.creditcard),
+        1,
+      );
+    }
 
     const availableMethods = JSON.stringify({
       count: methods.length,
       methods: methods.length ? methods : [],
     });
 
-    const ctUpdateActions: UpdateAction[] = [setCustomFields(CustomFields.payment.response, availableMethods)];
-
-    const hasCardPayment = methods.findIndex((method: Method) => method.id === PaymentMethod.creditcard);
-
-    if (hasCardPayment >= 0) {
-      ctUpdateActions.push(
-        setCustomFields(
-          CustomFields.payment.profileId,
-          toBoolean(readConfiguration().mollie.cardComponent, true) ? readConfiguration().mollie.profileId : '',
-        ),
-      );
-    }
+    ctUpdateActions.push(
+      setCustomFields(CustomFields.payment.profileId, enableCardComponent ? readConfiguration().mollie.profileId : ''),
+    );
+    ctUpdateActions.push(setCustomFields(CustomFields.payment.response, availableMethods));
 
     return {
       statusCode: 200,
