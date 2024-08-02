@@ -234,10 +234,10 @@ export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment): void
           cardToken: paymentCustomFields?.cardToken,
         },
       );
-  
+
       throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard');
     }
-  
+
     if (typeof paymentCustomFields?.cardToken !== 'string' || paymentCustomFields?.cardToken.trim() === '') {
       logger.error(
         `SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard, CommerceTools Payment ID: ${ctPayment.id}`,
@@ -246,7 +246,7 @@ export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment): void
           cardToken: paymentCustomFields?.cardToken,
         },
       );
-  
+
       throw new CustomError(
         400,
         'SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard',
