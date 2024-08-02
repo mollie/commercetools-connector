@@ -16,7 +16,7 @@ The target Mollie endpoint will be [Cancel Payment](https://docs.mollie.com/refe
 In order to use this functionality, the customer must have a payment which is created and not has been paid yet.
 
 Technically, the CommerceTools Payment object needs to include 3 transactions:
-- 1 transaction with type = `Authorization`, state = `Pending`. This transaction should also store the targeted Mollie Payment ID in `interactionId`.
+- 1 transaction with type = `Authorization`, state = `Success`. This transaction should also store the targeted Mollie Payment ID in `interactionId`.
 - 1 transaction with type = `CancelAuthorization`, state = `Initial`. This transaction is to point out that the customer is wanting to cancel the payment.
 
 From the Mollie side, a payment is marked as cancelable if its `isCancelable` is true. For further information, please have a look at [Mollie docs](https://docs.mollie.com/reference/cancel-payment)
@@ -27,7 +27,7 @@ From the Mollie side, a payment is marked as cancelable if its `isCancelable` is
 
 Target endpoint: `https://api.mollie.com/v2/payments/{id}`
 
-| CT PendingAuthorization transaction         | Parameter                                   | Required |
+| CT SuccessAuthorization transaction         | Parameter                                   | Required |
 |---------------------------------------------|---------------------------------------------|----------|
 | `interactionId`                             | `id`                                        | YES      |
 
@@ -38,17 +38,19 @@ Target endpoint: `https://api.mollie.com/v2/payments/{id}`
 - Detect if the CommerceTools Payment object has satisfied the [conditions](#conditions) above
 - If no, the connector should return success response an empty body (no updated actions)
 - If yes:
-  - The connector will get the Payment ID from PendingAuthorization transaction, use it query to [Mollie Get Payment API](#https://docs.mollie.com/reference/get-payment)
+  - The connector will get the Payment ID from SuccessAuthorization transaction, use it query to [Mollie Get Payment API](#https://docs.mollie.com/reference/get-payment)
   - Then, it will check if the Payment `isCancelable` is `true`. If it is not, the connector will return error response along with some details message will be save into the App-Log
   - If the Payment `isCancelable` is `true`, the connector will perform a call to the [Cancel Payment endpoint](https://docs.mollie.com/reference/cancel-payment) to cancel the payment.
-  - And finally, the connector will return a success response with a list of necessary updated actions including:
-    - Change PendingAuthorization transaction state from `Pending` to `Failure`
-    - Update PendingAuthorization transaction custom field `sctm_payment_cancel_reason`: store the reason of the cancelling from shop side, and a fixed message to point out that the cancelling was coming from the shop side
+  - And finally, the connector will return a success response with empty body response.
+  - The necessary update actions will be handled by the webhook endpoint, they are:
+    - Change SuccessAuthorization transaction state from `Pending` to `Failure`
+    - Change InitialCancelAuthorization transaction state from `Initial` to `Success`
+    - Update SuccessAuthorization transaction custom type `sctm_payment_cancel_reason`: store the reason of the cancelling from shop side, and a fixed message to point out that the cancelling was coming from the shop side
 
 ## Representation: CT Payment  
 
 <details>
-  <summary>Example Payment with to trigger a Payment Cancellation</summary>
+  <summary>Example of the final state of Payment object after cancelling successfully</summary>
 
 ```json
 {
@@ -89,15 +91,34 @@ Target endpoint: `https://api.mollie.com/v2/payments/{id}`
     "transactions": [
         {
             "id": "869ea4f0-b9f6-4006-bf04-d8306b5c9564",
-            "type": "Authorization",
-            "interactionId": "tr_7UhSN1zuXS",
+            "type": "Charge",
+            "interactionId": "tr_MCTkfDUHF4",
             "amount": {
                 "type": "centPrecision",
                 "currencyCode": "EUR",
                 "centAmount": 1604,
                 "fractionDigits": 2
             },
-            "state": "Pending",
+            "state": "Failure",
+            "custom": {
+                "type": {
+                    "key": "sctm_payment_cancel_reason"
+                },
+                "fields": {
+                    "reasonText": "Cancel refund reason"
+                }
+            }
+        },
+        {
+            "id": "869ea4f0-b9f6-4006-bf04-d8306b5c9564",
+            "type": "Authorization",
+            "amount": {
+                "type": "centPrecision",
+                "currencyCode": "EUR",
+                "centAmount": 1604,
+                "fractionDigits": 2
+            },
+            "state": "Success",
             "custom": {
                 "type": {
                     "key": "sctm_payment_cancel_reason"
@@ -116,9 +137,24 @@ Target endpoint: `https://api.mollie.com/v2/payments/{id}`
                 "centAmount": 1604,
                 "fractionDigits": 2
             },
-            "state": "Initial"
+            "state": "Success"
         },
     ],
+    "interfaceInteractions": [
+        {
+            "type": {
+                "typeId": "type",
+                "id": "d384c0f2-38bc-4310-8f16-71b6c74c767e"
+            },
+            "fields": {
+                "request": "{\"transactionId\":\"0f0cf655-2eb2-4777-aaf6-3c638908921f\",\"paymentMethod\":\"creditcard\"}",
+                "actionType": "createPayment",
+                "createdAt": "2024-08-02T04:51:52+00:00",
+                "response": "{\"molliePaymentId\":\"tr_MCTkfDUHF4\",\"checkoutUrl\":\"https://www.mollie.com/checkout/credit-card/embedded/MCTkfDUHF4\",\"transactionId\":\"0f0cf655-2eb2-4777-aaf6-3c638908921f\"}",
+                "id": "6ff341f7-b1be-47d5-9a2c-7cd0446e5bd2"
+            }
+        }
+    ]
 }
 ```
 </details>
@@ -126,9 +162,10 @@ Target endpoint: `https://api.mollie.com/v2/payments/{id}`
 
 ## Creating CommerceTools actions from Mollie's response
 
-When order is successfully cancelled on Mollie, we update commercetools payment with following actions
+When payment is successfully cancelled on Mollie, the webhook will be notified and we will update commercetools payment with following actions
 
 | Action name (CT)                 | Value                                                                      |
 | -------------------------------- | -------------------------------------------------------------------------- |
-| `changeTransactionState`         | `transactionId: <pendingAuthorizationTransactionId>, state: 'Failure'`     |
-| `setTransactionCustomField`      | `transactionId: <pendingAuthorizationTransactionId>, name:sctm_payment_cancel_refund, value: "{\"reasonText\":\"Cancel refund reason\",\"statusText\":\"Cancelled from shop side\"}"`                                   |
+| `changeTransactionState`         | `transactionId: <PendingChargeTransactionId>, state: 'Failure'`     |
+| `changeTransactionState`         | `transactionId: <InitialCancelAuthorizationTransactionId>, state: 'Success'`     |
+| `setTransactionCustomField`      | `transactionId: <PendingChargeTransactionId>, type.key:sctm_payment_cancel_reason, fields: {reasonText: "cancellation reason", statusText: "cancelled from shop side"`                                   |

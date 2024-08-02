@@ -791,18 +791,10 @@ describe('Test getPaymentCancelActions', () => {
       const paymentService = jest.requireActual(
         '../../src/service/payment.service.ts',
       ) as typeof import('../../src/service/payment.service.ts');
-      return paymentService.getPaymentCancelActions(
-        CTPayment.transactions[0],
-        CTPayment.transactions[1],
-        ConnectorActions.CancelRefund,
-      );
+      return paymentService.getPaymentCancelActions(CTPayment.transactions[0], CTPayment.transactions[1]);
     });
 
-    const actual = getPaymentCancelActions(
-      CTPayment.transactions[0],
-      CTPayment.transactions[1],
-      ConnectorActions.CancelRefund,
-    );
+    const actual = getPaymentCancelActions(CTPayment.transactions[0], CTPayment.transactions[1]);
     expect(actual).toHaveLength(3);
 
     expect(actual[0]).toEqual({
@@ -1018,6 +1010,139 @@ describe('Test handlePaymentWebhook', () => {
     expect(logger.debug).toBeCalledTimes(2);
     expect(logger.debug).toBeCalledWith(`SCTM - handlePaymentWebhook - paymentId:${fakePaymentId}`);
     expect(logger.debug).toBeCalledWith(`handlePaymentWebhook - No actions needed`);
+  });
+
+  it('should return false if the targeted status is canceled and commercetools pendingChargeTransaction is not found', async () => {
+    const fakePaymentId = 'tr_XXXX';
+    (getPaymentById as jest.Mock).mockReturnValue({
+      id: fakePaymentId,
+      status: 'canceled',
+      amount: {
+        currency: 'EUR',
+        value: '10.00',
+      },
+      captureMode: 'manual',
+    });
+    const ctPayment = {
+      id: 'payment-id',
+      transactions: [
+        {
+          id: '12345',
+          type: 'CancelAuthorization',
+          state: 'Initial',
+        },
+      ],
+    };
+    (getPaymentByMolliePaymentId as jest.Mock).mockReturnValue(ctPayment);
+    const result = await handlePaymentWebhook(fakePaymentId);
+
+    expect(result).toBe(false);
+    expect(logger.warn).toBeCalledTimes(1);
+    expect(logger.warn).toBeCalledWith(
+      `SCTM - handlePaymentWebhook - Pending Charge transaction or Initial CancelAuthorization transaction is not found, CommerceTools Payment ID: ${ctPayment.id}`,
+    );
+  });
+
+  it('should return false if the targeted status is canceled and commercetools initialCancelAuthorizationTransaction is not found', async () => {
+    const fakePaymentId = 'tr_XXXX';
+    (getPaymentById as jest.Mock).mockReturnValue({
+      id: fakePaymentId,
+      status: 'canceled',
+      amount: {
+        currency: 'EUR',
+        value: '10.00',
+      },
+      captureMode: 'manual',
+    });
+    const ctPayment = {
+      id: 'payment-id',
+      transactions: [
+        {
+          id: '12345',
+          type: 'Charge',
+          state: 'Pending',
+        },
+      ],
+    };
+    (getPaymentByMolliePaymentId as jest.Mock).mockReturnValue(ctPayment);
+    const result = await handlePaymentWebhook(fakePaymentId);
+
+    expect(result).toBe(false);
+    expect(logger.warn).toBeCalledTimes(1);
+    expect(logger.warn).toBeCalledWith(
+      `SCTM - handlePaymentWebhook - Pending Charge transaction or Initial CancelAuthorization transaction is not found, CommerceTools Payment ID: ${ctPayment.id}`,
+    );
+  });
+
+  it('should return true and perform update with specific actions if the targeted status is canceled', async () => {
+    const fakePaymentId = 'tr_XXXX';
+    (getPaymentById as jest.Mock).mockReturnValue({
+      id: fakePaymentId,
+      status: 'canceled',
+      amount: {
+        currency: 'EUR',
+        value: '10.00',
+      },
+      captureMode: 'manual',
+    });
+    const ctPayment = {
+      id: 'payment-id',
+      transactions: [
+        {
+          id: '12345',
+          type: 'Charge',
+          state: 'Pending',
+        },
+        {
+          id: '12346',
+          type: 'CancelAuthorization',
+          state: 'Initial',
+          custom: {
+            type: {
+              typeId: 'type',
+              id: 'sctm_payment_cancel_reason',
+            },
+            fields: {
+              reasonText: 'Dummy reason',
+            },
+          },
+        },
+      ],
+    };
+    (getPaymentByMolliePaymentId as jest.Mock).mockReturnValue(ctPayment);
+    const result = await handlePaymentWebhook(fakePaymentId);
+
+    expect(result).toBe(true);
+    expect(logger.warn).toBeCalledTimes(0);
+
+    const actions = [
+      {
+        action: 'changeTransactionState',
+        transactionId: ctPayment.transactions[0].id,
+        state: 'Failure',
+      },
+      {
+        action: 'changeTransactionState',
+        transactionId: ctPayment.transactions[1].id,
+        state: 'Success',
+      },
+      {
+        action: 'setTransactionCustomType',
+        type: {
+          key: 'sctm_payment_cancel_reason',
+        },
+        fields: {
+          reasonText: ctPayment.transactions[1].custom?.fields.reasonText,
+          statusText: CancelStatusText,
+        },
+        transactionId: ctPayment.transactions[0].id,
+      },
+    ];
+
+    expect(logger.info).toBeCalledWith(`handlePaymentWebhook - actions:${JSON.stringify(actions)}`);
+
+    expect(updatePayment).toBeCalledTimes(1);
+    expect(updatePayment).toBeCalledWith(ctPayment, actions);
   });
 
   it('should handle for manual capture payment', async () => {
@@ -1273,29 +1398,7 @@ describe('Test handleCancelPayment', () => {
 
     expect(actual).toEqual({
       statusCode: 200,
-      actions: [
-        {
-          action: 'changeTransactionState',
-          transactionId: CTPayment.transactions[1].id,
-          state: CTTransactionState.Failure,
-        },
-        {
-          action: 'changeTransactionState',
-          transactionId: CTPayment.transactions[2].id,
-          state: CTTransactionState.Success,
-        },
-        {
-          action: 'setTransactionCustomType',
-          type: {
-            key: 'sctm_payment_cancel_reason',
-          },
-          transactionId: CTPayment.transactions[1].id,
-          fields: {
-            reasonText: customFieldReason.reasonText,
-            statusText: CancelStatusText,
-          },
-        },
-      ],
+      actions: [],
     });
   });
 });

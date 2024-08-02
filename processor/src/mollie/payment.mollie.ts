@@ -77,8 +77,6 @@ export const listPaymentMethods = async (options: MethodsListParams): Promise<Li
 
 export const cancelPayment = async (paymentId: string): Promise<void> => {
   try {
-    // const response = await initMollieClient().payments.cancel(paymentId);
-    // console.log('cancelled payment', response);
     await initMollieClient().payments.cancel(paymentId);
   } catch (error: unknown) {
     let errorMessage;

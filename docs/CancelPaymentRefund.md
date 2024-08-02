@@ -45,12 +45,13 @@ Target endpoint: `https://api.mollie.com/v2/payments/{paymentId}/refunds/{id}`
   - If the Refund status is `queued` or `pending`, the connector will perform a call to the [Cancel Refund endpoint](https://docs.mollie.com/reference/cancel-refund) to cancel the refund.
   - And finally, the connector will return a success response with a list of necessary updated actions including: 
     - Change PendingRefund transaction state from `Pending` to `Failure`
+    - Change InitialCancelAuthorization transaction state from `Initial` to `Success`
     - Update PendingRefund transaction custom field `sctm_payment_cancel_reason`: store the reason of the cancelling from shop side, and a fixed message to point out that the cancelling was coming from the shop side
 
 ## Representation: CT Payment  
 
 <details>
-  <summary>Example Payment object to trigger cancelling the refund</summary>
+  <summary>Example of the final state of Payment object after cancelling the refund successfully</summary>
 
 ```json
 {
@@ -111,7 +112,7 @@ Target endpoint: `https://api.mollie.com/v2/payments/{paymentId}/refunds/{id}`
                 "centAmount": 1604,
                 "fractionDigits": 2
             },
-            "state": "Pending",
+            "state": "Failure",
             "custom": {
                 "type": {
                     "key": "sctm_payment_cancel_refund"
@@ -128,8 +129,17 @@ Target endpoint: `https://api.mollie.com/v2/payments/{paymentId}/refunds/{id}`
                 "centAmount": 1604,
                 "currencyCode": "EUR"
             },
-            "state": "Initial"
-        }
+            "state": "Success",
+            "custom": {
+                "type": {
+                    "typeId": "type",
+                    "key": "sctm_payment_cancel_reason"
+                },
+                "fields": {
+                    "reasonText": "Testing cancel payment"
+                }
+            },
+        },
     ],
 }
 ```
@@ -144,4 +154,4 @@ When order is successfully cancelled on Mollie, we update commercetools payment 
 | -------------------------------- | -------------------------------------------------------------------------- |
 | `changeTransactionState`         | `transactionId: <pendingRefundTransactionId>, state: 'Failure'`            |
 | `changeTransactionState`         | `transactionId: <initialCancelAuthorizationTransactionId>, state: 'Success'`            |
-| `setTransactionCustomType`     | `transactionId: <pendingRefundTransactionId>, type.key:sctm_payment_cancel_refund, fields: {reasonText: "cancellation reason", statusText: "cancelled from shop side"}`                                   |
+| `setTransactionCustomType`     | `transactionId: <pendingRefundTransactionId>, type.key:sctm_payment_cancel_reason, fields: {reasonText: "cancellation reason", statusText: "cancelled from shop side"}`                                   |
