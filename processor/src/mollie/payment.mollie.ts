@@ -100,7 +100,7 @@ export const getApplePaySession = async (options: ApplePaySessionRequest): Promi
     if (error instanceof MollieApiError) {
       errorMessage = `SCTM - getApplePaySession - error: ${error.message}, field: ${error.field}`;
     } else {
-      errorMessage = `SCTM - getApplePaySession - Failed to cancel payments with unknown errors`;
+      errorMessage = `SCTM - getApplePaySession - Failed to get ApplePay session with unknown errors`;
     }
 
     logger.error(errorMessage, {

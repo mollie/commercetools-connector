@@ -4,6 +4,7 @@ import {
   createMolliePayment,
   getPaymentById,
   listPaymentMethods,
+  getApplePaySession,
 } from '../../src/mollie/payment.mollie';
 import { MollieApiError, PaymentCreateParams } from '@mollie/api-client';
 import { logger } from '../../src/utils/logger.utils';
@@ -13,6 +14,7 @@ const mockPaymentsCreate = jest.fn();
 const mockPaymentsGet = jest.fn();
 const mockPaymentsList = jest.fn();
 const mockPaymentCancel = jest.fn();
+const mockRequestPaymentSession = jest.fn();
 
 jest.mock('../../src/client/mollie.client', () => ({
   initMollieClient: jest.fn(() => ({
@@ -23,6 +25,9 @@ jest.mock('../../src/client/mollie.client', () => ({
     },
     methods: {
       list: mockPaymentsList,
+    },
+    applePay: {
+      requestPaymentSession: mockRequestPaymentSession,
     },
   })),
 }));
@@ -240,6 +245,71 @@ describe('cancelPayment', () => {
       expect(logger.error).toBeCalledWith('SCTM - cancelPayment - Failed to cancel payments with unknown errors', {
         error: unexpectedError,
       });
+    }
+  });
+});
+
+describe('getApplePaySession', () => {
+  afterEach(() => {
+    jest.clearAllMocks(); // Clear all mocks after each test
+  });
+
+  it('should call getApplePaySession with the correct parameters', async () => {
+    await getApplePaySession({
+      domain: 'pay.mywebshop.com',
+      validationUrl: 'https://apple-pay-gateway-cert.apple.com/paymentservices/paymentSession',
+    });
+
+    expect(mockRequestPaymentSession).toHaveBeenCalledTimes(1);
+    expect(mockRequestPaymentSession).toHaveBeenCalledWith({
+      domain: 'pay.mywebshop.com',
+      validationUrl: 'https://apple-pay-gateway-cert.apple.com/paymentservices/paymentSession',
+    });
+  });
+
+  it('should be able to return a proper error message when error which is an instance of MollieApiError occurred', async () => {
+    const errorMessage = 'Something wrong happened';
+    const mollieApiError = new MollieApiError(errorMessage, { field: 'validationUrl' });
+
+    (mockRequestPaymentSession as jest.Mock).mockImplementation(() => {
+      throw mollieApiError;
+    });
+
+    try {
+      await getApplePaySession({
+        domain: 'pay.mywebshop.com',
+        validationUrl: '',
+      });
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith(`SCTM - getApplePaySession - error: ${errorMessage}, field: validationUrl`, {
+        error: mollieApiError,
+      });
+    }
+  });
+
+  it('should be able to return a proper error message when error which is not an instance of MollieApiError occurred', async () => {
+    const unexpectedError = new CustomError(400, 'dummy message');
+
+    (mockRequestPaymentSession as jest.Mock).mockImplementation(() => {
+      throw unexpectedError;
+    });
+
+    try {
+      await getApplePaySession({
+        domain: '',
+        validationUrl: '',
+      });
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith(
+        'SCTM - getApplePaySession - Failed to get ApplePay session with unknown errors',
+        {
+          error: unexpectedError,
+        },
+      );
     }
   });
 });

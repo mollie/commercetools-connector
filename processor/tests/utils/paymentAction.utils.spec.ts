@@ -337,6 +337,39 @@ describe('determinePaymentAction', () => {
       expectedConnectorAction: ConnectorActions.CancelRefund,
       expectedErrorMessage: '',
     },
+    {
+      CTPayment: {
+        id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        key: 'get-apple-pay-session-case',
+        version: 1,
+        createdAt: '2024-07-04T14:07:35.625Z',
+        lastModifiedAt: '2024-07-04T14:07:35.625Z',
+        amountPlanned: {
+          type: 'centPrecision',
+          currencyCode: 'EUR',
+          centAmount: 1000,
+          fractionDigits: 2,
+        },
+        paymentStatus: {},
+        transactions: [],
+        interfaceInteractions: [],
+        paymentMethodInfo: {},
+        custom: {
+          type: {
+            typeId: 'type',
+            id: 'sctm_apple_pay_session_request',
+          },
+          fields: {
+            sctm_apple_pay_session_request: JSON.stringify({
+              domain: 'pay.mywebshop.com',
+              validationUrl: 'https://apple-pay-gateway-cert.apple.com/paymentservices/paymentSession',
+            }),
+          },
+        } as unknown as CustomFields,
+      } as Payment,
+      expectedConnectorAction: ConnectorActions.GetApplePaySession,
+      expectedErrorMessage: '',
+    },
   ];
 
   it.each(dataSet)(

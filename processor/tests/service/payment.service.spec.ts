@@ -9,6 +9,7 @@ import {
   handleCreateRefund,
   handlePaymentCancelRefund,
   handleCancelPayment,
+  handleGetApplePaySession,
 } from '../../src/service/payment.service';
 import { ControllerResponseType } from '../../src/types/controller.types';
 import { CancelStatusText, ConnectorActions, CustomFields as CustomFieldName } from '../../src/utils/constant.utils';
@@ -19,6 +20,7 @@ import {
   getPaymentById,
   createMolliePayment,
   cancelPayment,
+  getApplePaySession,
 } from '../../src/mollie/payment.mollie';
 import { cancelPaymentRefund, createPaymentRefund, getPaymentRefund } from '../../src/mollie/refund.mollie';
 import CustomError from '../../src/errors/custom.error';
@@ -53,6 +55,7 @@ jest.mock('../../src/mollie/payment.mollie', () => ({
   getPaymentById: jest.fn(),
   getPaymentRefund: jest.fn(),
   cancelPayment: jest.fn(),
+  getApplePaySession: jest.fn(),
 }));
 
 jest.mock('../../src/mollie/refund.mollie', () => ({
@@ -1263,5 +1266,66 @@ describe('Test handleCancelPayment', () => {
         },
       ],
     });
+  });
+});
+
+describe('Test handleGetApplePaySession', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should handle with update action', async () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'applepay',
+      },
+      transactions: [],
+      custom: {
+        type: {
+          typeId: 'type',
+          key: 'sctm-payment-custom-type',
+        },
+        fields: {
+          sctm_apple_pay_session_request: JSON.stringify({
+            domain: 'pay.mywebshop.com',
+            validationUrl: 'https://apple-pay-gateway-cert.apple.com/paymentservices/paymentSession',
+          }),
+        },
+      } as unknown as CustomFields,
+    };
+
+    (getApplePaySession as jest.Mock).mockImplementationOnce(() => {
+      return {
+        domain: 'pay.mywebshop.com',
+        validationUrl: 'https://apple-pay-gateway-cert.apple.com/paymentservices/paymentSession',
+      };
+    });
+    const response = await handleGetApplePaySession(CTPayment);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.actions).toEqual([
+      {
+        action: 'setCustomField',
+        name: 'sctm_apple_pay_session_response',
+        value:
+          '{"domain":"pay.mywebshop.com","validationUrl":"https://apple-pay-gateway-cert.apple.com/paymentservices/paymentSession"}',
+      },
+    ]);
   });
 });

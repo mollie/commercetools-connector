@@ -8,6 +8,7 @@ import {
   handleListPaymentMethodsByPayment,
   handlePaymentCancelRefund,
   handleCreateRefund,
+  handleGetApplePaySession,
 } from '../../src/service/payment.service';
 import { CancelStatusText, ConnectorActions, CustomFields as CustomFieldName } from '../../src/utils/constant.utils';
 import { validateCommerceToolsPaymentPayload } from '../../src/validators/payment.validators';
@@ -17,6 +18,7 @@ jest.mock('../../src/service/payment.service', () => ({
   handleCreatePayment: jest.fn(),
   handlePaymentCancelRefund: jest.fn(),
   handleCreateRefund: jest.fn(),
+  handleGetApplePaySession: jest.fn(),
 }));
 
 jest.mock('../../src/validators/payment.validators.ts', () => ({
@@ -319,5 +321,58 @@ describe('Test payment.controller.ts', () => {
     expect(handleCreatePayment).toBeCalledTimes(0);
     expect(handlePaymentCancelRefund).toBeCalledTimes(1);
     expect(handlePaymentCancelRefund).toReturnWith(handlePaymentCancelRefundResponse);
+  });
+
+  test('call handleGetApplePaySession with valid object reference', async () => {
+    mockAction = 'Create' as string;
+    mockResource = {
+      typeId: 'payment',
+      obj: {
+        amountPlanned: {
+          centAmount: 11000,
+          currencyCode: 'EUR',
+          fractionDigits: 2,
+          type: 'centPrecision',
+        },
+        paymentMethodInfo: {
+          method: 'paypal',
+          paymentInterface: 'mollie',
+        },
+        custom: {
+          fields: {
+            sctm_apple_pay_session_request:
+              '{"domain":"pay.mywebshop.com","validationUrl":"https://apple-pay-gateway-cert.apple.com/paymentservices/paymentSession"}',
+          },
+        } as unknown as CustomFields,
+      } as unknown as Payment,
+    } as unknown as PaymentReference;
+
+    const handleGetApplePaySessionResponse = {
+      statusCode: 200,
+      actions: [
+        {
+          action: 'setCustomField',
+          name: 'sctm_apple_pay_session_response',
+          value:
+            '{"epochTimestamp":1555507053169,"expiresAt":1555510653169,"merchantSessionIdentifier":"SSH2EAF8AFAEAA94DEEA898162A5DAFD36E_916523AAED1343F5BC5815E12BEE9250AFFDC1A17C46B0DE5A9","nonce":"0206b8db","merchantIdentifier":"BD62FEB196874511C22DB28A9E14A89E3534C93194F73EA417EC566368D391EB","domainName":"pay.example.org","displayName":"Chuck Norris\'s Store","signature":"308006092a864886f7...8cc030ad3000000000000"}',
+        },
+      ],
+    };
+
+    (validateCommerceToolsPaymentPayload as jest.Mock).mockImplementationOnce(() => {
+      return;
+    });
+
+    (handleGetApplePaySession as jest.Mock).mockReturnValue(handleGetApplePaySessionResponse);
+    (determinePaymentAction as jest.Mock).mockReturnValue(ConnectorActions.GetApplePaySession);
+
+    const response = await paymentController(mockAction, mockResource);
+    expect(response).toBeDefined();
+    expect(response.statusCode).toBe(200);
+    expect(response?.actions?.length).toBeGreaterThan(0);
+    expect(response?.actions?.[0].action).toBe('setCustomField');
+    expect(handleGetApplePaySession).toBeCalledTimes(1);
+    expect(handleGetApplePaySession).toReturnWith(handleGetApplePaySessionResponse);
+    expect(handleCreatePayment).toBeCalledTimes(0);
   });
 });
