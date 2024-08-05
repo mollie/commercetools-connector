@@ -6,7 +6,7 @@ import { logger } from '../utils/logger.utils';
 import { ConnectorActions, CustomFields } from '../utils/constant.utils';
 import { DeterminePaymentActionType } from '../types/controller.types';
 import { CTTransactionState, CTTransactionType } from '../types/commercetools.types';
-import { parseStringToJsonObject } from '../utils/app.utils';
+import { parseStringToJsonObject, validateEmail } from '../utils/app.utils';
 import { readConfiguration } from '../utils/config.utils';
 import { toBoolean } from 'validator';
 import { CustomPaymentMethod } from '../types/mollie.types';
@@ -96,20 +96,12 @@ export const checkPaymentMethodInput = (
     );
   }
 
-  // if (method === MolliePaymentMethods.creditcard) {
-  //   checkPaymentMethodSpecificParameters(ctPayment);
-  // }
-
   if ([
     MolliePaymentMethods.creditcard,
     CustomPaymentMethod.blik
   ].includes(method as MolliePaymentMethods|CustomPaymentMethod)) {
     checkPaymentMethodSpecificParameters(ctPayment, method);
   }
-
-  // if (method === CustomPaymentMethod.blik) {
-
-  // }
 
   return true;
 };
@@ -275,14 +267,38 @@ export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, metho
         logger.error(
           `SCTM - PAYMENT PROCESSING - Currency Code must be PLN for payment method BLIK`,
           {
-            commerceToolsPaymentId: ctPayment.id,
-            currencyCode: ctPayment.amountPlanned.currencyCode,
+            commerceToolsPayment: ctPayment
           },
         );
   
         throw new CustomError(
           400,
           'SCTM - PAYMENT PROCESSING - Currency Code must be PLN for payment method BLIK',
+        );
+      }
+
+      if (!paymentCustomFields?.billingEmail) {
+        logger.error(
+          `SCTM - PAYMENT PROCESSING - billingEmail is required for payment method BLIK`,
+          {
+            commerceToolsPayment: ctPayment
+          },
+        );
+  
+        throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - billingEmail is required for payment method BLIK');
+      }
+
+      if (!validateEmail(paymentCustomFields.billingEmail)) {
+        logger.error(
+          `SCTM - PAYMENT PROCESSING - billingEmail must be a valid email address`,
+          {
+            commerceToolsPayment: ctPayment
+          },
+        );
+  
+        throw new CustomError(
+          400,
+          'SCTM - PAYMENT PROCESSING - billingEmail must be a valid email address',
         );
       }
 

@@ -121,8 +121,9 @@ export const createPaymentWithCustomMethod = async (paymentParams: PaymentCreate
     if (error instanceof AxiosError) {
       errorMessage = `SCTM - createPaymentWithCustomMethod - error: ${error.response?.data?.detail}, field: ${error.response?.data?.field}`;
     } else {
-      errorMessage = `SCTM - createPaymentWithCustomMethod - Failed to create a payment with unknown errors`;
+      errorMessage = 'SCTM - createPaymentWithCustomMethod - Failed to create a payment with unknown errors';
     }
+
 
     logger.error(errorMessage, {
       error,

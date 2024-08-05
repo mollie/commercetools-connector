@@ -279,7 +279,7 @@ describe('checkPaymentMethodInput', () => {
 });
 
 describe('checkPaymentMethodSpecificParameters', () => {
-  it('should return false if the payment method is creditcard and card component is enabled and cardToken is not defined in Custom Field', () => {
+  it('should throw an error if the payment method is creditcard and card component is enabled and cardToken is not defined in Custom Field', () => {
     process.env.MOLLIE_CARD_COMPONENT = '1';
 
     const CTPayment: Payment = {
@@ -319,7 +319,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
     }
   });
 
-  it('should return false if the payment method is creditcard and cardToken is an empty string', () => {
+  it('should throw an error if the payment method is creditcard and cardToken is an empty string', () => {
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
       version: 1,
@@ -441,6 +441,181 @@ describe('checkPaymentMethodSpecificParameters', () => {
     };
 
     expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(undefined);
+  });
+
+  it('should throw an error if the payment method is blik and the currency code is not PLN', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'blik',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request:
+            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/","billingEmail":"n.tran@shopmacher.de"}',
+        },
+      },
+    };
+
+    try {
+      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).message).toBe(
+        'SCTM - PAYMENT PROCESSING - Currency Code must be PLN for payment method BLIK',
+      );
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith(
+        `SCTM - PAYMENT PROCESSING - Currency Code must be PLN for payment method BLIK`,
+        {
+          commerceToolsPayment: CTPayment
+        },
+      );
+    }
+  });
+
+  it('should throw an error if the payment method is blik and the billing email is not provided', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'PLN',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'blik',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request:
+            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/"}',
+        },
+      },
+    };
+
+    try {
+      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).message).toBe(
+        'SCTM - PAYMENT PROCESSING - billingEmail is required for payment method BLIK',
+      );
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith(
+        `SCTM - PAYMENT PROCESSING - billingEmail is required for payment method BLIK`,
+        {
+          commerceToolsPayment: CTPayment
+        },
+      );
+    }
+  });
+
+   it('should throw an error if the payment method is blik and the billing email is provided incorrectly', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'PLN',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'blik',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request:
+            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/","billingEmail":"123123"}',
+        },
+      },
+    };
+
+    try {
+      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).message).toBe(
+        'SCTM - PAYMENT PROCESSING - billingEmail must be a valid email address',
+      );
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith(
+        `SCTM - PAYMENT PROCESSING - billingEmail must be a valid email address`,
+        {
+          commerceToolsPayment: CTPayment
+        },
+      );
+    }
+  });
+
+  it('should should not throw any error or terminate the process if the payment method is blik and the currency code is PLN and the billing email is provided correctly', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'PLN',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'blik',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request:
+            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/","billingEmail":"n.tran@shopmacher.de"}',
+        },
+      },
+    };
+
+    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(undefined);
+    expect(logger.error).toBeCalledTimes(0);
   });
 });
 

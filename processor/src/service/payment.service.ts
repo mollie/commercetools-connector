@@ -240,8 +240,6 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
     );
 
     molliePayment = await createPaymentWithCustomMethod(paymentParams);
-
-    console.log('custom mollie payment', molliePayment);
   }
 
   const ctActions = await getCreatePaymentUpdateAction(molliePayment, ctPayment);

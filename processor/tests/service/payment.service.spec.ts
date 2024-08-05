@@ -19,6 +19,7 @@ import {
   getPaymentById,
   createMolliePayment,
   cancelPayment,
+  createPaymentWithCustomMethod,
 } from '../../src/mollie/payment.mollie';
 import { cancelPaymentRefund, createPaymentRefund, getPaymentRefund } from '../../src/mollie/refund.mollie';
 import CustomError from '../../src/errors/custom.error';
@@ -27,6 +28,7 @@ import { getPaymentByMolliePaymentId, updatePayment } from '../../src/commerceto
 import { CreateParameters } from '@mollie/api-client/dist/types/src/binders/payments/refunds/parameters';
 import { getPaymentExtension } from '../../src/commercetools/extensions.commercetools';
 import { createMollieCreatePaymentParams } from '../../src/utils/map.utils';
+import { CustomPayment } from '../../src/types/mollie.types';
 
 const uuid = '5c8b0375-305a-4f19-ae8e-07806b101999';
 jest.mock('uuid', () => ({
@@ -54,6 +56,7 @@ jest.mock('../../src/mollie/payment.mollie', () => ({
   getPaymentById: jest.fn(),
   getPaymentRefund: jest.fn(),
   cancelPayment: jest.fn(),
+  createPaymentWithCustomMethod: jest.fn(),
 }));
 
 jest.mock('../../src/mollie/refund.mollie', () => ({
@@ -521,7 +524,7 @@ describe('Test getCreatePaymentUpdateAction', () => {
   });
 });
 
-describe('Test createPayment', () => {
+describe('Test handleCreatePayment', () => {
   const CTPayment: Payment = {
     id: '5c8b0375-305a-4f19-ae8e-07806b101999',
     version: 1,
@@ -636,6 +639,91 @@ describe('Test createPayment', () => {
         state: 'Pending',
       },
     ];
+
+    expect(actual).toEqual({
+      statusCode: 201,
+      actions: ctActions,
+    });
+  });
+
+  it('should able to call the createPaymentWithCustomMethod when the payment method is not defined in Mollie PaymentMethod enum', async () => {
+    const molliePayment: CustomPayment = {
+      resource: 'payment',
+      id: 'tr_7UhSN1zuXS',
+      amount: {
+        value: '10.00',
+        currency: 'EUR',
+      },
+      description: 'Order #12345',
+      redirectUrl: 'https://webshop.example.org/order/12345/',
+      webhookUrl: 'https://webshop.example.org/payments/webhook/',
+      metadata: '{"order_id":12345}',
+      profileId: 'pfl_QkEhN94Ba',
+      method: 'blik',
+      status: PaymentStatus.open,
+      isCancelable: false,
+      createdAt: '2024-03-20T09:13:37+00:00',
+      expiresAt: '2024-03-20T09:28:37+00:00',
+      _links: {
+        self: {
+          href: '...',
+          type: 'application/hal+json',
+        },
+        checkout: {
+          href: 'https://www.mollie.com/checkout/select-method/7UhSN1zuXS',
+          type: 'text/html',
+        },
+        documentation: {
+          href: '...',
+          type: 'text/html',
+        },
+      },
+    } as CustomPayment;
+
+    (createPaymentWithCustomMethod as jest.Mock).mockReturnValueOnce(molliePayment);
+    (getPaymentExtension as jest.Mock).mockReturnValueOnce({
+      destination: {
+        url: 'https://example.com',
+      },
+    });
+
+    (createMollieCreatePaymentParams as jest.Mock).mockReturnValueOnce({
+      method: 'blik',
+    });
+
+    const actual = await handleCreatePayment(CTPayment);
+
+    const ctActions = [
+      {
+        action: 'addInterfaceInteraction',
+        type: { key: 'sctm_interface_interaction_type' },
+        fields: {
+          id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          actionType: 'createPayment',
+          createdAt: '2024-03-20T09:13:37+00:00',
+          request: '{"transactionId":"5c8b0375-305a-4f19-ae8e-07806b101999","paymentMethod":"creditcard"}',
+          response:
+            '{"molliePaymentId":"tr_7UhSN1zuXS","checkoutUrl":"https://www.mollie.com/checkout/select-method/7UhSN1zuXS","transactionId":"5c8b0375-305a-4f19-ae8e-07806b101999"}',
+        },
+      },
+      {
+        action: 'changeTransactionInteractionId',
+        transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        interactionId: 'tr_7UhSN1zuXS',
+      },
+      {
+        action: 'changeTransactionTimestamp',
+        transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        timestamp: '2024-03-20T09:13:37+00:00',
+      },
+      {
+        action: 'changeTransactionState',
+        transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        state: 'Pending',
+      },
+    ];
+
+    expect(createPaymentWithCustomMethod).toBeCalledTimes(1);
 
     expect(actual).toEqual({
       statusCode: 201,
