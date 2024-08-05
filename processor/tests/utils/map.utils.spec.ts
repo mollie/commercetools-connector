@@ -84,18 +84,7 @@ describe('createMollieCreatePaymentParams', () => {
         currency: mollieAmount.currency,
         value: mollieAmount.value,
       },
-      locale: null,
-      redirectUrl: null,
       webhookUrl: extensionUrl,
-      description: '',
-      applicationFee: {},
-      billingAddress: {},
-      issuer: '',
-      metadata: null,
-      restrictPaymentMethodsToCountry: null,
-      shippingAddress: {},
-      cardToken: '',
-      include: '',
     });
   });
 
@@ -149,14 +138,7 @@ describe('createMollieCreatePaymentParams', () => {
       redirectUrl: customFieldObject.redirectUrl,
       webhookUrl: extensionUrl, // Always use our default webhook endpoint
       description: customFieldObject.description,
-      applicationFee: {},
-      billingAddress: {},
-      issuer: '',
-      metadata: null,
-      restrictPaymentMethodsToCountry: null,
-      shippingAddress: {},
       cardToken: customFieldObject.cardToken,
-      include: '',
     });
   });
 
@@ -216,11 +198,6 @@ describe('createMollieCreatePaymentParams', () => {
       description: customFieldObject.description,
       issuer: 'ideal_TEST',
       include: customFieldObject.include,
-      applicationFee: {},
-      billingAddress: {},
-      metadata: null,
-      restrictPaymentMethodsToCountry: null,
-      shippingAddress: {},
     });
   });
 
@@ -280,12 +257,6 @@ describe('createMollieCreatePaymentParams', () => {
       webhookUrl: extensionUrl,
       description: customFieldObject.description,
       include: customFieldObject.include,
-      issuer: '',
-      applicationFee: {},
-      billingAddress: {},
-      metadata: null,
-      restrictPaymentMethodsToCountry: null,
-      shippingAddress: {},
     });
   });
 
@@ -341,13 +312,6 @@ describe('createMollieCreatePaymentParams', () => {
       description: customFieldObject.description,
       dueDate: customFieldObject.dueDate,
       billingEmail: customFieldObject.billingEmail,
-      include: '',
-      issuer: '',
-      applicationFee: {},
-      billingAddress: {},
-      metadata: null,
-      restrictPaymentMethodsToCountry: null,
-      shippingAddress: {},
     });
   });
 
@@ -401,13 +365,6 @@ describe('createMollieCreatePaymentParams', () => {
       webhookUrl: extensionUrl,
       description: customFieldObject.description,
       billingEmail: customFieldObject.billingEmail,
-      include: '',
-      issuer: '',
-      applicationFee: {},
-      billingAddress: {},
-      metadata: null,
-      restrictPaymentMethodsToCountry: null,
-      shippingAddress: {},
     });
   });
 
@@ -459,13 +416,6 @@ describe('createMollieCreatePaymentParams', () => {
       redirectUrl: customFieldObject.redirectUrl,
       webhookUrl: extensionUrl,
       description: customFieldObject.description,
-      include: '',
-      issuer: '',
-      applicationFee: {},
-      billingAddress: {},
-      metadata: null,
-      restrictPaymentMethodsToCountry: null,
-      shippingAddress: {},
     });
   });
 
@@ -569,13 +519,6 @@ describe('createMollieCreatePaymentParams', () => {
       webhookUrl: extensionUrl,
       description: customFieldObject.description,
       applePayPaymentToken: customFieldObject.applePayPaymentToken,
-      include: '',
-      issuer: '',
-      applicationFee: {},
-      billingAddress: {},
-      metadata: null,
-      restrictPaymentMethodsToCountry: null,
-      shippingAddress: {},
     });
   });
 
@@ -631,13 +574,6 @@ describe('createMollieCreatePaymentParams', () => {
       description: customFieldObject.description,
       sessionId: customFieldObject.sessionId,
       digitalGoods: customFieldObject.digitalGoods,
-      include: '',
-      issuer: '',
-      applicationFee: {},
-      billingAddress: {},
-      metadata: null,
-      restrictPaymentMethodsToCountry: null,
-      shippingAddress: {},
     });
   });
 
@@ -693,13 +629,6 @@ describe('createMollieCreatePaymentParams', () => {
       description: customFieldObject.description,
       voucherNumber: customFieldObject.voucherNumber,
       voucherPin: customFieldObject.voucherPin,
-      include: '',
-      issuer: '',
-      applicationFee: {},
-      billingAddress: {},
-      metadata: null,
-      restrictPaymentMethodsToCountry: null,
-      shippingAddress: {},
     });
   });
 });

@@ -5,7 +5,7 @@ import { ParsedMethodsRequestType } from '../types/mollie.types';
 import { Payment } from '@commercetools/platform-sdk';
 import CustomError from '../errors/custom.error';
 import { PaymentCreateParams, MethodsListParams, PaymentMethod } from '@mollie/api-client';
-import { parseStringToJsonObject } from './app.utils';
+import { parseStringToJsonObject, removeEmptyProperties } from './app.utils';
 
 const extractMethodsRequest = (ctPayment: Payment): ParsedMethodsRequestType | undefined => {
   return ctPayment?.custom?.fields?.[CustomFields.payment.request];
@@ -106,7 +106,7 @@ export const createMollieCreatePaymentParams = (payment: Payment, extensionUrl: 
 
   const defaultWebhookEndpoint = new URL(extensionUrl).origin + '/webhook';
 
-  return {
+  const createPaymentParams = {
     amount: makeMollieAmount(amountPlanned),
     description: paymentRequest.description ?? '',
     redirectUrl: paymentRequest.redirectUrl ?? null,
@@ -120,6 +120,13 @@ export const createMollieCreatePaymentParams = (payment: Payment, extensionUrl: 
     metadata: paymentRequest.metadata ?? null,
     applicationFee: paymentRequest.applicationFee ?? {},
     include: paymentRequest.include ?? '',
+    captureMode: paymentRequest.captureMode ?? '',
     ...getSpecificPaymentParams(method as PaymentMethod, paymentRequest),
   };
+
+  const validatedCreatePaymentParams: PaymentCreateParams = removeEmptyProperties(
+    createPaymentParams,
+  ) as PaymentCreateParams;
+
+  return validatedCreatePaymentParams;
 };
