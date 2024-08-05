@@ -1,5 +1,5 @@
 import { Payment as CTPayment } from '@commercetools/platform-sdk';
-import { PaymentMethod as MolliePaymentMethods, PaymentMethod } from '@mollie/api-client';
+import { PaymentMethod as MolliePaymentMethods } from '@mollie/api-client';
 import SkipError from '../errors/skip.error';
 import CustomError from '../errors/custom.error';
 import { logger } from '../utils/logger.utils';
@@ -9,6 +9,7 @@ import { CTTransactionState, CTTransactionType } from '../types/commercetools.ty
 import { parseStringToJsonObject } from '../utils/app.utils';
 import { readConfiguration } from '../utils/config.utils';
 import { toBoolean } from 'validator';
+import { CustomPaymentMethod } from '../types/mollie.types';
 
 /**
  * Checks if the given action is either 'Create' or 'Update'.
@@ -50,7 +51,7 @@ export const checkPaymentInterface = (ctPayment: CTPayment): true | SkipError =>
  * @return {boolean} Returns true if the method is supported by Mollie
  */
 export const hasValidPaymentMethod: (method: string | undefined) => boolean = (method: string | undefined): boolean => {
-  return !!MolliePaymentMethods[method as MolliePaymentMethods] || method?.toLowerCase() === 'blik';
+  return !!MolliePaymentMethods[method as MolliePaymentMethods] || !!CustomPaymentMethod[method as CustomPaymentMethod];
 };
 
 /**
@@ -95,9 +96,20 @@ export const checkPaymentMethodInput = (
     );
   }
 
-  if (method === PaymentMethod.creditcard) {
-    checkPaymentMethodSpecificParameters(ctPayment);
+  // if (method === MolliePaymentMethods.creditcard) {
+  //   checkPaymentMethodSpecificParameters(ctPayment);
+  // }
+
+  if ([
+    MolliePaymentMethods.creditcard,
+    CustomPaymentMethod.blik
+  ].includes(method as MolliePaymentMethods|CustomPaymentMethod)) {
+    checkPaymentMethodSpecificParameters(ctPayment, method);
   }
+
+  // if (method === CustomPaymentMethod.blik) {
+
+  // }
 
   return true;
 };
@@ -215,7 +227,7 @@ export const checkValidSuccessAuthorizationTransaction = (ctPayment: CTPayment):
  * The `isInvalid` property indicates if the payment method input is invalid.
  * The `errorMessage` property contains the error message if the input is invalid.
  */
-export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment): void => {
+export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, method: string): void => {
   const paymentCustomFields = parseStringToJsonObject(
     ctPayment.custom?.fields?.[CustomFields.createPayment.request],
     CustomFields.createPayment.request,
@@ -223,36 +235,64 @@ export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment): void
     ctPayment.id,
   );
 
-  const cardComponentEnabled = toBoolean(readConfiguration().mollie.cardComponent, true);
+  switch (method) {
+    case MolliePaymentMethods.creditcard:
+      const cardComponentEnabled = toBoolean(readConfiguration().mollie.cardComponent, true);
 
-  if (cardComponentEnabled) {
-    if (!paymentCustomFields?.cardToken) {
-      logger.error(
-        `SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard, CommerceTools Payment ID: ${ctPayment.id}`,
-        {
-          commerceToolsPaymentId: ctPayment.id,
-          cardToken: paymentCustomFields?.cardToken,
-        },
-      );
+      if (cardComponentEnabled) {
+        if (!paymentCustomFields?.cardToken) {
+          logger.error(
+            `SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard, CommerceTools Payment ID: ${ctPayment.id}`,
+            {
+              commerceToolsPaymentId: ctPayment.id,
+              cardToken: paymentCustomFields?.cardToken,
+            },
+          );
+    
+          throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard');
+        }
+    
+        if (typeof paymentCustomFields?.cardToken !== 'string' || paymentCustomFields?.cardToken.trim() === '') {
+          logger.error(
+            `SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard, CommerceTools Payment ID: ${ctPayment.id}`,
+            {
+              commerceToolsPaymentId: ctPayment.id,
+              cardToken: paymentCustomFields?.cardToken,
+            },
+          );
+    
+          throw new CustomError(
+            400,
+            'SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard',
+          );
+        }
+      }
 
-      throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard');
-    }
+      break;
 
-    if (typeof paymentCustomFields?.cardToken !== 'string' || paymentCustomFields?.cardToken.trim() === '') {
-      logger.error(
-        `SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard, CommerceTools Payment ID: ${ctPayment.id}`,
-        {
-          commerceToolsPaymentId: ctPayment.id,
-          cardToken: paymentCustomFields?.cardToken,
-        },
-      );
+    case CustomPaymentMethod.blik:
+      if (ctPayment.amountPlanned.currencyCode.toLowerCase() !== 'pln') {
+        logger.error(
+          `SCTM - PAYMENT PROCESSING - Currency Code must be PLN for payment method BLIK`,
+          {
+            commerceToolsPaymentId: ctPayment.id,
+            currencyCode: ctPayment.amountPlanned.currencyCode,
+          },
+        );
+  
+        throw new CustomError(
+          400,
+          'SCTM - PAYMENT PROCESSING - Currency Code must be PLN for payment method BLIK',
+        );
+      }
 
-      throw new CustomError(
-        400,
-        'SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard',
-      );
-    }
+      break;
+
+    default:
+      break;
   }
+
+  
 };
 
 export const checkAmountPlanned = (ctPayment: CTPayment): true | CustomError => {

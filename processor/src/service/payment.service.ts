@@ -47,6 +47,7 @@ import {
 import { getPaymentExtension } from '../commercetools/extensions.commercetools';
 import { HttpDestination } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/extension';
 import { cancelPaymentRefund, createPaymentRefund, getPaymentRefund } from '../mollie/refund.mollie';
+import { CustomPayment } from '../types/mollie.types';
 
 /**
  * Handles listing payment methods by payment.
@@ -239,6 +240,8 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
     );
 
     molliePayment = await createPaymentWithCustomMethod(paymentParams);
+
+    console.log('custom mollie payment', molliePayment);
   }
 
   const ctActions = await getCreatePaymentUpdateAction(molliePayment, ctPayment);
@@ -257,7 +260,7 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
  * @return {Promise<UpdateAction[]>} A promise that resolves to an array of update actions.
  * @throws {Error} If the original transaction is not found.
  */
-export const getCreatePaymentUpdateAction = async (molliePayment: MPayment | any, CTPayment: Payment) => {
+export const getCreatePaymentUpdateAction = async (molliePayment: MPayment | CustomPayment, CTPayment: Payment) => {
   try {
     // Find the original transaction which triggered create order
     const originalTransaction = CTPayment.transactions?.find((transaction) => {

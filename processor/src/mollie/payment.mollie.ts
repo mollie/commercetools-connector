@@ -13,6 +13,7 @@ import { logger } from '../utils/logger.utils';
 import axios, { AxiosError } from 'axios';
 import { readConfiguration } from '../utils/config.utils';
 import { LIBRARY_NAME, LIBRARY_VERSION } from '../utils/constant.utils';
+import { CustomPayment } from '../types/mollie.types';
 
 /**
  * Creates a Mollie payment using the provided payment parameters.
@@ -102,7 +103,7 @@ export const cancelPayment = async (paymentId: string): Promise<void> => {
   }
 };
 
-export const createPaymentWithCustomMethod = async (paymentParams: PaymentCreateParams) => {
+export const createPaymentWithCustomMethod = async (paymentParams: PaymentCreateParams): Promise<CustomPayment> => {
   try {
     const { mollie } = readConfiguration();
 
@@ -111,7 +112,9 @@ export const createPaymentWithCustomMethod = async (paymentParams: PaymentCreate
       versionStrings: `${LIBRARY_NAME}/${LIBRARY_VERSION}`,
     };
 
-    return await axios.post('https://api.mollie.com/v2/payments', paymentParams, { headers });
+    const response = await axios.post('https://api.mollie.com/v2/payments', paymentParams, { headers });
+
+    return response.data;
   } catch (error: unknown) {
     let errorMessage;
 

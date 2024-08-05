@@ -302,7 +302,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
     };
 
     try {
-      checkPaymentMethodSpecificParameters(CTPayment);
+      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect((error as CustomError).message).toBe(
@@ -350,7 +350,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
     };
 
     try {
-      checkPaymentMethodSpecificParameters(CTPayment);
+      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect((error as CustomError).message).toBe(
@@ -397,7 +397,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
     };
 
     try {
-      checkPaymentMethodSpecificParameters(CTPayment);
+      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect(logger.error).toBeCalledTimes(1);
@@ -440,7 +440,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
       },
     };
 
-    expect(checkPaymentMethodSpecificParameters(CTPayment)).toBe(undefined);
+    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(undefined);
   });
 });
 
