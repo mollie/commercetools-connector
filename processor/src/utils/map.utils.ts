@@ -1,7 +1,7 @@
 import { CustomFields } from './constant.utils';
 import { logger } from './logger.utils';
 import { makeMollieAmount } from './mollie.utils';
-import { ParsedMethodsRequestType } from '../types/mollie.types';
+import { CustomPaymentMethod, ParsedMethodsRequestType } from '../types/mollie.types';
 import { Payment } from '@commercetools/platform-sdk';
 import CustomError from '../errors/custom.error';
 import { PaymentCreateParams, MethodsListParams, PaymentMethod } from '@mollie/api-client';
@@ -65,7 +65,7 @@ export const mapCommercetoolsPaymentCustomFieldsToMollieListParams = async (
   }
 };
 
-const getSpecificPaymentParams = (method: PaymentMethod, paymentRequest: any) => {
+const getSpecificPaymentParams = (method: PaymentMethod | CustomPaymentMethod, paymentRequest: any) => {
   switch (method) {
     case PaymentMethod.applepay:
       return { applePayPaymentToken: paymentRequest.applePayPaymentToken ?? '' };
@@ -88,6 +88,10 @@ const getSpecificPaymentParams = (method: PaymentMethod, paymentRequest: any) =>
       };
     case PaymentMethod.creditcard:
       return { cardToken: paymentRequest.cardToken ?? '' };
+    case CustomPaymentMethod.blik:
+      return {
+        billingEmail: paymentRequest.billingEmail ?? '',
+      };
     default:
       return {};
   }

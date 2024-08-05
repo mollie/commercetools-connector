@@ -2,12 +2,16 @@ import { jest, expect, describe, it, afterEach } from '@jest/globals';
 import {
   cancelPayment,
   createMolliePayment,
+  createPaymentWithCustomMethod,
   getPaymentById,
   listPaymentMethods,
 } from '../../src/mollie/payment.mollie';
 import { MollieApiError, PaymentCreateParams } from '@mollie/api-client';
 import { logger } from '../../src/utils/logger.utils';
 import CustomError from '../../src/errors/custom.error';
+import { LIBRARY_NAME, LIBRARY_VERSION } from '../../src/utils/constant.utils';
+import { readConfiguration } from '../../src/utils/config.utils';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 
 const mockPaymentsCreate = jest.fn();
 const mockPaymentsGet = jest.fn();
@@ -25,6 +29,12 @@ jest.mock('../../src/client/mollie.client', () => ({
       list: mockPaymentsList,
     },
   })),
+}));
+
+jest.mock('axios', () => ({
+  // @ts-expect-error ignore type error
+  ...jest.requireActual('axios'),
+  post: jest.fn(),
 }));
 
 describe('createMolliePayment', () => {
@@ -100,6 +110,126 @@ describe('createMolliePayment', () => {
           error: new Error('Unknown error'),
         },
       );
+    }
+  });
+});
+
+describe('createPaymentWithCustomMethod', () => {
+  afterEach(() => {
+    jest.clearAllMocks(); // Clear all mocks after each test
+  });
+
+  it('should call axios.post with the correct parameters', async () => {
+    const paymentParams: PaymentCreateParams = {
+      amount: {
+        value: '10.00',
+        currency: 'EUR',
+      },
+      description: 'Test payment',
+    };
+
+    const createPaymentEndpoint = 'https://api.mollie.com/v2/payments';
+    const headers = {
+      Authorization: `Bearer ${readConfiguration().mollie.apiKey}`,
+      versionStrings: `${LIBRARY_NAME}/${LIBRARY_VERSION}`,
+    };
+
+    (axios.post as jest.Mock).mockResolvedValue({
+      data: [],
+    } as never);
+
+    await createPaymentWithCustomMethod(paymentParams);
+
+    expect(axios.post).toHaveBeenCalledTimes(1);
+    expect(axios.post).toHaveBeenCalledWith(createPaymentEndpoint, paymentParams, { headers });
+  });
+
+  it('should throw AxiosError', async () => {
+    const paymentParams: PaymentCreateParams = {
+      amount: {
+        value: '10.00',
+        currency: 'EUR',
+      },
+      description: 'Test payment',
+    };
+
+    const createPaymentEndpoint = 'https://api.mollie.com/v2/payments';
+    const headers = {
+      Authorization: `Bearer ${readConfiguration().mollie.apiKey}`,
+      versionStrings: `${LIBRARY_NAME}/${LIBRARY_VERSION}`,
+    };
+
+    const axiosErrorResponse = {
+      data: {
+        detail: 'Something went wrong',
+        field: 'amount',
+      },
+    };
+
+    const errorMessage = `SCTM - createPaymentWithCustomMethod - error: ${axiosErrorResponse.data.detail}, field: ${axiosErrorResponse.data.field}`;
+
+    const axiosError = new AxiosError(
+      'Bad request',
+      'GeneralError',
+      undefined,
+      undefined,
+      axiosErrorResponse as AxiosResponse,
+    );
+
+    (axios.post as jest.Mock).mockImplementation(() => {
+      throw axiosError;
+    });
+
+    try {
+      await createPaymentWithCustomMethod(paymentParams);
+    } catch (error: any) {
+      expect(axios.post).toHaveBeenCalledTimes(1);
+      expect(axios.post).toHaveBeenCalledWith(createPaymentEndpoint, paymentParams, { headers });
+
+      expect(logger.error).toHaveBeenCalledTimes(1);
+      expect(logger.error).toHaveBeenCalledWith(errorMessage, { error: axiosError });
+
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).statusCode).toBe(400);
+      expect((error as CustomError).message).toBe(errorMessage);
+    }
+  });
+
+  it('should throw other exception', async () => {
+    const paymentParams: PaymentCreateParams = {
+      amount: {
+        value: '10.00',
+        currency: 'EUR',
+      },
+      description: 'Test payment',
+    };
+
+    const createPaymentEndpoint = 'https://api.mollie.com/v2/payments';
+    const headers = {
+      Authorization: `Bearer ${readConfiguration().mollie.apiKey}`,
+      versionStrings: `${LIBRARY_NAME}/${LIBRARY_VERSION}`,
+    };
+
+    const generalError = new Error('Bad request');
+
+    (axios.post as jest.Mock).mockImplementation(() => {
+      throw generalError;
+    });
+
+    try {
+      await createPaymentWithCustomMethod(paymentParams);
+    } catch (error: any) {
+      expect(axios.post).toHaveBeenCalledTimes(1);
+      expect(axios.post).toHaveBeenCalledWith(createPaymentEndpoint, paymentParams, { headers });
+
+      const errorMessage = 'SCTM - createPaymentWithCustomMethod - Failed to create a payment with unknown errors';
+
+      expect(logger.error).toHaveBeenCalledTimes(1);
+      expect(logger.error).toHaveBeenCalledWith(errorMessage, { error: generalError });
+
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).statusCode).toBe(400);
+      expect((error as CustomError).message).toBe(errorMessage);
     }
   });
 });
