@@ -436,11 +436,6 @@ export const handleCancelPayment = async (ctPayment: Payment): Promise<Controlle
       transaction.type === CTTransactionType.Authorization && transaction.state === CTTransactionState.Success,
   );
 
-  const initialCancelAuthorizationTransaction = ctPayment.transactions.find(
-    (transaction) =>
-      transaction.type === CTTransactionType.CancelAuthorization && transaction.state === CTTransactionState.Initial,
-  );
-
   const molliePayment = await getPaymentById(successAuthorizationTransaction?.interactionId as string);
 
   if (molliePayment.isCancelable === false) {

@@ -440,7 +440,9 @@ describe('checkPaymentMethodSpecificParameters', () => {
       },
     };
 
-    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(undefined);
+    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(
+      undefined,
+    );
   });
 
   it('should throw an error if the payment method is blik and the currency code is not PLN', () => {
@@ -484,7 +486,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
       expect(logger.error).toBeCalledWith(
         `SCTM - PAYMENT PROCESSING - Currency Code must be PLN for payment method BLIK`,
         {
-          commerceToolsPayment: CTPayment
+          commerceToolsPayment: CTPayment,
         },
       );
     }
@@ -531,13 +533,13 @@ describe('checkPaymentMethodSpecificParameters', () => {
       expect(logger.error).toBeCalledWith(
         `SCTM - PAYMENT PROCESSING - billingEmail is required for payment method BLIK`,
         {
-          commerceToolsPayment: CTPayment
+          commerceToolsPayment: CTPayment,
         },
       );
     }
   });
 
-   it('should throw an error if the payment method is blik and the billing email is provided incorrectly', () => {
+  it('should throw an error if the payment method is blik and the billing email is provided incorrectly', () => {
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
       version: 1,
@@ -575,12 +577,9 @@ describe('checkPaymentMethodSpecificParameters', () => {
         'SCTM - PAYMENT PROCESSING - billingEmail must be a valid email address',
       );
       expect(logger.error).toBeCalledTimes(1);
-      expect(logger.error).toBeCalledWith(
-        `SCTM - PAYMENT PROCESSING - billingEmail must be a valid email address`,
-        {
-          commerceToolsPayment: CTPayment
-        },
-      );
+      expect(logger.error).toBeCalledWith(`SCTM - PAYMENT PROCESSING - billingEmail must be a valid email address`, {
+        commerceToolsPayment: CTPayment,
+      });
     }
   });
 
@@ -614,7 +613,9 @@ describe('checkPaymentMethodSpecificParameters', () => {
       },
     };
 
-    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(undefined);
+    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(
+      undefined,
+    );
     expect(logger.error).toBeCalledTimes(0);
   });
 });

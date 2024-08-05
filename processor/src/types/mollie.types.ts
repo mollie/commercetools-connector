@@ -1,4 +1,4 @@
-import { PaymentData } from "@mollie/api-client/dist/types/src/data/payments/data";
+import { PaymentData } from '@mollie/api-client/dist/types/src/data/payments/data';
 
 export type ParsedMethodsRequestType = {
   locale?: string;
@@ -11,9 +11,11 @@ export type ParsedMethodsRequestType = {
 };
 
 export enum CustomPaymentMethod {
-  blik = "blik",
+  blik = 'blik',
 }
 
-export type CustomPayment = Readonly<Omit<PaymentData, 'method'> & {
-  method: CustomPaymentMethod
-}>;
+export type CustomPayment = Readonly<
+  Omit<PaymentData, 'method'> & {
+    method: CustomPaymentMethod;
+  }
+>;

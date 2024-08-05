@@ -65,7 +65,7 @@ export const mapCommercetoolsPaymentCustomFieldsToMollieListParams = async (
   }
 };
 
-const getSpecificPaymentParams = (method: PaymentMethod|CustomPaymentMethod, paymentRequest: any) => {
+const getSpecificPaymentParams = (method: PaymentMethod | CustomPaymentMethod, paymentRequest: any) => {
   switch (method) {
     case PaymentMethod.applepay:
       return { applePayPaymentToken: paymentRequest.applePayPaymentToken ?? '' };
@@ -91,7 +91,7 @@ const getSpecificPaymentParams = (method: PaymentMethod|CustomPaymentMethod, pay
     case CustomPaymentMethod.blik:
       return {
         billingEmail: paymentRequest.billingEmail ?? '',
-      }
+      };
     default:
       return {};
   }

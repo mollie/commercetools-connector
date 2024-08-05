@@ -11,13 +11,12 @@ import { logger } from '../../src/utils/logger.utils';
 import CustomError from '../../src/errors/custom.error';
 import { LIBRARY_NAME, LIBRARY_VERSION } from '../../src/utils/constant.utils';
 import { readConfiguration } from '../../src/utils/config.utils';
-import axios, { AxiosError, AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosResponse } from 'axios';
 
 const mockPaymentsCreate = jest.fn();
 const mockPaymentsGet = jest.fn();
 const mockPaymentsList = jest.fn();
 const mockPaymentCancel = jest.fn();
-const mockAxiosPost = jest.fn();
 
 jest.mock('../../src/client/mollie.client', () => ({
   initMollieClient: jest.fn(() => ({
@@ -136,7 +135,7 @@ describe('createPaymentWithCustomMethod', () => {
     };
 
     (axios.post as jest.Mock).mockResolvedValue({
-      data: []
+      data: [],
     } as never);
 
     await createPaymentWithCustomMethod(paymentParams);
@@ -163,13 +162,19 @@ describe('createPaymentWithCustomMethod', () => {
     const axiosErrorResponse = {
       data: {
         detail: 'Something went wrong',
-        field: 'amount'
-      }
+        field: 'amount',
+      },
     };
 
     const errorMessage = `SCTM - createPaymentWithCustomMethod - error: ${axiosErrorResponse.data.detail}, field: ${axiosErrorResponse.data.field}`;
 
-    const axiosError = new AxiosError('Bad request', 'GeneralError', undefined, undefined, axiosErrorResponse as AxiosResponse);
+    const axiosError = new AxiosError(
+      'Bad request',
+      'GeneralError',
+      undefined,
+      undefined,
+      axiosErrorResponse as AxiosResponse,
+    );
 
     (axios.post as jest.Mock).mockImplementation(() => {
       throw axiosError;
@@ -183,7 +188,7 @@ describe('createPaymentWithCustomMethod', () => {
 
       expect(logger.error).toHaveBeenCalledTimes(1);
       expect(logger.error).toHaveBeenCalledWith(errorMessage, { error: axiosError });
-      
+
       expect(error).toBeInstanceOf(CustomError);
       expect((error as CustomError).statusCode).toBe(400);
       expect((error as CustomError).message).toBe(errorMessage);
@@ -218,17 +223,16 @@ describe('createPaymentWithCustomMethod', () => {
       expect(axios.post).toHaveBeenCalledWith(createPaymentEndpoint, paymentParams, { headers });
 
       const errorMessage = 'SCTM - createPaymentWithCustomMethod - Failed to create a payment with unknown errors';
-      
+
       expect(logger.error).toHaveBeenCalledTimes(1);
       expect(logger.error).toHaveBeenCalledWith(errorMessage, { error: generalError });
-      
+
       expect(error).toBeInstanceOf(CustomError);
       expect((error as CustomError).statusCode).toBe(400);
       expect((error as CustomError).message).toBe(errorMessage);
     }
   });
 });
-
 
 describe('getPaymentById', () => {
   afterEach(() => {

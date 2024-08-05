@@ -124,7 +124,6 @@ export const createPaymentWithCustomMethod = async (paymentParams: PaymentCreate
       errorMessage = 'SCTM - createPaymentWithCustomMethod - Failed to create a payment with unknown errors';
     }
 
-
     logger.error(errorMessage, {
       error,
     });

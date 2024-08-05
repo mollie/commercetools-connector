@@ -426,7 +426,7 @@ describe('createMollieCreatePaymentParams', () => {
       locale: 'en_GB',
       redirectUrl: 'https://example.com/success',
       webhookUrl: 'https://example.com/webhook',
-      billingEmail: 'n.tran@shopmacher.de'
+      billingEmail: 'n.tran@shopmacher.de',
     };
 
     const CTPayment: Payment = {
@@ -470,7 +470,7 @@ describe('createMollieCreatePaymentParams', () => {
       redirectUrl: customFieldObject.redirectUrl,
       webhookUrl: customFieldObject.webhookUrl,
       description: customFieldObject.description,
-      billingEmail: customFieldObject.billingEmail
+      billingEmail: customFieldObject.billingEmail,
     });
   });
 

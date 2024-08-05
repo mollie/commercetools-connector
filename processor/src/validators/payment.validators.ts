@@ -96,10 +96,11 @@ export const checkPaymentMethodInput = (
     );
   }
 
-  if ([
-    MolliePaymentMethods.creditcard,
-    CustomPaymentMethod.blik
-  ].includes(method as MolliePaymentMethods|CustomPaymentMethod)) {
+  if (
+    [MolliePaymentMethods.creditcard, CustomPaymentMethod.blik].includes(
+      method as MolliePaymentMethods | CustomPaymentMethod,
+    )
+  ) {
     checkPaymentMethodSpecificParameters(ctPayment, method);
   }
 
@@ -228,7 +229,7 @@ export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, metho
   );
 
   switch (method) {
-    case MolliePaymentMethods.creditcard:
+    case MolliePaymentMethods.creditcard: {
       const cardComponentEnabled = toBoolean(readConfiguration().mollie.cardComponent, true);
 
       if (cardComponentEnabled) {
@@ -240,10 +241,10 @@ export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, metho
               cardToken: paymentCustomFields?.cardToken,
             },
           );
-    
+
           throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard');
         }
-    
+
         if (typeof paymentCustomFields?.cardToken !== 'string' || paymentCustomFields?.cardToken.trim() === '') {
           logger.error(
             `SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard, CommerceTools Payment ID: ${ctPayment.id}`,
@@ -252,7 +253,7 @@ export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, metho
               cardToken: paymentCustomFields?.cardToken,
             },
           );
-    
+
           throw new CustomError(
             400,
             'SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard',
@@ -261,45 +262,31 @@ export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, metho
       }
 
       break;
+    }
 
     case CustomPaymentMethod.blik:
       if (ctPayment.amountPlanned.currencyCode.toLowerCase() !== 'pln') {
-        logger.error(
-          `SCTM - PAYMENT PROCESSING - Currency Code must be PLN for payment method BLIK`,
-          {
-            commerceToolsPayment: ctPayment
-          },
-        );
-  
-        throw new CustomError(
-          400,
-          'SCTM - PAYMENT PROCESSING - Currency Code must be PLN for payment method BLIK',
-        );
+        logger.error(`SCTM - PAYMENT PROCESSING - Currency Code must be PLN for payment method BLIK`, {
+          commerceToolsPayment: ctPayment,
+        });
+
+        throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - Currency Code must be PLN for payment method BLIK');
       }
 
       if (!paymentCustomFields?.billingEmail) {
-        logger.error(
-          `SCTM - PAYMENT PROCESSING - billingEmail is required for payment method BLIK`,
-          {
-            commerceToolsPayment: ctPayment
-          },
-        );
-  
+        logger.error(`SCTM - PAYMENT PROCESSING - billingEmail is required for payment method BLIK`, {
+          commerceToolsPayment: ctPayment,
+        });
+
         throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - billingEmail is required for payment method BLIK');
       }
 
       if (!validateEmail(paymentCustomFields.billingEmail)) {
-        logger.error(
-          `SCTM - PAYMENT PROCESSING - billingEmail must be a valid email address`,
-          {
-            commerceToolsPayment: ctPayment
-          },
-        );
-  
-        throw new CustomError(
-          400,
-          'SCTM - PAYMENT PROCESSING - billingEmail must be a valid email address',
-        );
+        logger.error(`SCTM - PAYMENT PROCESSING - billingEmail must be a valid email address`, {
+          commerceToolsPayment: ctPayment,
+        });
+
+        throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - billingEmail must be a valid email address');
       }
 
       break;
@@ -307,8 +294,6 @@ export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, metho
     default:
       break;
   }
-
-  
 };
 
 export const checkAmountPlanned = (ctPayment: CTPayment): true | CustomError => {
