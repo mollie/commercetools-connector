@@ -39,3 +39,30 @@ export function parseStringToJsonObject(
     throw new CustomError(400, errorMessage);
   }
 }
+
+/**
+ * Removes empty properties from an object.
+ *
+ * @param {object} obj - The object from which to remove empty properties.
+ * @return {object} - The object with empty properties removed.
+ */
+export function removeEmptyProperties(obj: object) {
+  const clonedObject: { [key: string]: any } = Object.assign({}, obj);
+
+  for (const key in clonedObject) {
+    if (Object.prototype.hasOwnProperty.call(clonedObject, key)) {
+      const value = clonedObject[key];
+
+      if (
+        value === null ||
+        value === undefined ||
+        value === '' ||
+        (typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === 0)
+      ) {
+        delete clonedObject[key];
+      }
+    }
+  }
+
+  return clonedObject;
+}
