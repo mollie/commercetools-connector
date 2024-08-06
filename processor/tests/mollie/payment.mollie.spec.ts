@@ -2,12 +2,16 @@ import { jest, expect, describe, it, afterEach } from '@jest/globals';
 import {
   cancelPayment,
   createMolliePayment,
+  createPaymentWithCustomMethod,
   getPaymentById,
   listPaymentMethods,
 } from '../../src/mollie/payment.mollie';
 import { MollieApiError, PaymentCreateParams } from '@mollie/api-client';
 import { logger } from '../../src/utils/logger.utils';
 import CustomError from '../../src/errors/custom.error';
+import { LIBRARY_NAME, LIBRARY_VERSION } from '../../src/utils/constant.utils';
+import { readConfiguration } from '../../src/utils/config.utils';
+import fetch from 'node-fetch';
 
 const mockPaymentsCreate = jest.fn();
 const mockPaymentsGet = jest.fn();
@@ -26,6 +30,9 @@ jest.mock('../../src/client/mollie.client', () => ({
     },
   })),
 }));
+
+// @ts-expect-error: Mock fetch globally
+fetch = jest.fn() as jest.Mock;
 
 describe('createMolliePayment', () => {
   afterEach(() => {
@@ -100,6 +107,214 @@ describe('createMolliePayment', () => {
           error: new Error('Unknown error'),
         },
       );
+    }
+  });
+});
+
+describe('createPaymentWithCustomMethod', () => {
+  afterEach(() => {
+    jest.clearAllMocks(); // Clear all mocks after each test
+  });
+
+  it('should call fetch with the correct parameters', async () => {
+    const paymentParams: PaymentCreateParams = {
+      amount: {
+        value: '10.00',
+        currency: 'EUR',
+      },
+      description: 'Test payment',
+    };
+
+    const createPaymentEndpoint = 'https://api.mollie.com/v2/payments';
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${readConfiguration().mollie.apiKey}`,
+      versionStrings: `${LIBRARY_NAME}/${LIBRARY_VERSION}`,
+    };
+
+    (fetch as unknown as jest.Mock).mockImplementation(async () =>
+      Promise.resolve({
+        json: () => Promise.resolve({ data: [] }),
+        headers: new Headers(),
+        ok: true,
+        redirected: false,
+        status: 201,
+        statusText: 'OK',
+        url: '',
+      }),
+    );
+
+    await createPaymentWithCustomMethod(paymentParams);
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith(createPaymentEndpoint, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(paymentParams),
+    });
+  });
+
+  it('should log error if Mollie API returns an error', async () => {
+    const paymentParams: PaymentCreateParams = {
+      amount: {
+        value: '10.00',
+        currency: 'EUR',
+      },
+      description: 'Test payment',
+    };
+
+    const createPaymentEndpoint = 'https://api.mollie.com/v2/payments';
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${readConfiguration().mollie.apiKey}`,
+      versionStrings: `${LIBRARY_NAME}/${LIBRARY_VERSION}`,
+    };
+
+    const response = {
+      data: {
+        detail: 'Something went wrong',
+        field: 'amount',
+      },
+    };
+
+    const errorMessage = `SCTM - createPaymentWithCustomMethod - error: ${response.data.detail}, field: ${response.data.field}`;
+
+    (fetch as unknown as jest.Mock).mockImplementation(async () =>
+      Promise.resolve({
+        json: () =>
+          Promise.resolve({
+            detail: 'Something went wrong',
+            field: 'amount',
+          }),
+        headers: new Headers(),
+        ok: false,
+        redirected: false,
+        status: 422,
+        statusText: 'OK',
+        url: '',
+      }),
+    );
+
+    try {
+      await createPaymentWithCustomMethod(paymentParams);
+    } catch (error: unknown) {
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(fetch).toHaveBeenCalledWith(createPaymentEndpoint, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(paymentParams),
+      });
+
+      expect(logger.error).toHaveBeenCalledTimes(1);
+      expect(logger.error).toHaveBeenCalledWith(errorMessage, {
+        response: {
+          detail: 'Something went wrong',
+          field: 'amount',
+        },
+      });
+
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).statusCode).toBe(400);
+      expect((error as CustomError).message).toBe(errorMessage);
+    }
+  });
+
+  it('should throw a general error when the request failed with status neither 422 nor 503', async () => {
+    const paymentParams: PaymentCreateParams = {
+      amount: {
+        value: '10.00',
+        currency: 'EUR',
+      },
+      description: 'Test payment',
+    };
+
+    const createPaymentEndpoint = 'https://api.mollie.com/v2/payments';
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${readConfiguration().mollie.apiKey}`,
+      versionStrings: `${LIBRARY_NAME}/${LIBRARY_VERSION}`,
+    };
+
+    const response = {
+      detail: 'Something went wrong',
+      field: 'amount',
+      extra: 'testing',
+      title: 'mollie',
+    };
+
+    const errorMessage = 'SCTM - createPaymentWithCustomMethod - Failed to create a payment with unknown errors';
+
+    (fetch as unknown as jest.Mock).mockImplementation(async () =>
+      Promise.resolve({
+        json: () => Promise.resolve(response),
+        headers: new Headers(),
+        ok: false,
+        redirected: false,
+        status: 500,
+        statusText: 'Failed',
+        url: '',
+      }),
+    );
+
+    try {
+      await createPaymentWithCustomMethod(paymentParams);
+    } catch (error: any) {
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(fetch).toHaveBeenCalledWith(createPaymentEndpoint, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(paymentParams),
+      });
+
+      expect(logger.error).toHaveBeenCalledTimes(1);
+      expect(logger.error).toHaveBeenCalledWith(errorMessage, { response: response });
+
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).statusCode).toBe(400);
+      expect((error as CustomError).message).toBe(errorMessage);
+    }
+  });
+
+  it('should throw a general error when the an exception is thrown somewhere in the process', async () => {
+    const paymentParams: PaymentCreateParams = {
+      amount: {
+        value: '10.00',
+        currency: 'EUR',
+      },
+      description: 'Test payment',
+    };
+
+    const createPaymentEndpoint = 'https://api.mollie.com/v2/payments';
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${readConfiguration().mollie.apiKey}`,
+      versionStrings: `${LIBRARY_NAME}/${LIBRARY_VERSION}`,
+    };
+
+    const errorMessage = 'SCTM - createPaymentWithCustomMethod - Failed to create a payment with unknown errors';
+
+    const generalError = new Error('General error');
+
+    (fetch as unknown as jest.Mock).mockImplementation(async () => {
+      throw generalError;
+    });
+
+    try {
+      await createPaymentWithCustomMethod(paymentParams);
+    } catch (error: any) {
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(fetch).toHaveBeenCalledWith(createPaymentEndpoint, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(paymentParams),
+      });
+
+      expect(logger.error).toHaveBeenCalledTimes(1);
+      expect(logger.error).toHaveBeenCalledWith(errorMessage, { error: generalError });
+
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).statusCode).toBe(400);
+      expect((error as CustomError).message).toBe(errorMessage);
     }
   });
 });
