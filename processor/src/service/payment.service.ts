@@ -60,7 +60,9 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
   try {
     const mollieOptions = await mapCommercetoolsPaymentCustomFieldsToMollieListParams(ctPayment);
     const methods: List<Method> = await listPaymentMethods(mollieOptions);
-    const enableCardComponent = toBoolean(readConfiguration().mollie.cardComponent, true);
+    const enableCardComponent =
+      toBoolean(readConfiguration().mollie.cardComponent, true) &&
+      methods.filter((method: Method) => method.id === PaymentMethod.creditcard).length > 0;
     const ctUpdateActions: UpdateAction[] = [];
 
     if (enableCardComponent) {
