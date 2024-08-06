@@ -116,7 +116,7 @@ describe('createPaymentWithCustomMethod', () => {
     jest.clearAllMocks(); // Clear all mocks after each test
   });
 
-  it('should call getch with the correct parameters', async () => {
+  it('should call fetch with the correct parameters', async () => {
     const paymentParams: PaymentCreateParams = {
       amount: {
         value: '10.00',
