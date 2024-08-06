@@ -1,10 +1,11 @@
 import { CustomFields } from './constant.utils';
 import { logger } from './logger.utils';
 import { makeMollieAmount } from './mollie.utils';
-import { ParsedMethodsRequestType } from '../types/mollie.types';
+import { CustomPaymentMethod, ParsedMethodsRequestType } from '../types/mollie.types';
 import { Payment } from '@commercetools/platform-sdk';
 import CustomError from '../errors/custom.error';
 import { PaymentCreateParams, MethodsListParams, PaymentMethod } from '@mollie/api-client';
+import { parseStringToJsonObject, removeEmptyProperties } from './app.utils';
 
 const extractMethodsRequest = (ctPayment: Payment): ParsedMethodsRequestType | undefined => {
   return ctPayment?.custom?.fields?.[CustomFields.payment.request];
@@ -40,7 +41,10 @@ export const mapCommercetoolsPaymentCustomFieldsToMollieListParams = async (
     if (!parsedMethodsRequest) {
       logger.debug(
         'SCTM - field {custom.fields.sctm_payment_methods_request} not found. Returning default Mollie object',
-        baseParams,
+        {
+          ...baseParams,
+          commerceToolsPaymentId: ctPayment.id,
+        },
       );
       return baseParams;
     }
@@ -50,12 +54,18 @@ export const mapCommercetoolsPaymentCustomFieldsToMollieListParams = async (
       ...buildMethodsListParams(parsedMethodsRequest),
     };
   } catch (error: unknown) {
-    logger.error('SCTM - PARSING ERROR - field {custom.fields.sctm_payment_methods_request}');
+    logger.error(
+      `SCTM - PARSING ERROR - field {custom.fields.sctm_payment_methods_request}, CommerceTools Payment ID: ${ctPayment.id}`,
+      {
+        commerceToolsPaymentId: ctPayment.id,
+        error,
+      },
+    );
     throw new CustomError(400, 'SCTM - PARSING ERROR - field {custom.fields.sctm_payment_methods_request}');
   }
 };
 
-const getSpecificPaymentParams = (method: PaymentMethod, paymentRequest: any) => {
+const getSpecificPaymentParams = (method: PaymentMethod | CustomPaymentMethod, paymentRequest: any) => {
   switch (method) {
     case PaymentMethod.applepay:
       return { applePayPaymentToken: paymentRequest.applePayPaymentToken ?? '' };
@@ -78,21 +88,29 @@ const getSpecificPaymentParams = (method: PaymentMethod, paymentRequest: any) =>
       };
     case PaymentMethod.creditcard:
       return { cardToken: paymentRequest.cardToken ?? '' };
+    case CustomPaymentMethod.blik:
+      return {
+        billingEmail: paymentRequest.billingEmail ?? '',
+      };
     default:
       return {};
   }
 };
 
-export const createMollieCreatePaymentParams = (payment: Payment): PaymentCreateParams => {
-  const { amountPlanned, paymentMethodInfo, custom } = payment;
+export const createMollieCreatePaymentParams = (payment: Payment, extensionUrl: string): PaymentCreateParams => {
+  const { amountPlanned, paymentMethodInfo } = payment;
 
   const [method, issuer] = paymentMethodInfo?.method?.split(',') ?? [null, null];
-  const requestCustomField = custom?.fields?.[CustomFields.createPayment.request];
-  const paymentRequest = requestCustomField ? JSON.parse(requestCustomField) : {};
+  const paymentRequest = parseStringToJsonObject(
+    payment.custom?.fields?.[CustomFields.createPayment.request],
+    CustomFields.createPayment.request,
+    'SCTM - PAYMENT PROCESSING',
+    payment.id,
+  );
 
-  const defaultWebhookEndpoint = new URL(process.env.CONNECT_SERVICE_URL ?? '').origin + '/webhook';
+  const defaultWebhookEndpoint = new URL(extensionUrl).origin + '/webhook';
 
-  const molliePaymentParams: PaymentCreateParams = {
+  const createPaymentParams = {
     amount: makeMollieAmount(amountPlanned),
     description: paymentRequest.description ?? '',
     redirectUrl: paymentRequest.redirectUrl ?? null,
@@ -106,8 +124,13 @@ export const createMollieCreatePaymentParams = (payment: Payment): PaymentCreate
     metadata: paymentRequest.metadata ?? null,
     applicationFee: paymentRequest.applicationFee ?? {},
     include: paymentRequest.include ?? '',
+    captureMode: paymentRequest.captureMode ?? '',
     ...getSpecificPaymentParams(method as PaymentMethod, paymentRequest),
   };
 
-  return molliePaymentParams;
+  const validatedCreatePaymentParams: PaymentCreateParams = removeEmptyProperties(
+    createPaymentParams,
+  ) as PaymentCreateParams;
+
+  return validatedCreatePaymentParams;
 };

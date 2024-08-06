@@ -10,6 +10,10 @@ import {
 import { initMollieClient } from '../client/mollie.client';
 import CustomError from '../errors/custom.error';
 import { logger } from '../utils/logger.utils';
+import { readConfiguration } from '../utils/config.utils';
+import { LIBRARY_NAME, LIBRARY_VERSION } from '../utils/constant.utils';
+import { CustomPayment } from '../types/mollie.types';
+import fetch from 'node-fetch';
 
 /**
  * Creates a Mollie payment using the provided payment parameters.
@@ -24,13 +28,12 @@ export const createMolliePayment = async (paymentParams: PaymentCreateParams): P
     let errorMessage;
 
     if (error instanceof MollieApiError) {
-      errorMessage = `createMolliePayment - error: ${error.message}, field: ${error.field}`;
+      errorMessage = `SCTM - createMolliePayment - error: ${error.message}, field: ${error.field}`;
     } else {
-      errorMessage = `createMolliePayment - Failed to create payment with unknown errors`;
+      errorMessage = `SCTM - createMolliePayment - Failed to create payment with unknown errors`;
     }
 
-    logger.error({
-      message: errorMessage,
+    logger.error(errorMessage, {
       error,
     });
 
@@ -60,15 +63,88 @@ export const listPaymentMethods = async (options: MethodsListParams): Promise<Li
   } catch (error: unknown) {
     let errorMessage;
     if (error instanceof MollieApiError) {
-      errorMessage = `listPaymentMethods - error: ${error.message}, field: ${error.field}`;
+      errorMessage = `SCTM - listPaymentMethods - error: ${error.message}, field: ${error.field}`;
     } else {
-      errorMessage = `listPaymentMethods - Failed to list payments with unknown errors`;
+      errorMessage = `SCTM - listPaymentMethods - Failed to list payments with unknown errors`;
     }
 
-    logger.error({
-      message: errorMessage,
+    logger.error(errorMessage, {
       error,
     });
+
+    throw new CustomError(400, errorMessage);
+  }
+};
+
+export const cancelPayment = async (paymentId: string): Promise<void> => {
+  try {
+    await initMollieClient().payments.cancel(paymentId);
+  } catch (error: unknown) {
+    let errorMessage;
+    if (error instanceof MollieApiError) {
+      errorMessage = `SCTM - cancelPayment - error: ${error.message}, field: ${error.field}`;
+    } else if (
+      // TODO: This is just a temporary fix while waiting Mollie to update the Client
+      // Currently this call returned with status code 202 and an empty response body
+      // While the Client expecting some resource there, that's why it failed and throw exception
+      error instanceof Error &&
+      error.message === 'Received unexpected response from the server with resource undefined'
+    ) {
+      return;
+    } else {
+      errorMessage = `SCTM - cancelPayment - Failed to cancel payments with unknown errors`;
+    }
+
+    logger.error(errorMessage, {
+      error,
+    });
+
+    throw new CustomError(400, errorMessage);
+  }
+};
+
+export const createPaymentWithCustomMethod = async (paymentParams: PaymentCreateParams): Promise<CustomPayment> => {
+  let errorMessage;
+
+  try {
+    const { mollie } = readConfiguration();
+
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${mollie.apiKey}`,
+      versionStrings: `${LIBRARY_NAME}/${LIBRARY_VERSION}`,
+    };
+
+    const response = await fetch('https://api.mollie.com/v2/payments', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(paymentParams),
+    });
+
+    const data = await response.json();
+
+    if (response.status !== 201) {
+      if (response.status === 422 || response.status === 503) {
+        errorMessage = `SCTM - createPaymentWithCustomMethod - error: ${data?.detail}, field: ${data?.field}`;
+      } else {
+        errorMessage = 'SCTM - createPaymentWithCustomMethod - Failed to create a payment with unknown errors';
+      }
+
+      logger.error(errorMessage, {
+        response: data,
+      });
+
+      throw new CustomError(400, errorMessage);
+    }
+
+    return data;
+  } catch (error: unknown) {
+    if (!errorMessage) {
+      errorMessage = 'SCTM - createPaymentWithCustomMethod - Failed to create a payment with unknown errors';
+      logger.error(errorMessage, {
+        error,
+      });
+    }
 
     throw new CustomError(400, errorMessage);
   }

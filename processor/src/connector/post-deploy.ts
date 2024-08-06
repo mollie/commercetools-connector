@@ -5,7 +5,7 @@ import { assertError, assertString } from '../utils/assert.utils';
 import { createPaymentExtension } from '../commercetools/extensions.commercetools';
 import {
   createCustomPaymentInterfaceInteractionType,
-  createCustomPaymentTransactionCancelRefundType,
+  createCustomPaymentTransactionCancelReasonType,
   createCustomPaymentType,
 } from '../commercetools/customFields.commercetools';
 
@@ -19,7 +19,7 @@ async function postDeploy(properties: Map<string, unknown>): Promise<void> {
   await createPaymentExtension(applicationUrl);
   await createCustomPaymentType();
   await createCustomPaymentInterfaceInteractionType();
-  await createCustomPaymentTransactionCancelRefundType();
+  await createCustomPaymentTransactionCancelReasonType();
 }
 
 async function run(): Promise<void> {

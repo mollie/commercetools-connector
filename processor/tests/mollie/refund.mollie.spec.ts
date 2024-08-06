@@ -64,8 +64,8 @@ describe('createPaymentRefund', () => {
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect(logger.error).toBeCalledTimes(1);
-      expect(logger.error).toBeCalledWith({
-        message: `createMolliePaymentRefund - error: ` + errorMessage,
+      expect(logger.error).toBeCalledWith(`SCTM - createPaymentRefund - Calling Mollie API - error: ${errorMessage}`, {
+        molliePaymentId: paymentCreateRefund.paymentId,
         error: mollieApiError,
       });
     }
@@ -89,10 +89,13 @@ describe('createPaymentRefund', () => {
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect(logger.error).toBeCalledTimes(1);
-      expect(logger.error).toBeCalledWith({
-        message: `createMolliePaymentRefund - Calling Mollie API - Failed to create refund with unknown errors`,
-        error: new Error('Unknown error'),
-      });
+      expect(logger.error).toBeCalledWith(
+        `SCTM - createPaymentRefund - Calling Mollie API - Failed to create refund with unknown errors`,
+        {
+          molliePaymentId: paymentCreateRefund.paymentId,
+          error: new Error('Unknown error'),
+        },
+      );
     }
   });
 });
@@ -126,9 +129,10 @@ describe('getPaymentRefund', () => {
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect(logger.error).toBeCalledTimes(1);
-      expect(logger.error).toBeCalledWith({
-        message: `getPaymentRefund - error: ` + errorMessage,
+      expect(logger.error).toBeCalledWith(`SCTM - getPaymentRefund - Calling Mollie API - error: ${errorMessage}`, {
         error: mollieApiError,
+        molliePaymentId: 'tr_12345',
+        mollieRefundId: 'refund_id_1',
       });
     }
   });
@@ -149,10 +153,14 @@ describe('getPaymentRefund', () => {
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect(logger.error).toBeCalledTimes(1);
-      expect(logger.error).toBeCalledWith({
-        message: `getPaymentRefund - Failed to cancel the refund with unknown errors`,
-        error: unexpectedError,
-      });
+      expect(logger.error).toBeCalledWith(
+        'SCTM - getPaymentRefund - Calling Mollie API - Failed to cancel the refund with unknown errors',
+        {
+          molliePaymentId: 'tr_12345',
+          mollieRefundId: 'refund_id_1',
+          error: unexpectedError,
+        },
+      );
     }
   });
 });
@@ -190,15 +198,16 @@ describe('cancelPaymentRefund', () => {
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect(logger.error).toBeCalledTimes(1);
-      expect(logger.error).toBeCalledWith({
-        message: `cancelPaymentRefund - error: ` + errorMessage,
+      expect(logger.error).toBeCalledWith(`SCTM - cancelPaymentRefund - Calling Mollie API - error: ${errorMessage}`, {
+        molliePaymentId: paymentCancelRefund.paymentId,
+        mollieRefundId: 'refund_id_1',
         error: mollieApiError,
       });
     }
   });
 
   it('should be able to return a proper error message when error which is not an instance of MollieApiError occurred', async () => {
-    const unexpectedError = new CustomError(400, 'dummy message');
+    const unexpectedError = new CustomError(400, 'Unknown error');
 
     (mockPaymentRefundCancel as jest.Mock).mockImplementation(() => {
       throw unexpectedError;
@@ -213,10 +222,14 @@ describe('cancelPaymentRefund', () => {
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect(logger.error).toBeCalledTimes(1);
-      expect(logger.error).toBeCalledWith({
-        message: `cancelPaymentRefund - Failed to cancel the refund with unknown errors`,
-        error: unexpectedError,
-      });
+      expect(logger.error).toBeCalledWith(
+        `SCTM - cancelPaymentRefund - Calling Mollie API - Failed to cancel the refund with unknown errors`,
+        {
+          molliePaymentId: paymentCancelRefund.paymentId,
+          mollieRefundId: 'refund_id_1',
+          error: new Error('Unknown error'),
+        },
+      );
     }
   });
 });

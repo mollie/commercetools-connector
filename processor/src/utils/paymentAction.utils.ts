@@ -14,6 +14,7 @@ const getTransactionGroups = (transactions: Transaction[]) => {
     initialRefund: [] as Transaction[],
     pendingRefund: [] as Transaction[],
     initialCancelAuthorization: [] as Transaction[],
+    successAuthorization: [] as Transaction[],
   };
 
   transactions?.forEach((transaction) => {
@@ -37,6 +38,8 @@ const getTransactionGroups = (transactions: Transaction[]) => {
       case CTTransactionState.Success:
         if (transaction.type === CTTransactionType.Charge) {
           groups.successCharge.push(transaction);
+        } else if (transaction.type === CTTransactionType.Authorization) {
+          groups.successAuthorization.push(transaction);
         }
         break;
     }
@@ -45,7 +48,7 @@ const getTransactionGroups = (transactions: Transaction[]) => {
   return groups;
 };
 
-const determineAction = (groups: ReturnType<typeof getTransactionGroups>, key?: string): DeterminePaymentActionType => {
+const determineAction = (groups: ReturnType<typeof getTransactionGroups>): DeterminePaymentActionType => {
   if (groups.initialCharge.length > 1) {
     throw new CustomError(400, 'Only one transaction can be in "Initial" state at any time');
   }
@@ -57,15 +60,12 @@ const determineAction = (groups: ReturnType<typeof getTransactionGroups>, key?: 
     );
   }
 
-  if (groups.pendingCharge.length && !key) {
-    throw new CustomError(
-      400,
-      'Cannot create a Transaction in state "Pending". This state is reserved to indicate the transaction has been accepted by the payment service provider',
-    );
+  if (groups.initialCharge.length === 1 && !groups.successCharge.length && !groups.pendingCharge.length) {
+    return ConnectorActions.CreatePayment;
   }
 
-  if ((key || groups.initialCharge.length === 1) && !groups.successCharge.length && !groups.pendingCharge.length) {
-    return ConnectorActions.CreatePayment;
+  if (groups.successAuthorization.length === 1 && groups.initialCancelAuthorization.length === 1) {
+    return ConnectorActions.CancelPayment;
   }
 
   if (groups.successCharge.length === 1 && groups.initialRefund.length) {
@@ -99,8 +99,8 @@ export const determinePaymentAction = (ctPayment?: Payment): DeterminePaymentAct
     return ConnectorActions.GetPaymentMethods;
   }
 
-  const { key, transactions } = ctPayment;
+  const { transactions } = ctPayment;
   const groups = getTransactionGroups(transactions);
 
-  return determineAction(groups, key);
+  return determineAction(groups);
 };

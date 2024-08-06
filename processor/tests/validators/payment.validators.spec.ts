@@ -11,6 +11,7 @@ import {
   validateCommerceToolsPaymentPayload,
   checkValidRefundTransactionForCreate,
   checkValidRefundTransactionForCancel,
+  checkValidSuccessAuthorizationTransaction,
 } from './../../src/validators/payment.validators';
 import { describe, it, expect, jest, afterEach } from '@jest/globals';
 import CustomError from '../../src/errors/custom.error';
@@ -179,7 +180,7 @@ describe('checkPaymentMethodInput', () => {
     } catch (error: any) {
       expect(error).toBeInstanceOf(CustomError);
       expect(error.message).toBe(
-        'SCTM - PAYMENT PROCESSING - Payment method must be set in order to create a Mollie payment.',
+        `SCTM - PAYMENT PROCESSING - Payment method must be set in order to create a Mollie payment, CommerceTools Payment ID: ${CTPayment.id}.`,
       );
     }
   });
@@ -209,7 +210,7 @@ describe('checkPaymentMethodInput', () => {
     } catch (error: any) {
       expect(error).toBeInstanceOf(CustomError);
       expect(error.message).toBe(
-        `SCTM - PAYMENT PROCESSING - Invalid paymentMethodInfo.method "${CTPayment.paymentMethodInfo.method}".`,
+        `SCTM - PAYMENT PROCESSING - Invalid paymentMethodInfo.method "${CTPayment.paymentMethodInfo.method}", CommerceTools Payment ID: ${CTPayment.id}.`,
       );
     }
   });
@@ -278,7 +279,9 @@ describe('checkPaymentMethodInput', () => {
 });
 
 describe('checkPaymentMethodSpecificParameters', () => {
-  it('should return false if the payment method is creditcard and cardToken is not defined in Custom Field', () => {
+  it('should throw an error if the payment method is creditcard and card component is enabled and cardToken is not defined in Custom Field', () => {
+    process.env.MOLLIE_CARD_COMPONENT = '1';
+
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
       version: 1,
@@ -299,7 +302,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
     };
 
     try {
-      checkPaymentMethodSpecificParameters(CTPayment);
+      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect((error as CustomError).message).toBe(
@@ -307,12 +310,16 @@ describe('checkPaymentMethodSpecificParameters', () => {
       );
       expect(logger.error).toBeCalledTimes(1);
       expect(logger.error).toBeCalledWith(
-        'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard',
+        `SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard, CommerceTools Payment ID: ${CTPayment.id}`,
+        {
+          cardToken: undefined,
+          commerceToolsPaymentId: CTPayment.id,
+        },
       );
     }
   });
 
-  it('should return false if the payment method is creditcard and cardToken is an empty string', () => {
+  it('should throw an error if the payment method is creditcard and cardToken is an empty string', () => {
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
       version: 1,
@@ -343,7 +350,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
     };
 
     try {
-      checkPaymentMethodSpecificParameters(CTPayment);
+      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect((error as CustomError).message).toBe(
@@ -351,7 +358,11 @@ describe('checkPaymentMethodSpecificParameters', () => {
       );
       expect(logger.error).toBeCalledTimes(1);
       expect(logger.error).toBeCalledWith(
-        'SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard',
+        `SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard, CommerceTools Payment ID: ${CTPayment.id}`,
+        {
+          cardToken: 123,
+          commerceToolsPaymentId: CTPayment.id,
+        },
       );
     }
   });
@@ -386,12 +397,15 @@ describe('checkPaymentMethodSpecificParameters', () => {
     };
 
     try {
-      checkPaymentMethodSpecificParameters(CTPayment);
+      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect(logger.error).toBeCalledTimes(1);
       expect(logger.error).toHaveBeenCalledWith(
         'SCTM - PAYMENT PROCESSING - Failed to parse the JSON string from the custom field sctm_create_payment_request.',
+        {
+          commerceToolsId: CTPayment.id,
+        },
       );
     }
   });
@@ -426,7 +440,183 @@ describe('checkPaymentMethodSpecificParameters', () => {
       },
     };
 
-    expect(checkPaymentMethodSpecificParameters(CTPayment)).toBe(undefined);
+    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(
+      undefined,
+    );
+  });
+
+  it('should throw an error if the payment method is blik and the currency code is not PLN', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'blik',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request:
+            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/","billingEmail":"n.tran@shopmacher.de"}',
+        },
+      },
+    };
+
+    try {
+      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).message).toBe(
+        'SCTM - PAYMENT PROCESSING - Currency Code must be PLN for payment method BLIK',
+      );
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith(
+        `SCTM - PAYMENT PROCESSING - Currency Code must be PLN for payment method BLIK`,
+        {
+          commerceToolsPayment: CTPayment,
+        },
+      );
+    }
+  });
+
+  it('should throw an error if the payment method is blik and the billing email is not provided', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'PLN',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'blik',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request:
+            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/"}',
+        },
+      },
+    };
+
+    try {
+      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).message).toBe(
+        'SCTM - PAYMENT PROCESSING - billingEmail is required for payment method BLIK',
+      );
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith(
+        `SCTM - PAYMENT PROCESSING - billingEmail is required for payment method BLIK`,
+        {
+          commerceToolsPayment: CTPayment,
+        },
+      );
+    }
+  });
+
+  it('should throw an error if the payment method is blik and the billing email is provided incorrectly', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'PLN',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'blik',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request:
+            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/","billingEmail":"123123"}',
+        },
+      },
+    };
+
+    try {
+      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).message).toBe(
+        'SCTM - PAYMENT PROCESSING - billingEmail must be a valid email address',
+      );
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith(`SCTM - PAYMENT PROCESSING - billingEmail must be a valid email address`, {
+        commerceToolsPayment: CTPayment,
+      });
+    }
+  });
+
+  it('should should not throw any error or terminate the process if the payment method is blik and the currency code is PLN and the billing email is provided correctly', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'PLN',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'blik',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request:
+            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/","billingEmail":"n.tran@shopmacher.de"}',
+        },
+      },
+    };
+
+    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(
+      undefined,
+    );
+    expect(logger.error).toBeCalledTimes(0);
   });
 });
 
@@ -450,7 +640,12 @@ describe('checkAmountPlanned', () => {
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect(logger.error).toBeCalledTimes(1);
-      expect(logger.error).toBeCalledWith('SCTM - PAYMENT PROCESSING - Payment {amountPlanned} not found.');
+      expect(logger.error).toBeCalledWith(
+        `SCTM - PAYMENT PROCESSING - Payment {amountPlanned} not found, commerceToolsPaymentId: ${CTPayment.id}.`,
+        {
+          commerceToolsPaymentId: CTPayment.id,
+        },
+      );
     }
   });
 
@@ -478,8 +673,6 @@ describe('checkAmountPlanned', () => {
   });
 });
 
-// import * as paymentValidators from '../../src/validators/payment.validators';
-
 describe('validateCommerceToolsPaymentPayload', () => {
   const paymentValidators = require('../../src/validators/payment.validators');
 
@@ -487,6 +680,7 @@ describe('validateCommerceToolsPaymentPayload', () => {
   jest.spyOn(paymentValidators, 'checkValidSuccessChargeTransaction');
   jest.spyOn(paymentValidators, 'checkValidRefundTransactionForCreate');
   jest.spyOn(paymentValidators, 'checkValidRefundTransactionForCancel');
+  jest.spyOn(paymentValidators, 'checkValidSuccessAuthorizationTransaction');
 
   it('should not call the checkPaymentMethodInput when the action is not "CreatePayment"', () => {
     try {
@@ -596,7 +790,8 @@ describe('validateCommerceToolsPaymentPayload', () => {
       CTPayment: {
         ...CTPayment,
       },
-      exception: 'SCTM - Validating transactions for refund actions - No successful charge transaction found',
+      exception:
+        'SCTM - handleCreateRefund - No successful charge transaction found, CommerceTools Transaction ID: undefined.',
     },
     {
       CTPayment: {
@@ -616,7 +811,8 @@ describe('validateCommerceToolsPaymentPayload', () => {
           },
         ],
       },
-      exception: 'SCTM - Validating transactions for refund actions - No successful charge transaction found',
+      exception:
+        'SCTM - handleCreateRefund - No successful charge transaction found, CommerceTools Transaction ID: undefined.',
     },
     {
       CTPayment: {
@@ -762,7 +958,8 @@ describe('validateCommerceToolsPaymentPayload', () => {
       CTPayment: {
         ...CTPayment,
       },
-      exception: 'SCTM - Validating transactions for refund actions - No successful charge transaction found',
+      exception:
+        'SCTM - handleCreateRefund - No successful charge transaction found, CommerceTools Transaction ID: undefined.',
     },
     {
       CTPayment: {
@@ -782,7 +979,8 @@ describe('validateCommerceToolsPaymentPayload', () => {
           },
         ],
       },
-      exception: 'SCTM - Validating transactions for refund actions - No successful charge transaction found',
+      exception:
+        'SCTM - handleCreateRefund - No successful charge transaction found, CommerceTools Transaction ID: undefined.',
     },
     {
       CTPayment: {
@@ -873,4 +1071,92 @@ describe('validateCommerceToolsPaymentPayload', () => {
       }).toThrow(exception);
     },
   );
+
+  it('should call the checkValidSuccessAuthorizationTransaction when the action is "CancelPayment" and throw error if the mollie payment id is not found', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [
+        {
+          id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          type: 'Authorization',
+          amount: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 1000,
+            fractionDigits: 2,
+          },
+          state: 'Success',
+          // interactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        },
+      ],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        paymentInterface: 'Mollie',
+      },
+    };
+
+    try {
+      validateCommerceToolsPaymentPayload('Update', ConnectorActions.CancelPayment, CTPayment);
+    } catch (error: unknown) {
+      expect(checkValidSuccessAuthorizationTransaction).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith(
+        `SCTM - handleCancelPayment - Cannot get the Mollie payment ID from CommerceTools transaction, CommerceTools Transaction ID: ${CTPayment.transactions[0].id}.`,
+      );
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).message).toBe(
+        `SCTM - handleCancelPayment - Cannot get the Mollie payment ID from CommerceTools transaction, CommerceTools Transaction ID: ${CTPayment.transactions[0].id}.`,
+      );
+      expect((error as CustomError).statusCode).toBe(400);
+    }
+  });
+
+  it('should call the checkValidSuccessAuthorizationTransaction when the action is "CancelPayment" and return true if the mollie payment id is found', () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [
+        {
+          id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          type: 'Authorization',
+          amount: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 1000,
+            fractionDigits: 2,
+          },
+          state: 'Success',
+          interactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        },
+      ],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        paymentInterface: 'Mollie',
+      },
+    };
+
+    validateCommerceToolsPaymentPayload('Update', ConnectorActions.CancelPayment, CTPayment);
+    expect(checkValidSuccessAuthorizationTransaction).toBeCalledTimes(1);
+    expect(checkValidSuccessAuthorizationTransaction).toBeCalledWith(CTPayment);
+    expect(checkValidSuccessAuthorizationTransaction).toReturnWith(true);
+  });
 });

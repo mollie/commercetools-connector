@@ -2,11 +2,11 @@ import { CTError, CTEnumErrors, CTErrorExtensionExtraInfo } from '../types/comme
 
 // This is based on MollieApiError interface from Mollie's SDK
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-const getExtraInfo = ({ status, statusCode, links, title, field }: any): CTErrorExtensionExtraInfo => {
-  const orginalStatus = status || statusCode;
+export const getExtraInfo = ({ status, statusCode, links, title, field }: any): CTErrorExtensionExtraInfo => {
+  const originalStatus = status || statusCode;
   const extraInfo = Object.assign(
     {},
-    orginalStatus && { originalStatusCode: orginalStatus },
+    originalStatus && { originalStatusCode: originalStatus },
     links && { links },
     title && { title },
     field && { field },

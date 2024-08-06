@@ -1,4 +1,4 @@
-import { describe, jest, it, beforeEach, afterEach } from '@jest/globals';
+import { describe, jest, it, expect, beforeEach, afterEach } from '@jest/globals';
 import { post } from '../../src/controllers/webhook.controller';
 import { NextFunction, Request, Response } from 'express';
 import { logger } from '../../src/utils/logger.utils';
@@ -48,8 +48,9 @@ describe('Test webhook.controller.ts', () => {
     expect(res.send).toHaveBeenCalled();
   });
 
-  it('should return only status code 200', async () => {
+  it('should return status code 200', async () => {
     (isPayment as jest.Mock).mockReturnValue(true);
+    (handlePaymentWebhook as jest.Mock).mockReturnValue(true);
 
     req = {
       body: { id: 'tr_123' },
@@ -60,6 +61,24 @@ describe('Test webhook.controller.ts', () => {
     expect(logger.info).toHaveBeenCalledTimes(1);
     expect(logger.info).toHaveBeenCalledWith('Webhook with id tr_123 is handled successfully.');
     expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalled();
+  });
+
+  it('should return status code 400 if the payment was not handled successfully', async () => {
+    (isPayment as jest.Mock).mockReturnValue(true);
+    (handlePaymentWebhook as jest.Mock).mockReturnValue(false);
+
+    req = {
+      body: { id: 'tr_123' },
+    };
+
+    await post(req as Request, res as Response, next);
+
+    expect(logger.warn).toHaveBeenCalledTimes(1);
+    expect(logger.warn).toHaveBeenCalledWith(
+      'Webhook with id tr_123 is handled unsuccessfully, retry will be take place automatically.',
+    );
+    expect(res.status).toHaveBeenCalledWith(400);
     expect(res.send).toHaveBeenCalled();
   });
 
