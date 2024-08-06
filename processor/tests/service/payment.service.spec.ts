@@ -356,7 +356,7 @@ describe('Test listPaymentMethodsByPayment', () => {
     expect(response?.actions?.[0]).toEqual({
       action: 'setCustomField',
       name: 'sctm_mollie_profile_id',
-      value: 'pfl_12345',
+      value: process.env.MOLLIE_PROFILE_ID,
     });
     expect(JSON.stringify(response)).not.toContain('creditcard');
   });
