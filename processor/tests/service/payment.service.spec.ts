@@ -275,6 +275,11 @@ describe('Test listPaymentMethodsByPayment', () => {
     expect(response.statusCode).toBe(200);
     expect(response?.actions?.length).toBeGreaterThan(0);
     expect(response?.actions?.[0]?.action).toBe('setCustomField');
+    expect(response?.actions?.[0]).toEqual({
+      action: 'setCustomField',
+      name: 'sctm_mollie_profile_id',
+      value: '',
+    });
     expect(JSON.stringify(response)).toContain('creditcard');
   });
 
@@ -348,6 +353,11 @@ describe('Test listPaymentMethodsByPayment', () => {
     expect(response.statusCode).toBe(200);
     expect(response?.actions?.length).toBeGreaterThan(0);
     expect(response?.actions?.[0]?.action).toBe('setCustomField');
+    expect(response?.actions?.[0]).toEqual({
+      action: 'setCustomField',
+      name: 'sctm_mollie_profile_id',
+      value: process.env.MOLLIE_PROFILE_ID,
+    });
     expect(JSON.stringify(response)).not.toContain('creditcard');
   });
 });
