@@ -14,6 +14,7 @@ export function createDateNowString(): string {
  *
  * @param {string} targetedString - The string to be parsed.
  * @param {string} fieldName - The name of the custom field.
+ * @param errorPrefix
  * @param {string} commerceToolsId - CommerceTools Payment ID or Transaction ID.
  * @returns {object} - The parsed JSON object.
  * @throws {CustomError} - If the string cannot be parsed into a JSON object.

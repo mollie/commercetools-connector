@@ -1,24 +1,31 @@
-import { describe, test, jest, beforeEach, afterEach, expect, it } from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, it, jest, test } from '@jest/globals';
 import { CustomFields, Payment } from '@commercetools/platform-sdk';
 import {
-  handlePaymentWebhook,
   getCreatePaymentUpdateAction,
   getPaymentCancelActions,
-  handleCreatePayment,
-  handleListPaymentMethodsByPayment,
-  handleCreateRefund,
-  handlePaymentCancelRefund,
+  getRefundStatusUpdateActions,
   handleCancelPayment,
+  handleCreatePayment,
+  handleCreateRefund,
+  handleListPaymentMethodsByPayment,
+  handlePaymentCancelRefund,
+  handlePaymentWebhook,
 } from '../../src/service/payment.service';
 import { ControllerResponseType } from '../../src/types/controller.types';
 import { CancelStatusText, ConnectorActions, CustomFields as CustomFieldName } from '../../src/utils/constant.utils';
-import { PaymentStatus, Payment as molliePayment, Refund } from '@mollie/api-client';
-import { CTTransactionState } from '../../src/types/commercetools.types';
+import { Payment as molliePayment, PaymentStatus, Refund, RefundStatus } from '@mollie/api-client';
 import {
-  listPaymentMethods,
-  getPaymentById,
-  createMolliePayment,
+  ChangeTransactionState,
+  CTTransaction,
+  CTTransactionState,
+  CTTransactionType,
+  mollieRefundToCTStatusMap,
+} from '../../src/types/commercetools.types';
+import {
   cancelPayment,
+  createMolliePayment,
+  getPaymentById,
+  listPaymentMethods,
   createPaymentWithCustomMethod,
 } from '../../src/mollie/payment.mollie';
 import { cancelPaymentRefund, createPaymentRefund, getPaymentRefund } from '../../src/mollie/refund.mollie';
@@ -29,6 +36,8 @@ import { CreateParameters } from '@mollie/api-client/dist/types/src/binders/paym
 import { getPaymentExtension } from '../../src/commercetools/extensions.commercetools';
 import { createMollieCreatePaymentParams } from '../../src/utils/map.utils';
 import { CustomPayment } from '../../src/types/mollie.types';
+import { changeTransactionState } from '../../src/commercetools/action.commercetools';
+import { makeCTMoney, shouldRefundStatusUpdate } from '../../src/utils/mollie.utils';
 
 const uuid = '5c8b0375-305a-4f19-ae8e-07806b101999';
 jest.mock('uuid', () => ({
@@ -68,6 +77,17 @@ jest.mock('../../src/mollie/refund.mollie', () => ({
 jest.mock('../../src/utils/map.utils.ts', () => ({
   ...(jest.requireActual('../../src/utils/map.utils.ts') as object),
   createMollieCreatePaymentParams: jest.fn(),
+}));
+
+jest.mock('../../src/commercetools/action.commercetools', () => ({
+  ...(jest.requireActual('../../src/commercetools/action.commercetools') as object),
+  changeTransactionState: jest.fn(),
+}));
+
+jest.mock('../../src/utils/mollie.utils', () => ({
+  ...(jest.requireActual('../../src/utils/mollie.utils') as object),
+  makeCTMoney: jest.fn(),
+  shouldRefundStatusUpdate: jest.fn(),
 }));
 
 describe('Test listPaymentMethodsByPayment', () => {
@@ -480,6 +500,12 @@ describe('Test getCreatePaymentUpdateAction', () => {
       return paymentService.getCreatePaymentUpdateAction(molliePayment, CTPayment);
     });
 
+    (changeTransactionState as jest.Mock).mockReturnValueOnce({
+      action: 'changeTransactionState',
+      state: 'Pending',
+      transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+    });
+
     const actual = await getCreatePaymentUpdateAction(molliePayment, CTPayment);
     expect(actual).toHaveLength(4);
 
@@ -608,6 +634,12 @@ describe('Test handleCreatePayment', () => {
       method: 'creditcard',
     });
 
+    (changeTransactionState as jest.Mock).mockReturnValueOnce({
+      action: 'changeTransactionState',
+      state: 'Pending',
+      transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+    });
+
     const actual = await handleCreatePayment(CTPayment);
 
     const ctActions = [
@@ -689,6 +721,12 @@ describe('Test handleCreatePayment', () => {
 
     (createMollieCreatePaymentParams as jest.Mock).mockReturnValueOnce({
       method: 'blik',
+    });
+
+    (changeTransactionState as jest.Mock).mockReturnValueOnce({
+      action: 'changeTransactionState',
+      state: 'Pending',
+      transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
     });
 
     const actual = await handleCreatePayment(CTPayment);
@@ -776,6 +814,12 @@ describe('Test handleCreateRefund', () => {
         method: 'creditcard',
       },
     };
+
+    (changeTransactionState as jest.Mock).mockReturnValueOnce({
+      action: 'changeTransactionState',
+      state: 'Pending',
+      transactionId: 'test_refund',
+    });
 
     (createPaymentRefund as jest.Mock).mockReturnValue({
       id: 'fake_refund_id',
@@ -880,6 +924,17 @@ describe('Test getPaymentCancelActions', () => {
         '../../src/service/payment.service.ts',
       ) as typeof import('../../src/service/payment.service.ts');
       return paymentService.getPaymentCancelActions(CTPayment.transactions[0], CTPayment.transactions[1]);
+    });
+
+    (changeTransactionState as jest.Mock).mockReturnValueOnce({
+      action: 'changeTransactionState',
+      state: 'Failure',
+      transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+    });
+    (changeTransactionState as jest.Mock).mockReturnValueOnce({
+      action: 'changeTransactionState',
+      state: 'Success',
+      transactionId: '5c8b0375-305a-4f19-ae8e-07806b101929',
     });
 
     const actual = getPaymentCancelActions(CTPayment.transactions[0], CTPayment.transactions[1]);
@@ -1122,6 +1177,18 @@ describe('Test handlePaymentWebhook', () => {
       ],
     };
     (getPaymentByMolliePaymentId as jest.Mock).mockReturnValue(ctPayment);
+
+    (changeTransactionState as jest.Mock).mockReturnValueOnce({
+      action: 'changeTransactionState',
+      transactionId: '12345',
+      state: 'Failure',
+    });
+    (changeTransactionState as jest.Mock).mockReturnValueOnce({
+      action: 'changeTransactionState',
+      transactionId: '12346',
+      state: 'Success',
+    });
+
     const result = await handlePaymentWebhook(fakePaymentId);
 
     expect(result).toBe(false);
@@ -1248,6 +1315,12 @@ describe('Test handlePaymentWebhook', () => {
       transactions: [],
     };
     (getPaymentByMolliePaymentId as jest.Mock).mockReturnValue(ctPayment);
+    (makeCTMoney as jest.Mock).mockReturnValueOnce({
+      centAmount: 1000,
+      currencyCode: 'EUR',
+      fractionDigits: 2,
+      type: 'centPrecision',
+    });
     await handlePaymentWebhook(fakePaymentId);
     expect(updatePayment as jest.Mock).toBeCalledTimes(1);
     expect(updatePayment as jest.Mock).toBeCalledWith(ctPayment, [
@@ -1277,6 +1350,12 @@ describe('Test handlePaymentWebhook', () => {
       transactions: [],
     };
     (getPaymentByMolliePaymentId as jest.Mock).mockReturnValue(ctPayment);
+    (makeCTMoney as jest.Mock).mockReturnValueOnce({
+      centAmount: 1000,
+      currencyCode: 'EUR',
+      fractionDigits: 2,
+      type: 'centPrecision',
+    });
     await handlePaymentWebhook(fakePaymentId);
     expect(updatePayment as jest.Mock).toBeCalledTimes(1);
     expect(updatePayment as jest.Mock).toBeCalledWith(ctPayment, [
@@ -1312,6 +1391,11 @@ describe('Test handlePaymentWebhook', () => {
       ],
     };
     (getPaymentByMolliePaymentId as jest.Mock).mockReturnValue(ctPayment);
+    (changeTransactionState as jest.Mock).mockReturnValueOnce({
+      action: 'changeTransactionState',
+      state: 'Success',
+      transactionId: 'test',
+    });
     await handlePaymentWebhook(fakePaymentId);
     expect(updatePayment as jest.Mock).toBeCalledTimes(1);
     expect(updatePayment as jest.Mock).toBeCalledWith(ctPayment, [
@@ -1488,5 +1572,163 @@ describe('Test handleCancelPayment', () => {
       statusCode: 200,
       actions: [],
     });
+  });
+});
+
+describe('Test getRefundStatusUpdateActions', () => {
+  const mockChangeTransactionState = changeTransactionState as jest.MockedFunction<typeof changeTransactionState>;
+  const mockShouldRefundStatusUpdate = shouldRefundStatusUpdate as jest.MockedFunction<typeof shouldRefundStatusUpdate>;
+  const mockMakeCTMoney = makeCTMoney as jest.MockedFunction<typeof makeCTMoney>;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should update transaction state if matching transaction found and should update', () => {
+    const ctTransactions: CTTransaction[] = [
+      {
+        id: '1',
+        type: CTTransactionType.Refund,
+        interactionId: 'refund1',
+        state: CTTransactionState.Initial,
+        amount: {
+          type: 'centPrecision',
+          currencyCode: 'EUR',
+          centAmount: 1000,
+          fractionDigits: 2,
+        },
+      },
+    ];
+    const mollieRefunds: Refund[] = [
+      { id: 'refund1', status: RefundStatus.pending, amount: { currency: 'EUR', value: '10.00' } } as Refund,
+    ];
+
+    mockShouldRefundStatusUpdate.mockReturnValue(true);
+    mockChangeTransactionState.mockReturnValue({ action: 'changeTransactionState' } as ChangeTransactionState);
+
+    const result = getRefundStatusUpdateActions(ctTransactions, mollieRefunds);
+
+    expect(result).toEqual([{ action: 'changeTransactionState' }]);
+    expect(mockShouldRefundStatusUpdate).toHaveBeenCalledWith('pending', CTTransactionState.Initial);
+    expect(mockChangeTransactionState).toHaveBeenCalledWith('1', mollieRefundToCTStatusMap['pending']);
+  });
+
+  it('should not update transaction state if matching transaction found but should not update', () => {
+    const ctTransactions: CTTransaction[] = [
+      {
+        id: '1',
+        type: CTTransactionType.Refund,
+        interactionId: 'refund1',
+        state: CTTransactionState.Initial,
+        amount: {
+          type: 'centPrecision',
+          currencyCode: 'EUR',
+          centAmount: 1000,
+          fractionDigits: 2,
+        },
+      },
+    ];
+    const mollieRefunds: Refund[] = [
+      { id: 'refund1', status: RefundStatus.pending, amount: { currency: 'EUR', value: '10.00' } } as Refund,
+    ];
+
+    mockShouldRefundStatusUpdate.mockReturnValue(false);
+
+    const result = getRefundStatusUpdateActions(ctTransactions, mollieRefunds);
+
+    expect(result).toEqual([]);
+    expect(mockShouldRefundStatusUpdate).toHaveBeenCalledWith('pending', CTTransactionState.Initial);
+    expect(mockChangeTransactionState).not.toHaveBeenCalled();
+  });
+
+  it('should add a new transaction if no matching transaction is found', () => {
+    const ctTransactions: CTTransaction[] = [];
+    const mollieRefunds: Refund[] = [
+      { id: 'refund1', status: RefundStatus.pending, amount: { currency: 'EUR', value: '10.00' } } as Refund,
+    ];
+
+    mockMakeCTMoney.mockReturnValue({ currencyCode: 'EUR', centAmount: 1000 });
+
+    const result = getRefundStatusUpdateActions(ctTransactions, mollieRefunds);
+
+    expect(result).toEqual([
+      {
+        action: 'addTransaction',
+        transaction: {
+          type: CTTransactionType.Refund,
+          amount: { currencyCode: 'EUR', centAmount: 1000 },
+          interactionId: 'refund1',
+          state: mollieRefundToCTStatusMap['pending'],
+        },
+      },
+    ]);
+    expect(mockMakeCTMoney).toHaveBeenCalledWith({ currency: 'EUR', value: '10.00' });
+  });
+
+  it('should handle multiple refunds and transactions correctly', () => {
+    const ctTransactions: CTTransaction[] = [
+      {
+        id: '1',
+        type: CTTransactionType.Refund,
+        interactionId: 'refund1',
+        state: CTTransactionState.Initial,
+        amount: {
+          type: 'centPrecision',
+          currencyCode: 'EUR',
+          centAmount: 1000,
+          fractionDigits: 2,
+        },
+      },
+      {
+        id: '2',
+        type: CTTransactionType.Refund,
+        interactionId: 'refund2',
+        state: CTTransactionState.Initial,
+        amount: {
+          type: 'centPrecision',
+          currencyCode: 'EUR',
+          centAmount: 2000,
+          fractionDigits: 2,
+        },
+      },
+    ];
+    const mollieRefunds: Refund[] = [
+      { id: 'refund1', status: RefundStatus.pending, amount: { currency: 'EUR', value: '10.00' } } as Refund,
+      { id: 'refund3', status: RefundStatus.refunded, amount: { currency: 'EUR', value: '20.00' } } as Refund,
+    ];
+
+    mockShouldRefundStatusUpdate.mockImplementation(
+      (mollieStatus, ctState) => mollieStatus === 'pending' && ctState === CTTransactionState.Initial,
+    );
+    mockChangeTransactionState.mockReturnValue({
+      action: 'changeTransactionState',
+      state: mollieRefundToCTStatusMap['pending'],
+      transactionId: '1',
+    } as ChangeTransactionState);
+    mockMakeCTMoney.mockImplementation((amount) => ({
+      currencyCode: amount.currency,
+      centAmount: Number(amount.value) * 100,
+    }));
+
+    const result = getRefundStatusUpdateActions(ctTransactions, mollieRefunds);
+
+    expect(result).toEqual([
+      {
+        action: 'changeTransactionState',
+        state: mollieRefundToCTStatusMap['pending'],
+        transactionId: '1',
+      },
+      {
+        action: 'addTransaction',
+        transaction: {
+          type: CTTransactionType.Refund,
+          amount: { currencyCode: 'EUR', centAmount: 2000 },
+          interactionId: 'refund3',
+          state: 'Success',
+        },
+      },
+    ]);
+    expect(mockChangeTransactionState).toHaveBeenCalledWith('1', mollieRefundToCTStatusMap['pending']);
+    expect(mockMakeCTMoney).toHaveBeenCalledWith({ currency: 'EUR', value: '20.00' });
   });
 });

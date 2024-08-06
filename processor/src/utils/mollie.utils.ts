@@ -1,7 +1,7 @@
 import { CentPrecisionMoney } from '@commercetools/platform-sdk';
 import { Amount } from '@mollie/api-client/dist/types/src/data/global';
 import { CTMoney, CTTransactionState } from '../types/commercetools.types';
-import { PaymentStatus } from '@mollie/api-client';
+import { PaymentStatus, RefundStatus } from '@mollie/api-client';
 
 const convertCTToMollieAmountValue = (ctValue: number, fractionDigits = 2): string => {
   const divider = Math.pow(10, fractionDigits);
@@ -53,6 +53,39 @@ export const shouldPaymentStatusUpdate = (
     case PaymentStatus.failed:
     case PaymentStatus.expired:
       shouldUpdate = ctTransactionState !== CTTransactionState.Failure;
+      break;
+
+    default:
+      shouldUpdate = false;
+      break;
+  }
+  return shouldUpdate;
+};
+
+/**
+ * Returns true if mollie refund status has changed and the CT Transaction should be updated
+ * @param mollieRefundStatus
+ * @param ctTransactionStatus
+ */
+export const shouldRefundStatusUpdate = (
+  mollieRefundStatus: RefundStatus,
+  ctTransactionStatus: CTTransactionState,
+): boolean => {
+  let shouldUpdate: boolean;
+
+  switch (mollieRefundStatus) {
+    case RefundStatus.queued:
+    case RefundStatus.pending:
+    case RefundStatus.processing:
+      shouldUpdate = ctTransactionStatus !== CTTransactionState.Pending;
+      break;
+
+    case RefundStatus.refunded:
+      shouldUpdate = ctTransactionStatus !== CTTransactionState.Success;
+      break;
+
+    case RefundStatus.failed:
+      shouldUpdate = ctTransactionStatus !== CTTransactionState.Failure;
       break;
 
     default:
