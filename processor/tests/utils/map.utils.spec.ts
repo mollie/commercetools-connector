@@ -6,6 +6,7 @@ import {
 import { Payment } from '@commercetools/platform-sdk';
 import { MethodsListParams, PaymentCreateParams, PaymentMethod } from '@mollie/api-client';
 import { makeMollieAmount } from '../../src/utils/mollie.utils';
+import { CustomPaymentMethod } from '../../src/types/mollie.types';
 
 describe('Test map.utils.ts', () => {
   let mockCtPayment: Payment;
@@ -419,55 +420,59 @@ describe('createMollieCreatePaymentParams', () => {
     });
   });
 
-  // it('should able to create a mollie payment params from CommerceTools payment object with method as blik', () => {
-  //   const customFieldObject = {
-  //     description: 'Test payment',
-  //     locale: 'en_GB',
-  //     redirectUrl: 'https://example.com/success',
-  //     webhookUrl: 'https://example.com/webhook',
-  //   };
+  it('should able to create a mollie payment params from CommerceTools payment object with method as blik', () => {
+    const customFieldObject = {
+      description: 'Test payment',
+      locale: 'en_GB',
+      redirectUrl: 'https://example.com/success',
+      webhookUrl: 'https://example.com/webhook',
+      billingEmail: 'n.tran@shopmacher.de',
+    };
 
-  //   const CTPayment: Payment = {
-  //     id: '5c8b0375-305a-4f19-ae8e-07806b101999',
-  //     version: 1,
-  //     createdAt: '2024-07-04T14:07:35.625Z',
-  //     lastModifiedAt: '2024-07-04T14:07:35.625Z',
-  //     amountPlanned: {
-  //       type: 'centPrecision',
-  //       currencyCode: 'EUR',
-  //       centAmount: 1000,
-  //       fractionDigits: 2,
-  //     },
-  //     paymentStatus: {},
-  //     transactions: [],
-  //     interfaceInteractions: [],
-  //     paymentMethodInfo: {
-  //       method: PaymentMethod.przelewy24,
-  //     },
-  //     custom: {
-  //       type: {
-  //         typeId: 'type',
-  //         id: 'sctm_payment',
-  //       },
-  //       fields: {
-  //         sctm_create_payment_request: JSON.stringify(customFieldObject),
-  //       },
-  //     },
-  //   };
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: CustomPaymentMethod.blik,
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm_payment',
+        },
+        fields: {
+          sctm_create_payment_request: JSON.stringify(customFieldObject),
+        },
+      },
+    };
 
-  //   const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment);
-  //   expect(mollieCreatePaymentParams).toEqual({
-  //     method: PaymentMethod.bl,
-  //     amount: {
-  //       currency: 'EUR',
-  //       value: '10.00',
-  //     },
-  //     locale: customFieldObject.locale,
-  //     redirectUrl: customFieldObject.redirectUrl,
-  //     webhookUrl: customFieldObject.webhookUrl,
-  //     description: customFieldObject.description,
-  //   });
-  // });
+    const extensionUrl = 'https://example.com/webhook';
+
+    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
+    expect(mollieCreatePaymentParams).toEqual({
+      method: CustomPaymentMethod.blik,
+      amount: {
+        currency: 'EUR',
+        value: '10.00',
+      },
+      locale: customFieldObject.locale,
+      redirectUrl: customFieldObject.redirectUrl,
+      webhookUrl: customFieldObject.webhookUrl,
+      description: customFieldObject.description,
+      billingEmail: customFieldObject.billingEmail,
+    });
+  });
 
   it('should able to create a mollie payment params from CommerceTools payment object with method as applepay', async () => {
     const customFieldObject = {
