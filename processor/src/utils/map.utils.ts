@@ -4,7 +4,7 @@ import { makeMollieAmount } from './mollie.utils';
 import { CustomPaymentMethod, ParsedMethodsRequestType } from '../types/mollie.types';
 import { Payment } from '@commercetools/platform-sdk';
 import CustomError from '../errors/custom.error';
-import { PaymentCreateParams, MethodsListParams, PaymentMethod } from '@mollie/api-client';
+import { MethodsListParams, PaymentCreateParams, PaymentMethod } from '@mollie/api-client';
 import { parseStringToJsonObject, removeEmptyProperties } from './app.utils';
 
 const extractMethodsRequest = (ctPayment: Payment): ParsedMethodsRequestType | undefined => {
@@ -128,9 +128,5 @@ export const createMollieCreatePaymentParams = (payment: Payment, extensionUrl: 
     ...getSpecificPaymentParams(method as PaymentMethod, paymentRequest),
   };
 
-  const validatedCreatePaymentParams: PaymentCreateParams = removeEmptyProperties(
-    createPaymentParams,
-  ) as PaymentCreateParams;
-
-  return validatedCreatePaymentParams;
+  return removeEmptyProperties(createPaymentParams) as PaymentCreateParams;
 };

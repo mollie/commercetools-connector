@@ -1,7 +1,13 @@
 import { CentPrecisionMoney } from '@commercetools/platform-sdk';
-import { PaymentStatus } from '@mollie/api-client';
+import { PaymentStatus, RefundStatus } from '@mollie/api-client';
 import { CTMoney, CTTransactionState } from '../../src/types/commercetools.types';
-import { makeMollieAmount, makeCTMoney, isPayment, shouldPaymentStatusUpdate } from '../../src/utils/mollie.utils';
+import {
+  makeMollieAmount,
+  makeCTMoney,
+  isPayment,
+  shouldPaymentStatusUpdate,
+  shouldRefundStatusUpdate,
+} from '../../src/utils/mollie.utils';
 import { Amount } from '@mollie/api-client/dist/types/src/data/global';
 import { expect, describe, it } from '@jest/globals';
 
@@ -135,6 +141,42 @@ describe('Test mollie.utils.ts', () => {
 
     it('should return false for unsupported molliePaymentStatus', () => {
       expect(shouldPaymentStatusUpdate('unknown' as PaymentStatus, CTTransactionState.Initial)).toBe(false);
+    });
+  });
+
+  describe('shouldRefundStatusUpdate', () => {
+    test('returns true when mollieRefundStatus is queued, pending, or processing and ctTransactionStatus is not Pending', () => {
+      expect(shouldRefundStatusUpdate(RefundStatus.queued, CTTransactionState.Success)).toBe(true);
+      expect(shouldRefundStatusUpdate(RefundStatus.pending, CTTransactionState.Failure)).toBe(true);
+      expect(shouldRefundStatusUpdate(RefundStatus.processing, CTTransactionState.Success)).toBe(true);
+    });
+
+    test('returns false when mollieRefundStatus is queued, pending, or processing and ctTransactionStatus is Pending', () => {
+      expect(shouldRefundStatusUpdate(RefundStatus.queued, CTTransactionState.Pending)).toBe(false);
+      expect(shouldRefundStatusUpdate(RefundStatus.pending, CTTransactionState.Pending)).toBe(false);
+      expect(shouldRefundStatusUpdate(RefundStatus.processing, CTTransactionState.Pending)).toBe(false);
+    });
+
+    test('returns true when mollieRefundStatus is refunded and ctTransactionStatus is not Success', () => {
+      expect(shouldRefundStatusUpdate(RefundStatus.refunded, CTTransactionState.Pending)).toBe(true);
+      expect(shouldRefundStatusUpdate(RefundStatus.refunded, CTTransactionState.Failure)).toBe(true);
+    });
+
+    test('returns false when mollieRefundStatus is refunded and ctTransactionStatus is Success', () => {
+      expect(shouldRefundStatusUpdate(RefundStatus.refunded, CTTransactionState.Success)).toBe(false);
+    });
+
+    test('returns true when mollieRefundStatus is failed and ctTransactionStatus is not Failure', () => {
+      expect(shouldRefundStatusUpdate(RefundStatus.failed, CTTransactionState.Pending)).toBe(true);
+      expect(shouldRefundStatusUpdate(RefundStatus.failed, CTTransactionState.Success)).toBe(true);
+    });
+
+    test('returns false when mollieRefundStatus is failed and ctTransactionStatus is Failure', () => {
+      expect(shouldRefundStatusUpdate(RefundStatus.failed, CTTransactionState.Failure)).toBe(false);
+    });
+
+    test('returns false for unknown mollieRefundStatus', () => {
+      expect(shouldRefundStatusUpdate('unknown' as RefundStatus, CTTransactionState.Pending)).toBe(false);
     });
   });
 });

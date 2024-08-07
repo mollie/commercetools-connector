@@ -32,9 +32,6 @@
   "engines": {
     "node": ">=18.0.0 <=20.9.0"
   },
-  "resolutions": {
-    "axios": "1.6.8"
-  },
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.7",
     "@types/express": "^4.17.21",

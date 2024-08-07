@@ -141,6 +141,14 @@ export const molliePaymentToCTStatusMap: StatusMap = {
   pending: CTTransactionState.Pending,
 };
 
+export const mollieRefundToCTStatusMap: StatusMap = {
+  refunded: CTTransactionState.Success,
+  failed: CTTransactionState.Failure,
+  queued: CTTransactionState.Pending,
+  pending: CTTransactionState.Pending,
+  processing: CTTransactionState.Pending,
+};
+
 export type WebhookRequest = {
   id: string;
 };
