@@ -10,10 +10,10 @@ import {
 import { initMollieClient } from '../client/mollie.client';
 import CustomError from '../errors/custom.error';
 import { logger } from '../utils/logger.utils';
-import axios, { AxiosError } from 'axios';
 import { readConfiguration } from '../utils/config.utils';
 import { LIBRARY_NAME, LIBRARY_VERSION } from '../utils/constant.utils';
 import { CustomPayment } from '../types/mollie.types';
+import fetch from 'node-fetch';
 
 /**
  * Creates a Mollie payment using the provided payment parameters.
@@ -104,29 +104,47 @@ export const cancelPayment = async (paymentId: string): Promise<void> => {
 };
 
 export const createPaymentWithCustomMethod = async (paymentParams: PaymentCreateParams): Promise<CustomPayment> => {
+  let errorMessage;
+
   try {
     const { mollie } = readConfiguration();
 
     const headers = {
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${mollie.apiKey}`,
       versionStrings: `${LIBRARY_NAME}/${LIBRARY_VERSION}`,
     };
 
-    const response = await axios.post('https://api.mollie.com/v2/payments', paymentParams, { headers });
+    const response = await fetch('https://api.mollie.com/v2/payments', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(paymentParams),
+    });
 
-    return response.data;
-  } catch (error: unknown) {
-    let errorMessage;
+    const data = await response.json();
 
-    if (error instanceof AxiosError) {
-      errorMessage = `SCTM - createPaymentWithCustomMethod - error: ${error.response?.data?.detail}, field: ${error.response?.data?.field}`;
-    } else {
-      errorMessage = 'SCTM - createPaymentWithCustomMethod - Failed to create a payment with unknown errors';
+    if (response.status !== 201) {
+      if (response.status === 422 || response.status === 503) {
+        errorMessage = `SCTM - createPaymentWithCustomMethod - error: ${data?.detail}, field: ${data?.field}`;
+      } else {
+        errorMessage = 'SCTM - createPaymentWithCustomMethod - Failed to create a payment with unknown errors';
+      }
+
+      logger.error(errorMessage, {
+        response: data,
+      });
+
+      throw new CustomError(400, errorMessage);
     }
 
-    logger.error(errorMessage, {
-      error,
-    });
+    return data;
+  } catch (error: unknown) {
+    if (!errorMessage) {
+      errorMessage = 'SCTM - createPaymentWithCustomMethod - Failed to create a payment with unknown errors';
+      logger.error(errorMessage, {
+        error,
+      });
+    }
 
     throw new CustomError(400, errorMessage);
   }
