@@ -1,6 +1,6 @@
 import { ControllerResponseType } from '../types/controller.types';
 import { CancelStatusText, ConnectorActions, CustomFields, PAY_LATER_ENUMS } from '../utils/constant.utils';
-import { List, Method, Payment as MPayment, PaymentMethod, PaymentStatus } from '@mollie/api-client';
+import { List, Method, Payment as MPayment, PaymentMethod, PaymentStatus, Refund } from '@mollie/api-client';
 import { logger } from '../utils/logger.utils';
 import {
   createMollieCreatePaymentParams,
@@ -16,14 +16,21 @@ import {
   listPaymentMethods,
 } from '../mollie/payment.mollie';
 import {
+  AddTransaction,
   ChangeTransactionState,
   CTTransaction,
   CTTransactionState,
   CTTransactionType,
   molliePaymentToCTStatusMap,
+  mollieRefundToCTStatusMap,
   UpdateActionKey,
 } from '../types/commercetools.types';
-import { makeCTMoney, makeMollieAmount, shouldPaymentStatusUpdate } from '../utils/mollie.utils';
+import {
+  makeCTMoney,
+  makeMollieAmount,
+  shouldPaymentStatusUpdate,
+  shouldRefundStatusUpdate,
+} from '../utils/mollie.utils';
 import { getPaymentByMolliePaymentId, updatePayment } from '../commercetools/payment.commercetools';
 import {
   PaymentUpdateAction,
@@ -60,7 +67,9 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
   try {
     const mollieOptions = await mapCommercetoolsPaymentCustomFieldsToMollieListParams(ctPayment);
     const methods: List<Method> = await listPaymentMethods(mollieOptions);
-    const enableCardComponent = toBoolean(readConfiguration().mollie.cardComponent, true);
+    const enableCardComponent =
+      toBoolean(readConfiguration().mollie.cardComponent, true) &&
+      methods.filter((method: Method) => method.id === PaymentMethod.creditcard).length > 0;
     const ctUpdateActions: UpdateAction[] = [];
 
     if (enableCardComponent) {
@@ -134,8 +143,16 @@ export const handlePaymentWebhook = async (paymentId: string): Promise<boolean> 
 
   const action = getPaymentStatusUpdateAction(ctPayment.transactions as CTTransaction[], molliePayment);
 
+  // If refunds are present, update their status
+  const refunds = molliePayment._embedded?.refunds;
+  if (refunds?.length) {
+    const refundUpdateActions = getRefundStatusUpdateActions(ctPayment.transactions as CTTransaction[], refunds);
+    action.push(...refundUpdateActions);
+  }
+
   if (action.length === 0) {
     logger.debug(`handlePaymentWebhook - No actions needed`);
+
     return true;
   }
 
@@ -396,9 +413,10 @@ export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<Con
  * Retrieves the payment cancel actions based on the provided pending refund transaction.
  * Would be used for cancel a payment or cancel a refund
  *
- * @param {Transaction} transaction - The pending refund transaction.
  * @return {Action[]} An array of actions including updating the transaction state and setting the transaction custom field value.
  * @throws {CustomError} If the JSON string from the custom field cannot be parsed.
+ * @param targetTransaction
+ * @param triggerTransaction
  */
 export const getPaymentCancelActions = (targetTransaction: Transaction, triggerTransaction: Transaction) => {
   const transactionCustomFieldName = CustomFields.paymentCancelReason;
@@ -422,6 +440,58 @@ export const getPaymentCancelActions = (targetTransaction: Transaction, triggerT
 };
 
 /**
+ * @param ctTransactions
+ * @param mollieRefunds
+ *
+ * Process mollie refunds and match to corresponding commercetools transaction
+ * Update the existing transactions if the status has changed
+ * If there is a refund and no corresponding transaction, add it to commercetools
+ */
+export const getRefundStatusUpdateActions = (
+  ctTransactions: CTTransaction[],
+  mollieRefunds: Refund[],
+): (ChangeTransactionState | AddTransaction)[] => {
+  const updateActions: (ChangeTransactionState | AddTransaction)[] = [];
+  const refundTransactions = ctTransactions?.filter((ctTransaction) => ctTransaction.type === CTTransactionType.Refund);
+
+  mollieRefunds.forEach((mollieRefund) => {
+    const { id: mollieRefundId, status: mollieRefundStatus } = mollieRefund;
+    const matchingCTTransaction = refundTransactions.find((rt) => rt.interactionId === mollieRefundId);
+
+    if (matchingCTTransaction) {
+      const shouldUpdate = shouldRefundStatusUpdate(
+        mollieRefundStatus,
+        matchingCTTransaction.state as CTTransactionState,
+      );
+
+      if (shouldUpdate) {
+        const updateAction = changeTransactionState(
+          matchingCTTransaction.id as string,
+          mollieRefundToCTStatusMap[mollieRefundStatus],
+        ) as ChangeTransactionState;
+
+        updateActions.push(updateAction);
+      }
+    } else {
+      const updateAction: AddTransaction = {
+        action: UpdateActionKey.AddTransaction,
+        transaction: {
+          type: CTTransactionType.Refund,
+
+          amount: makeCTMoney(mollieRefund.amount),
+          interactionId: mollieRefundId,
+          state: mollieRefundToCTStatusMap[mollieRefundStatus],
+        },
+      };
+
+      updateActions.push(updateAction);
+    }
+  });
+
+  return updateActions;
+};
+
+/**
  * Handles the cancellation of a payment.
  *
  * @param {Payment} ctPayment - The CommerceTools payment object.
@@ -438,7 +508,7 @@ export const handleCancelPayment = async (ctPayment: Payment): Promise<Controlle
 
   const molliePayment = await getPaymentById(successAuthorizationTransaction?.interactionId as string);
 
-  if (molliePayment.isCancelable === false) {
+  if (!molliePayment.isCancelable) {
     logger.error(`SCTM - handleCancelPayment - Payment is not cancelable, Mollie Payment ID: ${molliePayment.id}`, {
       molliePaymentId: molliePayment.id,
       commerceToolsPaymentId: ctPayment.id,
