@@ -1,8 +1,8 @@
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+[![GitHub Actions](https://github.com/mollie/commercetools-connector/actions/workflows/ci.yml/badge.svg)](https://github.com/mollie/commercetools-connector/actions/workflows/ci.yml/badge.svg)
 
 # 🚀 COMMERCETOOLS MOLLIE CONNECTOR 🚀
 
-[![GitHub Actions](https://github.com/mollie/commercetools-connector/actions/workflows/ci.yml/badge.svg)](https://github.com/mollie/commercetools-connector/actions/workflows/ci.yml/badge.svg)
 ![commercetools logo](https://unpkg.com/@commercetools-frontend/assets/logos/commercetools_primary-logo_horizontal_RGB.png)
 
 This project provides a commercetools connector integrating between the conmmercetools and Mollie PSP
