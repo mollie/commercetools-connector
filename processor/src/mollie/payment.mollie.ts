@@ -7,7 +7,7 @@ import {
   PaymentCreateParams,
   PaymentEmbed,
 } from '@mollie/api-client';
-import { initMollieClient } from '../client/mollie.client';
+import { initMollieClient, initMollieClientForApplePaySession } from '../client/mollie.client';
 import CustomError from '../errors/custom.error';
 import { logger } from '../utils/logger.utils';
 import { ApplePaySessionRequest, CustomPayment } from '../types/mollie.types';
@@ -151,7 +151,7 @@ export const createPaymentWithCustomMethod = async (paymentParams: PaymentCreate
 
 export const getApplePaySession = async (options: ApplePaySessionRequest): Promise<ApplePaySession> => {
   try {
-    return await initMollieClient().applePay.requestPaymentSession(options);
+    return await initMollieClientForApplePaySession().applePay.requestPaymentSession(options);
   } catch (error: unknown) {
     let errorMessage;
     if (error instanceof MollieApiError) {
