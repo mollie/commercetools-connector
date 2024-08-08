@@ -14,7 +14,7 @@ const getTransactionGroups = (transactions: Transaction[]) => {
     initialRefund: [] as Transaction[],
     pendingRefund: [] as Transaction[],
     initialCancelAuthorization: [] as Transaction[],
-    pendingAuthorization: [] as Transaction[],
+    successAuthorization: [] as Transaction[],
   };
 
   transactions?.forEach((transaction) => {
@@ -33,13 +33,13 @@ const getTransactionGroups = (transactions: Transaction[]) => {
           groups.pendingCharge.push(transaction);
         } else if (transaction.type === CTTransactionType.Refund) {
           groups.pendingRefund.push(transaction);
-        } else if (transaction.type === CTTransactionType.Authorization) {
-          groups.pendingAuthorization.push(transaction);
         }
         break;
       case CTTransactionState.Success:
         if (transaction.type === CTTransactionType.Charge) {
           groups.successCharge.push(transaction);
+        } else if (transaction.type === CTTransactionType.Authorization) {
+          groups.successAuthorization.push(transaction);
         }
         break;
     }
@@ -64,7 +64,7 @@ const determineAction = (groups: ReturnType<typeof getTransactionGroups>): Deter
     return ConnectorActions.CreatePayment;
   }
 
-  if (groups.pendingAuthorization.length === 1 && groups.initialCancelAuthorization.length === 1) {
+  if (groups.successAuthorization.length === 1 && groups.initialCancelAuthorization.length === 1) {
     return ConnectorActions.CancelPayment;
   }
 

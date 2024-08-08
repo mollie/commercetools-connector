@@ -46,9 +46,15 @@ const envValidators = [
     referencedBy: 'environmentVariables',
   }),
 
-  standardKey(['mollie', 'apiKey'], {
-    code: 'InvalidMollieApiKey',
-    message: 'Mollie API key should be a valid string.',
+  standardKey(['mollie', 'testApiKey'], {
+    code: 'InvalidMollieTestApiKey',
+    message: 'Mollie test API key should be a valid string.',
+    referencedBy: 'environmentVariables',
+  }),
+
+  standardKey(['mollie', 'liveApiKey'], {
+    code: 'InvalidMollieLiveApiKey',
+    message: 'Mollie live API key should be a valid string.',
     referencedBy: 'environmentVariables',
   }),
 
@@ -81,6 +87,19 @@ const envValidators = [
     {
       min: 1,
       max: 1,
+    },
+  ),
+
+  standardString(
+    ['mollie', 'mode'],
+    {
+      code: 'InvalidMode',
+      message: 'Mode should be a valid string of either "test" or "live".',
+      referencedBy: 'environmentVariables',
+    },
+    {
+      min: 1,
+      max: 4,
     },
   ),
 ];

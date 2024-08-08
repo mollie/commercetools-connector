@@ -10,8 +10,11 @@ import {
 import { initMollieClient } from '../client/mollie.client';
 import CustomError from '../errors/custom.error';
 import { logger } from '../utils/logger.utils';
-import { ApplePaySessionRequest } from '../types/mollie.types';
+import { ApplePaySessionRequest, CustomPayment } from '../types/mollie.types';
 import ApplePaySession from '@mollie/api-client/dist/types/src/data/applePaySession/ApplePaySession';
+import { getApiKey } from '../utils/config.utils';
+import { VERSION_STRING } from '../utils/constant.utils';
+import fetch from 'node-fetch';
 
 /**
  * Creates a Mollie payment using the provided payment parameters.
@@ -74,13 +77,21 @@ export const listPaymentMethods = async (options: MethodsListParams): Promise<Li
   }
 };
 
-export const cancelPayment = async (paymentId: string): Promise<Payment> => {
+export const cancelPayment = async (paymentId: string): Promise<void> => {
   try {
-    return await initMollieClient().payments.cancel(paymentId);
+    await initMollieClient().payments.cancel(paymentId);
   } catch (error: unknown) {
     let errorMessage;
     if (error instanceof MollieApiError) {
       errorMessage = `SCTM - cancelPayment - error: ${error.message}, field: ${error.field}`;
+    } else if (
+      // TODO: This is just a temporary fix while waiting Mollie to update the Client
+      // Currently this call returned with status code 202 and an empty response body
+      // While the Client expecting some resource there, that's why it failed and throw exception
+      error instanceof Error &&
+      error.message === 'Received unexpected response from the server with resource undefined'
+    ) {
+      return;
     } else {
       errorMessage = `SCTM - cancelPayment - Failed to cancel payments with unknown errors`;
     }
@@ -88,6 +99,52 @@ export const cancelPayment = async (paymentId: string): Promise<Payment> => {
     logger.error(errorMessage, {
       error,
     });
+
+    throw new CustomError(400, errorMessage);
+  }
+};
+
+export const createPaymentWithCustomMethod = async (paymentParams: PaymentCreateParams): Promise<CustomPayment> => {
+  let errorMessage;
+
+  try {
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${getApiKey()}`,
+      versionStrings: `${VERSION_STRING}`,
+    };
+
+    const response = await fetch('https://api.mollie.com/v2/payments', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(paymentParams),
+    });
+
+    const data = await response.json();
+
+    if (response.status !== 201) {
+      if (response.status === 422 || response.status === 503) {
+        errorMessage = `SCTM - createPaymentWithCustomMethod - error: ${data?.detail}, field: ${data?.field}`;
+      } else {
+        errorMessage = 'SCTM - createPaymentWithCustomMethod - Failed to create a payment with unknown errors';
+      }
+
+      logger.error(errorMessage, {
+        response: data,
+      });
+
+      throw new CustomError(400, errorMessage);
+    }
+
+    return data;
+  } catch (error: unknown) {
+    if (!errorMessage) {
+      errorMessage = 'SCTM - createPaymentWithCustomMethod - Failed to create a payment with unknown errors';
+      logger.error(errorMessage, {
+        error,
+      });
+    }
+
     throw new CustomError(400, errorMessage);
   }
 };

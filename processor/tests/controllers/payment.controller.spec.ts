@@ -9,9 +9,12 @@ import {
   handlePaymentCancelRefund,
   handleCreateRefund,
   handleGetApplePaySession,
+  handleCancelPayment,
 } from '../../src/service/payment.service';
 import { CancelStatusText, ConnectorActions, CustomFields as CustomFieldName } from '../../src/utils/constant.utils';
 import { validateCommerceToolsPaymentPayload } from '../../src/validators/payment.validators';
+import SkipError from '../../src/errors/skip.error';
+import { logger } from '../../src/utils/logger.utils';
 
 jest.mock('../../src/service/payment.service', () => ({
   handleListPaymentMethodsByPayment: jest.fn(),
@@ -19,13 +22,14 @@ jest.mock('../../src/service/payment.service', () => ({
   handlePaymentCancelRefund: jest.fn(),
   handleCreateRefund: jest.fn(),
   handleGetApplePaySession: jest.fn(),
+  handleCancelPayment: jest.fn(),
 }));
 
 jest.mock('../../src/validators/payment.validators.ts', () => ({
   validateCommerceToolsPaymentPayload: jest.fn(),
 }));
 
-jest.mock('../../src/utils/paymentAction.utils.ts', () => ({
+jest.mock('../../src/utils/paymentAction.utils', () => ({
   determinePaymentAction: jest.fn(),
 }));
 
@@ -80,6 +84,87 @@ describe('Test payment.controller.ts', () => {
       expect(handleListPaymentMethodsByPayment).toBeCalledTimes(0);
       expect(handleCreatePayment).toBeCalledTimes(0);
     });
+  });
+
+  test('should throw a SkipError if no action matched', async () => {
+    mockAction = 'Create' as string;
+    mockResource = {
+      typeId: 'payment',
+      obj: {
+        paymentMethodInfo: {
+          paymentInterface: 'mollie',
+          method: 'card',
+        },
+        amountPlanned: {
+          type: 'centPrecision',
+          currencyCode: 'EUR',
+          centAmount: 1000,
+          fractionDigits: 2,
+        },
+        custom: {
+          fields: {
+            sctm_payment_methods_request: {
+              locale: 'de_DE',
+            },
+          },
+        } as unknown as CustomFields,
+      } as unknown as Payment,
+    } as PaymentReference;
+
+    (determinePaymentAction as jest.Mock).mockReturnValue(ConnectorActions.NoAction);
+
+    try {
+      await paymentController(mockAction, mockResource);
+    } catch (error: unknown) {
+      expect(determinePaymentAction).toBeCalledTimes(1);
+      expect(error).toBeInstanceOf(SkipError);
+      expect(error).toHaveProperty('message', 'No payment actions matched');
+    }
+  });
+
+  test('should throw a SkipError if no action matched if the action is not detected at the end', async () => {
+    mockAction = 'Create' as string;
+    mockResource = {
+      typeId: 'payment',
+      obj: {
+        paymentMethodInfo: {
+          paymentInterface: 'mollie',
+          method: 'card',
+        },
+        amountPlanned: {
+          type: 'centPrecision',
+          currencyCode: 'EUR',
+          centAmount: 1000,
+          fractionDigits: 2,
+        },
+        custom: {
+          fields: {
+            sctm_payment_methods_request: {
+              locale: 'de_DE',
+            },
+          },
+        } as unknown as CustomFields,
+      } as unknown as Payment,
+    } as PaymentReference;
+
+    (determinePaymentAction as jest.Mock).mockReturnValue('dummyAction');
+
+    (validateCommerceToolsPaymentPayload as jest.Mock).mockImplementationOnce(() => {
+      return;
+    });
+
+    try {
+      await paymentController(mockAction, mockResource);
+    } catch (error: unknown) {
+      expect(determinePaymentAction).toBeCalledTimes(1);
+      expect(error).toBeInstanceOf(SkipError);
+      expect(error).toHaveProperty('message', 'No payment actions matched');
+      expect(logger.debug).toBeCalledTimes(4);
+      expect(logger.debug).toHaveBeenNthCalledWith(
+        4,
+        'SCTM - payment processing - paymentController - No payment actions matched',
+      );
+    }
   });
 
   test('call listPaymentMethodsByPayment with valid object reference', async () => {
@@ -374,5 +459,70 @@ describe('Test payment.controller.ts', () => {
     expect(handleGetApplePaySession).toBeCalledTimes(1);
     expect(handleGetApplePaySession).toReturnWith(handleGetApplePaySessionResponse);
     expect(handleCreatePayment).toBeCalledTimes(0);
+  });
+
+  test('able to call and retrieve the result from handleCancelPayment', async () => {
+    mockAction = 'Create' as string;
+    mockResource = {
+      typeId: 'payment',
+      obj: {
+        paymentMethodInfo: {
+          paymentInterface: 'mollie',
+          method: 'card',
+        },
+        amountPlanned: {
+          type: 'centPrecision',
+          currencyCode: 'EUR',
+          centAmount: 1000,
+          fractionDigits: 2,
+        },
+        custom: {
+          fields: {
+            sctm_payment_methods_request: {
+              locale: 'de_DE',
+            },
+          },
+        } as unknown as CustomFields,
+      } as unknown as Payment,
+    } as PaymentReference;
+
+    const transactionCustomFieldValue = JSON.stringify({
+      responseText: 'Manually cancelled',
+      statusText: CancelStatusText,
+    });
+
+    const handleCancelPaymentResponse = {
+      statusCode: 200,
+      actions: [
+        {
+          action: 'changeTransactionState',
+          transactionId: 'tr_123456',
+          state: 'Failure',
+        },
+        {
+          action: 'setTransactionCustomField',
+          transactionId: 'tr_123456',
+          name: CustomFieldName.paymentCancelReason,
+          value: transactionCustomFieldValue,
+        },
+      ],
+    };
+
+    (validateCommerceToolsPaymentPayload as jest.Mock).mockImplementationOnce(() => {
+      return;
+    });
+
+    (determinePaymentAction as jest.Mock).mockReturnValue(ConnectorActions.CancelPayment);
+
+    (handleCancelPayment as jest.Mock).mockReturnValue(handleCancelPaymentResponse);
+
+    const response = await paymentController(mockAction, mockResource);
+    expect(response).toBeDefined();
+    expect(handleListPaymentMethodsByPayment).toBeCalledTimes(0);
+    expect(handleCreatePayment).toBeCalledTimes(0);
+    expect(handleCreateRefund).toBeCalledTimes(0);
+    expect(handlePaymentCancelRefund).toBeCalledTimes(0);
+    expect(handleCancelPayment).toBeCalledTimes(1);
+    expect(handleCancelPayment).toReturnWith(handleCancelPaymentResponse);
   });
 });

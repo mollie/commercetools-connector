@@ -214,6 +214,18 @@ describe('determinePaymentAction', () => {
         paymentStatus: {},
         transactions: [
           {
+            id: '5c8b0375-305a-4f19-ae8e-07806b101998',
+            type: 'Charge',
+            interactionId: 'tr_123123',
+            amount: {
+              type: 'centPrecision',
+              currencyCode: 'EUR',
+              centAmount: 1000,
+              fractionDigits: 2,
+            },
+            state: 'Pending',
+          },
+          {
             id: '5c8b0375-305a-4f19-ae8e-07806b101999',
             type: 'Authorization',
             interactionId: 'tr_123123',
@@ -223,7 +235,7 @@ describe('determinePaymentAction', () => {
               centAmount: 1000,
               fractionDigits: 2,
             },
-            state: 'Pending',
+            state: 'Success',
           },
           {
             id: '5c8b0375-305a-4f19-ae8e-07806b102000',

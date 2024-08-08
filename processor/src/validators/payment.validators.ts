@@ -1,12 +1,15 @@
 import { Payment as CTPayment } from '@commercetools/platform-sdk';
-import { PaymentMethod as MolliePaymentMethods, PaymentMethod } from '@mollie/api-client';
+import { PaymentMethod as MolliePaymentMethods } from '@mollie/api-client';
 import SkipError from '../errors/skip.error';
 import CustomError from '../errors/custom.error';
 import { logger } from '../utils/logger.utils';
 import { ConnectorActions, CustomFields } from '../utils/constant.utils';
 import { DeterminePaymentActionType } from '../types/controller.types';
 import { CTTransactionState, CTTransactionType } from '../types/commercetools.types';
-import { parseStringToJsonObject } from '../utils/app.utils';
+import { parseStringToJsonObject, validateEmail } from '../utils/app.utils';
+import { readConfiguration } from '../utils/config.utils';
+import { toBoolean } from 'validator';
+import { CustomPaymentMethod } from '../types/mollie.types';
 
 /**
  * Checks if the given action is either 'Create' or 'Update'.
@@ -48,7 +51,7 @@ export const checkPaymentInterface = (ctPayment: CTPayment): true | SkipError =>
  * @return {boolean} Returns true if the method is supported by Mollie
  */
 export const hasValidPaymentMethod: (method: string | undefined) => boolean = (method: string | undefined): boolean => {
-  return !!MolliePaymentMethods[method as MolliePaymentMethods];
+  return !!MolliePaymentMethods[method as MolliePaymentMethods] || !!CustomPaymentMethod[method as CustomPaymentMethod];
 };
 
 /**
@@ -93,8 +96,12 @@ export const checkPaymentMethodInput = (
     );
   }
 
-  if (method === PaymentMethod.creditcard) {
-    checkPaymentMethodSpecificParameters(ctPayment);
+  if (
+    [MolliePaymentMethods.creditcard, CustomPaymentMethod.blik].includes(
+      method as MolliePaymentMethods | CustomPaymentMethod,
+    )
+  ) {
+    checkPaymentMethodSpecificParameters(ctPayment, method);
   }
 
   return true;
@@ -183,19 +190,19 @@ export const checkValidRefundTransactionForCancel = (ctPayment: CTPayment): bool
  * @param {CTPayment} ctPayment - The Commercetools Payment object to check.
  * @return {true | CustomError} Returns true if the refund transaction is valid, otherwise exception.
  */
-export const checkValidPendingAuthorizationTransaction = (ctPayment: CTPayment): boolean => {
-  const pendingAuthorizationTransaction = ctPayment.transactions.find(
+export const checkValidSuccessAuthorizationTransaction = (ctPayment: CTPayment): boolean => {
+  const successAuthorizationTransaction = ctPayment.transactions.find(
     (transaction) =>
-      transaction.type === CTTransactionType.Authorization && transaction.state === CTTransactionState.Pending,
+      transaction.type === CTTransactionType.Authorization && transaction.state === CTTransactionState.Success,
   );
 
-  if (!pendingAuthorizationTransaction?.interactionId) {
+  if (!successAuthorizationTransaction?.interactionId) {
     logger.error(
-      `SCTM - handleCancelPayment - Cannot get the Mollie payment ID from CommerceTools transaction, CommerceTools Transaction ID: ${pendingAuthorizationTransaction?.id}.`,
+      `SCTM - handleCancelPayment - Cannot get the Mollie payment ID from CommerceTools transaction, CommerceTools Transaction ID: ${successAuthorizationTransaction?.id}.`,
     );
     throw new CustomError(
       400,
-      `SCTM - handleCancelPayment - Cannot get the Mollie payment ID from CommerceTools transaction, CommerceTools Transaction ID: ${pendingAuthorizationTransaction?.id}.`,
+      `SCTM - handleCancelPayment - Cannot get the Mollie payment ID from CommerceTools transaction, CommerceTools Transaction ID: ${successAuthorizationTransaction?.id}.`,
     );
   }
 
@@ -213,7 +220,7 @@ export const checkValidPendingAuthorizationTransaction = (ctPayment: CTPayment):
  * The `isInvalid` property indicates if the payment method input is invalid.
  * The `errorMessage` property contains the error message if the input is invalid.
  */
-export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment): void => {
+export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, method: string): void => {
   const paymentCustomFields = parseStringToJsonObject(
     ctPayment.custom?.fields?.[CustomFields.createPayment.request],
     CustomFields.createPayment.request,
@@ -221,31 +228,71 @@ export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment): void
     ctPayment.id,
   );
 
-  if (!paymentCustomFields?.cardToken) {
-    logger.error(
-      `SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard, CommerceTools Payment ID: ${ctPayment.id}`,
-      {
-        commerceToolsPaymentId: ctPayment.id,
-        cardToken: paymentCustomFields?.cardToken,
-      },
-    );
+  switch (method) {
+    case MolliePaymentMethods.creditcard: {
+      const cardComponentEnabled = toBoolean(readConfiguration().mollie.cardComponent, true);
 
-    throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard');
-  }
+      if (cardComponentEnabled) {
+        if (!paymentCustomFields?.cardToken) {
+          logger.error(
+            `SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard, CommerceTools Payment ID: ${ctPayment.id}`,
+            {
+              commerceToolsPaymentId: ctPayment.id,
+              cardToken: paymentCustomFields?.cardToken,
+            },
+          );
 
-  if (typeof paymentCustomFields?.cardToken !== 'string' || paymentCustomFields?.cardToken.trim() === '') {
-    logger.error(
-      `SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard, CommerceTools Payment ID: ${ctPayment.id}`,
-      {
-        commerceToolsPaymentId: ctPayment.id,
-        cardToken: paymentCustomFields?.cardToken,
-      },
-    );
+          throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard');
+        }
 
-    throw new CustomError(
-      400,
-      'SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard',
-    );
+        if (typeof paymentCustomFields?.cardToken !== 'string' || paymentCustomFields?.cardToken.trim() === '') {
+          logger.error(
+            `SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard, CommerceTools Payment ID: ${ctPayment.id}`,
+            {
+              commerceToolsPaymentId: ctPayment.id,
+              cardToken: paymentCustomFields?.cardToken,
+            },
+          );
+
+          throw new CustomError(
+            400,
+            'SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard',
+          );
+        }
+      }
+
+      break;
+    }
+
+    case CustomPaymentMethod.blik:
+      if (ctPayment.amountPlanned.currencyCode.toLowerCase() !== 'pln') {
+        logger.error(`SCTM - PAYMENT PROCESSING - Currency Code must be PLN for payment method BLIK`, {
+          commerceToolsPayment: ctPayment,
+        });
+
+        throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - Currency Code must be PLN for payment method BLIK');
+      }
+
+      if (!paymentCustomFields?.billingEmail) {
+        logger.error(`SCTM - PAYMENT PROCESSING - billingEmail is required for payment method BLIK`, {
+          commerceToolsPayment: ctPayment,
+        });
+
+        throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - billingEmail is required for payment method BLIK');
+      }
+
+      if (!validateEmail(paymentCustomFields.billingEmail)) {
+        logger.error(`SCTM - PAYMENT PROCESSING - billingEmail must be a valid email address`, {
+          commerceToolsPayment: ctPayment,
+        });
+
+        throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - billingEmail must be a valid email address');
+      }
+
+      break;
+
+    default:
+      break;
   }
 };
 
@@ -285,7 +332,7 @@ export const validateCommerceToolsPaymentPayload = (
       checkPaymentMethodInput(connectorAction, ctPayment);
       break;
     case ConnectorActions.CancelPayment:
-      checkValidPendingAuthorizationTransaction(ctPayment);
+      checkValidSuccessAuthorizationTransaction(ctPayment);
       break;
     case ConnectorActions.CreateRefund:
       checkValidSuccessChargeTransaction(ctPayment);

@@ -15,13 +15,20 @@ deployAs:
           description: Enable Mollie cart component (0 or 1)
           required: false
           default: "0"
+        - key: CONNECTOR_MODE
+          description: Either test or live
+          required: true
+          default: "test"
         - key: DEBUG
           description: Debug mode (0 or 1)
           required: false
           default: "0"
       securedConfiguration:
-        - key: MOLLIE_API_KEY
-          description: Mollie PSP API key
+        - key: MOLLIE_API_TEST_KEY
+          description: Mollie PSP test API key
+          required: true
+        - key: MOLLIE_API_LIVE_KEY
+          description: Mollie PSP live API key
           required: true
         - key: MOLLIE_PROFILE_ID
           description: Mollie PSP profile ID

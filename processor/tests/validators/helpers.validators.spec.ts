@@ -233,7 +233,9 @@ describe('Test helpers.validators.ts', () => {
         region: process.env.CTP_REGION as string,
       },
       mollie: {
-        apiKey: process.env.MOLLIE_API_KEY as string,
+        liveApiKey: process.env.MOLLIE_API_LIVE_KEY as string,
+        testApiKey: process.env.MOLLIE_API_TEST_KEY as string,
+        mode: process.env.CONNECTOR_MODE as string,
         debug: (process.env.DEBUG ?? '0') as string,
         profileId: process.env.MOLLIE_PROFILE_ID as string,
         cardComponent: (process.env.MOLLIE_CARD_COMPONENT ?? '0') as string,
@@ -254,7 +256,9 @@ describe('Test helpers.validators.ts', () => {
         region: process.env.CTP_REGION as string,
       },
       mollie: {
-        apiKey: process.env.MOLLIE_API_KEY as string,
+        liveApiKey: process.env.MOLLIE_API_LIVE_KEY as string,
+        testApiKey: process.env.MOLLIE_API_TEST_KEY as string,
+        mode: process.env.CONNECTOR_MODE as string,
         debug: (process.env.DEBUG ?? '0') as string,
         profileId: process.env.MOLLIE_PROFILE_ID as string,
         cardComponent: (process.env.MOLLIE_CARD_COMPONENT ?? '0') as string,

@@ -23,7 +23,9 @@ export type ConnectorEnvVars = {
     region: string;
   };
   mollie: {
-    apiKey: string;
+    testApiKey: string;
+    liveApiKey: string;
+    mode: string;
     profileId: string;
     debug: string;
     cardComponent: string;

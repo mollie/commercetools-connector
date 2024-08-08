@@ -25,11 +25,17 @@ export const post = async (request: Request, response: Response, next: NextFunct
       return;
     }
 
-    await handlePaymentWebhook(id);
+    const result = await handlePaymentWebhook(id);
 
-    logger.info(`Webhook with id ${id} is handled successfully.`);
+    if (result) {
+      response.status(200).send();
 
-    response.status(200).send();
+      logger.info(`Webhook with id ${id} is handled successfully.`);
+    } else {
+      response.status(400).send();
+
+      logger.warn(`Webhook with id ${id} is handled unsuccessfully, retry will be take place automatically.`);
+    }
   } catch (error: any) {
     logger.error(`Error processing webhook event`, error);
 

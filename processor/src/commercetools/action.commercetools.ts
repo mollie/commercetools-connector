@@ -88,11 +88,13 @@ export const changeTransactionState = (id: string, newState: CTTransactionState)
   };
 };
 
-export const setTransactionCustomField = (transactionId: string, name: string, value: string) => {
+export const setTransactionCustomType = (transactionId: string, key: string, fields: object) => {
   return {
-    action: 'setTransactionCustomField',
-    transactionId: transactionId,
-    name: name,
-    value: value,
+    action: 'setTransactionCustomType',
+    type: {
+      key,
+    },
+    fields,
+    transactionId,
   };
 };
