@@ -21,4 +21,5 @@ export const logger = createApplicationLogger({
       fields: [{ from: 'message', to: 'message', replaceValue: (value) => `[${VERSION_STRING}] - ${value}` }],
     }),
   ],
+  json: true,
 });
