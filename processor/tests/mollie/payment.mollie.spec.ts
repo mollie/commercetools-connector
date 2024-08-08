@@ -30,6 +30,8 @@ jest.mock('../../src/client/mollie.client', () => ({
     methods: {
       list: mockPaymentsList,
     },
+  })),
+  initMollieClientForApplePaySession: jest.fn(() => ({
     applePay: {
       requestPaymentSession: mockRequestPaymentSession,
     },
