@@ -1,6 +1,7 @@
-import { createApplicationLogger } from '@commercetools-backend/loggers';
+import { createApplicationLogger, rewriteFieldsFormatter } from '@commercetools-backend/loggers';
 import { readConfiguration } from './config.utils';
 import { toBoolean } from 'validator';
+import { VERSION_STRING } from './constant.utils';
 
 /**
  * Create a logger instance with the appropriate log level based on the configuration.
@@ -14,4 +15,10 @@ export const logger = createApplicationLogger({
    * @type {string}
    */
   level: toBoolean(readConfiguration().mollie.debug ?? '0', true) ? 'debug' : 'info',
+
+  formatters: [
+    rewriteFieldsFormatter({
+      fields: [{ from: 'message', to: 'message', replaceValue: (value) => `[${VERSION_STRING}] - ${value}` }],
+    }),
+  ],
 });
