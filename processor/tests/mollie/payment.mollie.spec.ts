@@ -9,8 +9,8 @@ import {
 import { MollieApiError, PaymentCreateParams } from '@mollie/api-client';
 import { logger } from '../../src/utils/logger.utils';
 import CustomError from '../../src/errors/custom.error';
-import { LIBRARY_NAME, LIBRARY_VERSION } from '../../src/utils/constant.utils';
-import { readConfiguration } from '../../src/utils/config.utils';
+import { VERSION_STRING } from '../../src/utils/constant.utils';
+import { getApiKey } from '../../src/utils/config.utils';
 import fetch from 'node-fetch';
 
 const mockPaymentsCreate = jest.fn();
@@ -128,8 +128,8 @@ describe('createPaymentWithCustomMethod', () => {
     const createPaymentEndpoint = 'https://api.mollie.com/v2/payments';
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${readConfiguration().mollie.apiKey}`,
-      versionStrings: `${LIBRARY_NAME}/${LIBRARY_VERSION}`,
+      Authorization: `Bearer ${getApiKey()}`,
+      versionStrings: `${VERSION_STRING}`,
     };
 
     (fetch as unknown as jest.Mock).mockImplementation(async () =>
@@ -166,8 +166,8 @@ describe('createPaymentWithCustomMethod', () => {
     const createPaymentEndpoint = 'https://api.mollie.com/v2/payments';
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${readConfiguration().mollie.apiKey}`,
-      versionStrings: `${LIBRARY_NAME}/${LIBRARY_VERSION}`,
+      Authorization: `Bearer ${getApiKey()}`,
+      versionStrings: `${VERSION_STRING}`,
     };
 
     const response = {
@@ -231,8 +231,8 @@ describe('createPaymentWithCustomMethod', () => {
     const createPaymentEndpoint = 'https://api.mollie.com/v2/payments';
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${readConfiguration().mollie.apiKey}`,
-      versionStrings: `${LIBRARY_NAME}/${LIBRARY_VERSION}`,
+      Authorization: `Bearer ${getApiKey()}`,
+      versionStrings: `${VERSION_STRING}`,
     };
 
     const response = {
@@ -287,8 +287,8 @@ describe('createPaymentWithCustomMethod', () => {
     const createPaymentEndpoint = 'https://api.mollie.com/v2/payments';
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${readConfiguration().mollie.apiKey}`,
-      versionStrings: `${LIBRARY_NAME}/${LIBRARY_VERSION}`,
+      Authorization: `Bearer ${getApiKey()}`,
+      versionStrings: `${VERSION_STRING}`,
     };
 
     const errorMessage = 'SCTM - createPaymentWithCustomMethod - Failed to create a payment with unknown errors';

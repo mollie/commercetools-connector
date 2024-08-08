@@ -10,8 +10,8 @@ import {
 import { initMollieClient } from '../client/mollie.client';
 import CustomError from '../errors/custom.error';
 import { logger } from '../utils/logger.utils';
-import { readConfiguration } from '../utils/config.utils';
-import { LIBRARY_NAME, LIBRARY_VERSION } from '../utils/constant.utils';
+import { getApiKey } from '../utils/config.utils';
+import { VERSION_STRING } from '../utils/constant.utils';
 import { CustomPayment } from '../types/mollie.types';
 import fetch from 'node-fetch';
 
@@ -107,12 +107,10 @@ export const createPaymentWithCustomMethod = async (paymentParams: PaymentCreate
   let errorMessage;
 
   try {
-    const { mollie } = readConfiguration();
-
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${mollie.apiKey}`,
-      versionStrings: `${LIBRARY_NAME}/${LIBRARY_VERSION}`,
+      Authorization: `Bearer ${getApiKey()}`,
+      versionStrings: `${VERSION_STRING}`,
     };
 
     const response = await fetch('https://api.mollie.com/v2/payments', {

@@ -18,7 +18,9 @@ export const readConfiguration = () => {
       region: process.env.CTP_REGION as string,
     },
     mollie: {
-      apiKey: process.env.MOLLIE_API_KEY as string,
+      testApiKey: process.env.MOLLIE_API_TEST_KEY as string,
+      liveApiKey: process.env.MOLLIE_API_LIVE_KEY as string,
+      mode: process.env.CONNECTOR_MODE as string,
       debug: process.env.DEBUG as string,
       profileId: process.env.MOLLIE_PROFILE_ID as string,
       cardComponent: process.env.MOLLIE_CARD_COMPONENT as string,
@@ -35,4 +37,11 @@ export const readConfiguration = () => {
   }
 
   return envVars;
+};
+
+export const getApiKey = (): string => {
+  if (process.env.CONNECTOR_MODE === 'test') {
+    return process.env.MOLLIE_API_TEST_KEY as string;
+  }
+  return process.env.MOLLIE_API_LIVE_KEY as string;
 };
