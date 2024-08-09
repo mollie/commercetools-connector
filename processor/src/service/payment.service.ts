@@ -55,7 +55,7 @@ import {
 import { getPaymentExtension } from '../commercetools/extensions.commercetools';
 import { HttpDestination } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/extension';
 import { cancelPaymentRefund, createPaymentRefund, getPaymentRefund } from '../mollie/refund.mollie';
-import { ApplePaySessionRequest, CustomPayment } from '../types/mollie.types';
+import { ApplePaySessionRequest, CustomPayment, SupportedPaymentMethods } from '../types/mollie.types';
 import { parseStringToJsonObject } from '../utils/app.utils';
 import ApplePaySession from '@mollie/api-client/dist/types/src/data/applePaySession/ApplePaySession';
 
@@ -81,6 +81,13 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
         1,
       );
     }
+
+    methods.splice(
+      methods.findIndex((method: Method) => {
+        return !SupportedPaymentMethods[method.id.toString() as SupportedPaymentMethods];
+      }),
+      1,
+    );
 
     const availableMethods = JSON.stringify({
       count: methods.length,
