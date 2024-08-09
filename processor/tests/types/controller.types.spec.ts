@@ -32,5 +32,11 @@ describe('Test controller.types.ts', () => {
 
   test('should return the correct {DeterminePaymentActionType} type declaration', () => {
     expect(functions.isDeterminePaymentActionType('getPaymentMethods')).toBeTruthy();
+    expect(functions.isDeterminePaymentActionType('createPayment')).toBeTruthy();
+    expect(functions.isDeterminePaymentActionType('cancelPayment')).toBeTruthy();
+    expect(functions.isDeterminePaymentActionType('createRefund')).toBeTruthy();
+    expect(functions.isDeterminePaymentActionType('cancelRefund')).toBeTruthy();
+    expect(functions.isDeterminePaymentActionType('noAction')).toBeTruthy();
+    expect(functions.isDeterminePaymentActionType('getApplePaySession')).toBeTruthy();
   });
 });

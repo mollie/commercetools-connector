@@ -67,16 +67,28 @@ describe('Test env.validators.ts', () => {
       index1: 5,
       index2: 0,
       field1: 'mollie',
-      field2: 'apiKey',
+      field2: 'testApiKey',
       error: {
-        code: 'InvalidMollieApiKey',
-        message: 'Mollie API key should be a valid string.',
+        code: 'InvalidMollieTestApiKey',
+        message: 'Mollie test API key should be a valid string.',
         referencedBy: 'environmentVariables',
       },
       condition: undefined,
     },
     {
       index1: 6,
+      index2: 0,
+      field1: 'mollie',
+      field2: 'liveApiKey',
+      error: {
+        code: 'InvalidMollieLiveApiKey',
+        message: 'Mollie live API key should be a valid string.',
+        referencedBy: 'environmentVariables',
+      },
+      condition: undefined,
+    },
+    {
+      index1: 7,
       index2: 0,
       field1: 'mollie',
       field2: 'profileId',
@@ -88,7 +100,7 @@ describe('Test env.validators.ts', () => {
       condition: undefined,
     },
     {
-      index1: 7,
+      index1: 8,
       index2: 0,
       field1: 'mollie',
       field2: 'debug',
@@ -100,7 +112,7 @@ describe('Test env.validators.ts', () => {
       condition: { min: 1, max: 1 },
     },
     {
-      index1: 8,
+      index1: 9,
       index2: 0,
       field1: 'mollie',
       field2: 'cardComponent',
@@ -110,6 +122,18 @@ describe('Test env.validators.ts', () => {
         referencedBy: 'environmentVariables',
       },
       condition: { min: 1, max: 1 },
+    },
+    {
+      index1: 10,
+      index2: 0,
+      field1: 'mollie',
+      field2: 'mode',
+      error: {
+        code: 'InvalidMode',
+        message: 'Mode should be a valid string of either "test" or "live".',
+        referencedBy: 'environmentVariables',
+      },
+      condition: { min: 1, max: 4 },
     },
   ])(
     'should return the correct validation array contains [%s, %s]',

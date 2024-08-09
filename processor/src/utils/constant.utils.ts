@@ -19,6 +19,12 @@ export const CustomFields = {
     interfaceInteraction: 'sctm_interface_interaction_type',
   },
   paymentCancelReason: 'sctm_payment_cancel_reason',
+  applePay: {
+    session: {
+      request: 'sctm_apple_pay_session_request',
+      response: 'sctm_apple_pay_session_response',
+    },
+  },
 };
 
 export enum ConnectorActions {
@@ -28,6 +34,7 @@ export enum ConnectorActions {
   CreateRefund = 'createRefund',
   CancelRefund = 'cancelRefund',
   NoAction = 'noAction',
+  GetApplePaySession = 'getApplePaySession',
 }
 
 export const ErrorMessages = {

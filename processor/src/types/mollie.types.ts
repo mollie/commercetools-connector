@@ -10,6 +10,10 @@ export type ParsedMethodsRequestType = {
   sequenceType?: string;
 };
 
+export type ApplePaySessionRequest = {
+  domain: string;
+  validationUrl: string;
+};
 export enum CustomPaymentMethod {
   blik = 'blik',
 }

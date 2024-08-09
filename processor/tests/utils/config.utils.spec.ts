@@ -14,7 +14,9 @@ describe('Test src/utils/config.utils.ts', () => {
         region: process.env.CTP_REGION,
       },
       mollie: {
-        apiKey: process.env.MOLLIE_API_KEY,
+        liveApiKey: process.env.MOLLIE_API_LIVE_KEY,
+        testApiKey: process.env.MOLLIE_API_TEST_KEY,
+        mode: process.env.CONNECTOR_MODE,
         debug: process.env.DEBUG,
         profileId: process.env.MOLLIE_PROFILE_ID,
         cardComponent: process.env.MOLLIE_CARD_COMPONENT,
@@ -47,8 +49,13 @@ describe('Test src/utils/config.utils.ts', () => {
     expect(() => readConfiguration()).toThrow(CustomError);
   });
 
-  test('should throw an error when MOLLIE_API_KEY is not defined', () => {
-    delete process.env.MOLLIE_API_KEY;
+  test('should throw an error when MOLLIE_API_LIVE_KEY is not defined', () => {
+    delete process.env.MOLLIE_API_LIVE_KEY;
+    expect(() => readConfiguration()).toThrow(CustomError);
+  });
+
+  test('should throw an error when MOLLIE_API_TEST_KEY is not defined', () => {
+    delete process.env.MOLLIE_API_TEST_KEY;
     expect(() => readConfiguration()).toThrow(CustomError);
   });
 
@@ -59,6 +66,11 @@ describe('Test src/utils/config.utils.ts', () => {
 
   test('should throw an error when MOLLIE_CARD_COMPONENT is not defined', () => {
     delete process.env.MOLLIE_CARD_COMPONENT;
+    expect(() => readConfiguration()).toThrow(CustomError);
+  });
+
+  test('should throw an error when CONNECTOR_MODE is not defined', () => {
+    delete process.env.CONNECTOR_MODE;
     expect(() => readConfiguration()).toThrow(CustomError);
   });
 });

@@ -11,4 +11,5 @@ export type DeterminePaymentActionType =
   | 'cancelPayment'
   | 'createRefund'
   | 'cancelRefund'
-  | 'noAction';
+  | 'noAction'
+  | 'getApplePaySession';

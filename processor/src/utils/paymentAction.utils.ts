@@ -99,6 +99,14 @@ export const determinePaymentAction = (ctPayment?: Payment): DeterminePaymentAct
     return ConnectorActions.GetPaymentMethods;
   }
 
+  const shouldGetAppleSession =
+    ctPayment.custom?.fields?.[CustomFields.applePay.session.request] &&
+    ctPayment.custom?.fields?.[CustomFields.applePay.session.request].length > 0;
+
+  if (shouldGetAppleSession) {
+    return ConnectorActions.GetApplePaySession;
+  }
+
   const { transactions } = ctPayment;
   const groups = getTransactionGroups(transactions);
 
