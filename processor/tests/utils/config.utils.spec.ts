@@ -1,7 +1,6 @@
 import { readConfiguration } from '../../src/utils/config.utils';
 import CustomError from '../../src/errors/custom.error';
-import { describe, expect, test, beforeEach } from '@jest/globals';
-import * as dotenv from 'dotenv';
+import { describe, expect, test } from '@jest/globals';
 
 const env = process.env;
 
@@ -81,5 +80,5 @@ describe('Test src/utils/config.utils.ts', () => {
   test('should throw an error when MOLLIE_BANK_TRANSFER_DUE_DATE is invalid', () => {
     process.env.MOLLIE_BANK_TRANSFER_DUE_DATE = 'dummy';
     expect(() => readConfiguration()).toThrow(CustomError);
-  })
+  });
 });

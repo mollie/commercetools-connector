@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 
-import validator, { isInt } from 'validator';
+import validator from 'validator';
 import { ValidatorCreator, Wrapper } from '../types/index.types';
 import { DUE_DATE_PATTERN } from '../utils/constant.utils';
 
@@ -34,15 +34,16 @@ export const standardDueDate = (path, message) => [
 
         if (match) {
           const days = parseInt(match[1]);
-          
+
           return days >= 1 && days <= 100;
         }
 
         return false;
-      }), message
-    ]
-  ]
-]
+      }),
+      message,
+    ],
+  ],
+];
 
 export const standardNaturalNumber = (path, message) => [
   path,

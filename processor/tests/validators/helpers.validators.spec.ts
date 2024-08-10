@@ -1,6 +1,5 @@
-import { standardDueDate } from './../../src/validators/helpers.validators';
-import { describe, test, expect, jest, it } from '@jest/globals';
 import {
+  standardDueDate,
   array,
   standardEmail,
   standardNaturalNumber,
@@ -10,7 +9,8 @@ import {
   getValidateMessages,
   optional,
   region,
-} from '../../src/validators/helpers.validators';
+} from './../../src/validators/helpers.validators';
+import { describe, test, expect, jest, it } from '@jest/globals';
 import { ConnectorEnvVars, Message } from '../../src/types/index.types';
 import envValidators from '../../src/validators/env.validators';
 
@@ -72,10 +72,11 @@ const mockObject = {
     path: ['./demo/path/dueDate'] as string[],
     message: {
       code: 'InvalidBankTransferDueDate',
-      message: 'Bank transfer due date must be from 1d to 100d, the number must be an integer. If it was not set, the default will be 14d',
+      message:
+        'Bank transfer due date must be from 1d to 100d, the number must be an integer. If it was not set, the default will be 14d',
       referencedBy: 'environmentVariables',
     } as Message,
-  }
+  },
 };
 
 const mockResponse = {
@@ -114,7 +115,8 @@ const mockResponse = {
         [jest.fn()],
         {
           code: 'InvalidBankTransferDueDate',
-          message: 'Bank transfer due date must be from 1d to 100d, the number must be an integer. If it was not set, the default will be 14d',
+          message:
+            'Bank transfer due date must be from 1d to 100d, the number must be an integer. If it was not set, the default will be 14d',
           referencedBy: 'environmentVariables',
         },
       ],
@@ -261,7 +263,7 @@ describe('Test helpers.validators.ts', () => {
         debug: (process.env.DEBUG ?? '0') as string,
         profileId: process.env.MOLLIE_PROFILE_ID as string,
         cardComponent: (process.env.MOLLIE_CARD_COMPONENT ?? '0') as string,
-        bankTransferDueDate: process.env.MOLLIE_BANK_TRANSFER_DUE_DATE
+        bankTransferDueDate: process.env.MOLLIE_BANK_TRANSFER_DUE_DATE,
       },
     };
     const error = getValidateMessages(envValidators, vars);
@@ -285,7 +287,7 @@ describe('Test helpers.validators.ts', () => {
         debug: (process.env.DEBUG ?? '0') as string,
         profileId: process.env.MOLLIE_PROFILE_ID as string,
         cardComponent: (process.env.MOLLIE_CARD_COMPONENT ?? '0') as string,
-        bankTransferDueDate: process.env.MOLLIE_BANK_TRANSFER_DUE_DATE
+        bankTransferDueDate: process.env.MOLLIE_BANK_TRANSFER_DUE_DATE,
       },
     };
     const error = getValidateMessages(envValidators, vars);
@@ -358,11 +360,12 @@ describe('test getValidateMessages', () => {
     expect(result).toEqual([
       {
         code: 'InvalidBankTransferDueDate',
-        message: 'Bank transfer due date must be from 1d to 100d, the number must be an integer. If it was not set, the default will be 14d',
-        referencedBy: 'environmentVariables'
-      }
-    ])
-  })
+        message:
+          'Bank transfer due date must be from 1d to 100d, the number must be an integer. If it was not set, the default will be 14d',
+        referencedBy: 'environmentVariables',
+      },
+    ]);
+  });
 
   it('should able to return suitable error message when MOLLIE_BANK_TRANSFER_DUE_DATE is invalid', () => {
     const envVars: ConnectorEnvVars = {
@@ -389,11 +392,12 @@ describe('test getValidateMessages', () => {
     expect(result).toEqual([
       {
         code: 'InvalidBankTransferDueDate',
-        message: 'Bank transfer due date must be from 1d to 100d, the number must be an integer. If it was not set, the default will be 14d',
-        referencedBy: 'environmentVariables'
-      }
-    ])
-  })
+        message:
+          'Bank transfer due date must be from 1d to 100d, the number must be an integer. If it was not set, the default will be 14d',
+        referencedBy: 'environmentVariables',
+      },
+    ]);
+  });
 
   it('should able to return suitable error message when MOLLIE_BANK_TRANSFER_DUE_DATE is more than 100 days', () => {
     const envVars: ConnectorEnvVars = {
@@ -420,9 +424,10 @@ describe('test getValidateMessages', () => {
     expect(result).toEqual([
       {
         code: 'InvalidBankTransferDueDate',
-        message: 'Bank transfer due date must be from 1d to 100d, the number must be an integer. If it was not set, the default will be 14d',
-        referencedBy: 'environmentVariables'
-      }
-    ])
-  })
-})
+        message:
+          'Bank transfer due date must be from 1d to 100d, the number must be an integer. If it was not set, the default will be 14d',
+        referencedBy: 'environmentVariables',
+      },
+    ]);
+  });
+});

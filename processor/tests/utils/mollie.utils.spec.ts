@@ -198,13 +198,13 @@ describe('Test mollie.utils.ts', () => {
 
     test('should throw error if no matches', () => {
       try {
-        calculateDueDate('5')
+        calculateDueDate('5');
       } catch (error: unknown) {
         expect(logger.error).toBeCalledTimes(1);
         expect(logger.error).toBeCalledWith('SCTM - calculateDueDate - Failed to calculate the due date, input: 5');
 
         expect(error).toBeInstanceOf(CustomError);
       }
-    })
-  })
+    });
+  });
 });

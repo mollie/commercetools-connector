@@ -500,8 +500,8 @@ describe('checkPaymentMethodSpecificParameters', () => {
     const paymentRequest = {
       description: 'Test',
       billingAddress: {
-        title: 'Billing address title'
-      }
+        title: 'Billing address title',
+      },
     };
 
     const CTPayment: Payment = {
@@ -554,8 +554,8 @@ describe('checkPaymentMethodSpecificParameters', () => {
       description: 'Test',
       billingAddress: {
         title: 'Billing address title',
-        email: 'dummy string'
-      }
+        email: 'dummy string',
+      },
     };
 
     const CTPayment: Payment = {
@@ -590,16 +590,11 @@ describe('checkPaymentMethodSpecificParameters', () => {
       checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
-      expect((error as CustomError).message).toBe(
-        'SCTM - PAYMENT PROCESSING - email must be a valid email address',
-      );
+      expect((error as CustomError).message).toBe('SCTM - PAYMENT PROCESSING - email must be a valid email address');
       expect(logger.error).toBeCalledTimes(1);
-      expect(logger.error).toBeCalledWith(
-        `SCTM - PAYMENT PROCESSING - email must be a valid email address`,
-        {
-          commerceToolsPayment: CTPayment,
-        },
-      );
+      expect(logger.error).toBeCalledWith(`SCTM - PAYMENT PROCESSING - email must be a valid email address`, {
+        commerceToolsPayment: CTPayment,
+      });
     }
   });
 
@@ -608,8 +603,8 @@ describe('checkPaymentMethodSpecificParameters', () => {
       description: 'Test',
       billingAddress: {
         title: 'Billing address title',
-        email: 'test@gmail.com'
-      }
+        email: 'test@gmail.com',
+      },
     };
 
     const CTPayment: Payment = {

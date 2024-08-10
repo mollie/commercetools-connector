@@ -12,8 +12,7 @@ jest.mock('../../src/utils/mollie.utils.ts', () => ({
   // @ts-expect-error ignore type error
   ...jest.requireActual('../../src/utils/mollie.utils.ts'),
   // __esModule: true,
-  calculateDueDate: jest.fn()
-
+  calculateDueDate: jest.fn(),
 }));
 
 describe('Test map.utils.ts', () => {
@@ -276,7 +275,7 @@ describe('createMollieCreatePaymentParams', () => {
       redirectUrl: 'https://example.com/success',
       webhookUrl: 'https://example.com/webhook',
       billingAddress: {
-        email: 'test@mollie.com'
+        email: 'test@mollie.com',
       },
     };
 
@@ -325,7 +324,7 @@ describe('createMollieCreatePaymentParams', () => {
       webhookUrl: extensionUrl,
       description: customFieldObject.description,
       billingAddress: customFieldObject.billingAddress,
-      dueDate
+      dueDate,
     });
   });
 

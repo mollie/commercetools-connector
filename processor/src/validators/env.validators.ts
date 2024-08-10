@@ -102,14 +102,12 @@ const envValidators = [
       max: 4,
     },
   ),
-  standardDueDate(
-    ['mollie', 'bankTransferDueDate'],
-    {
-      code: 'InvalidBankTransferDueDate',
-      message: 'Bank transfer due date must be from 1d to 100d, the number must be an integer. If it was not set, the default will be 14d',
-      referencedBy: 'environmentVariables',
-    },
-  ),
+  standardDueDate(['mollie', 'bankTransferDueDate'], {
+    code: 'InvalidBankTransferDueDate',
+    message:
+      'Bank transfer due date must be from 1d to 100d, the number must be an integer. If it was not set, the default will be 14d',
+    referencedBy: 'environmentVariables',
+  }),
 ];
 
 export default envValidators;

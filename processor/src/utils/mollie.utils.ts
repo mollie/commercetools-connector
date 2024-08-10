@@ -106,13 +106,13 @@ export const calculateDueDate = (input?: string): string => {
   const match = input.match(DUE_DATE_PATTERN);
 
   if (match) {
-      const days = parseInt(match[1]);
-      if (!isNaN(days)) {
-          const today = new Date();
-          const futureDate = new Date(today.getTime() + days * 24 * 60 * 60 * 1000);
+    const days = parseInt(match[1]);
+    if (!isNaN(days)) {
+      const today = new Date();
+      const futureDate = new Date(today.getTime() + days * 24 * 60 * 60 * 1000);
 
-          return futureDate.toISOString().split('T')[0] as string;
-      }
+      return futureDate.toISOString().split('T')[0] as string;
+    }
   }
 
   const errorMessage = `SCTM - calculateDueDate - Failed to calculate the due date, input: ${input}`;
@@ -120,4 +120,4 @@ export const calculateDueDate = (input?: string): string => {
   logger.error(errorMessage);
 
   throw new CustomError(400, errorMessage);
-}
+};
