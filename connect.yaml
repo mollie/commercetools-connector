@@ -23,6 +23,9 @@ deployAs:
           description: Debug mode (0 or 1)
           required: false
           default: "0"
+        - key: MOLLIE_BANK_TRANSFER_DUE_DATE
+          description: Payment method Bank Transfer due date (1d -> 100d)
+          default: "14d"
       securedConfiguration:
         - key: MOLLIE_API_TEST_KEY
           description: Mollie PSP test API key

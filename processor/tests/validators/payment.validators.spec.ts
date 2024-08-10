@@ -25,6 +25,7 @@ jest.mock('@mollie/api-client', () => ({
     dummy: 'dummy',
     creditcard: 'creditcard',
     giftcard: 'giftcard',
+    banktransfer: 'banktransfer',
   },
 }));
 
@@ -443,6 +444,206 @@ describe('checkPaymentMethodSpecificParameters', () => {
     expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(
       undefined,
     );
+  });
+
+  it('should throw an error if the payment method is banktransfer and the billingAddress is not specified', () => {
+    const paymentRequest = {
+      description: 'Test',
+    };
+
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'banktransfer',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request: JSON.stringify(paymentRequest),
+        },
+      },
+    };
+
+    try {
+      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).message).toBe(
+        'SCTM - PAYMENT PROCESSING - email is required for payment method banktransfer. Please make sure you have sent it in billingAddress.email of the custom field',
+      );
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith(
+        `SCTM - PAYMENT PROCESSING - email is required for payment method banktransfer. Please make sure you have sent it in billingAddress.email of the custom field`,
+        {
+          commerceToolsPayment: CTPayment,
+        },
+      );
+    }
+  });
+
+  it('should throw an error if the payment method is banktransfer and the billingAddress is specified but does not provide email', () => {
+    const paymentRequest = {
+      description: 'Test',
+      billingAddress: {
+        title: 'Billing address title'
+      }
+    };
+
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'banktransfer',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request: JSON.stringify(paymentRequest),
+        },
+      },
+    };
+
+    try {
+      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).message).toBe(
+        'SCTM - PAYMENT PROCESSING - email is required for payment method banktransfer. Please make sure you have sent it in billingAddress.email of the custom field',
+      );
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith(
+        `SCTM - PAYMENT PROCESSING - email is required for payment method banktransfer. Please make sure you have sent it in billingAddress.email of the custom field`,
+        {
+          commerceToolsPayment: CTPayment,
+        },
+      );
+    }
+  });
+
+  it('should throw an error if the payment method is banktransfer and the email is not valid', () => {
+    const paymentRequest = {
+      description: 'Test',
+      billingAddress: {
+        title: 'Billing address title',
+        email: 'dummy string'
+      }
+    };
+
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'banktransfer',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request: JSON.stringify(paymentRequest),
+        },
+      },
+    };
+
+    try {
+      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).message).toBe(
+        'SCTM - PAYMENT PROCESSING - email must be a valid email address',
+      );
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith(
+        `SCTM - PAYMENT PROCESSING - email must be a valid email address`,
+        {
+          commerceToolsPayment: CTPayment,
+        },
+      );
+    }
+  });
+
+  it('should should not throw any error or terminate the process if the payment method is banktransfer and the email is provided correctly', () => {
+    const paymentRequest = {
+      description: 'Test',
+      billingAddress: {
+        title: 'Billing address title',
+        email: 'test@gmail.com'
+      }
+    };
+
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'banktransfer',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request: JSON.stringify(paymentRequest),
+        },
+      },
+    };
+
+    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(
+      undefined,
+    );
+    expect(logger.error).toBeCalledTimes(0);
   });
 
   it('should throw an error if the payment method is blik and the currency code is not PLN', () => {

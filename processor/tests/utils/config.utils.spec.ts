@@ -1,6 +1,9 @@
 import { readConfiguration } from '../../src/utils/config.utils';
 import CustomError from '../../src/errors/custom.error';
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, test, beforeEach } from '@jest/globals';
+import * as dotenv from 'dotenv';
+
+const env = process.env;
 
 describe('Test src/utils/config.utils.ts', () => {
   test('should return the correct configuration when all env vars are valid', () => {
@@ -20,6 +23,7 @@ describe('Test src/utils/config.utils.ts', () => {
         debug: process.env.DEBUG,
         profileId: process.env.MOLLIE_PROFILE_ID,
         cardComponent: process.env.MOLLIE_CARD_COMPONENT,
+        bankTransferDueDate: process.env.MOLLIE_BANK_TRANSFER_DUE_DATE,
       },
     });
   });
@@ -73,4 +77,9 @@ describe('Test src/utils/config.utils.ts', () => {
     delete process.env.CONNECTOR_MODE;
     expect(() => readConfiguration()).toThrow(CustomError);
   });
+
+  test('should throw an error when MOLLIE_BANK_TRANSFER_DUE_DATE is invalid', () => {
+    process.env.MOLLIE_BANK_TRANSFER_DUE_DATE = 'dummy';
+    expect(() => readConfiguration()).toThrow(CustomError);
+  })
 });

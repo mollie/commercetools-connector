@@ -44,3 +44,7 @@ export const ErrorMessages = {
 export const PAY_LATER_ENUMS = [PaymentMethod.klarnapaylater, PaymentMethod.klarnasliceit];
 
 export const CancelStatusText = 'Cancelled from shop side';
+
+export const DUE_DATE_PATTERN = /^(\d+)d$/;
+
+export const DEFAULT_DUE_DATE = 14;

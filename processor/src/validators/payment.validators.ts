@@ -264,6 +264,26 @@ export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, metho
       break;
     }
 
+    case MolliePaymentMethods.banktransfer: {
+      if (!paymentCustomFields?.billingAddress || !paymentCustomFields?.billingAddress?.email) {
+        logger.error(`SCTM - PAYMENT PROCESSING - email is required for payment method banktransfer. Please make sure you have sent it in billingAddress.email of the custom field`, {
+          commerceToolsPayment: ctPayment,
+        });
+
+        throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - email is required for payment method banktransfer. Please make sure you have sent it in billingAddress.email of the custom field');
+      }
+
+      if (!validateEmail(paymentCustomFields.billingAddress.email)) {
+        logger.error(`SCTM - PAYMENT PROCESSING - email must be a valid email address`, {
+          commerceToolsPayment: ctPayment,
+        });
+
+        throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - email must be a valid email address');
+      }
+
+      break;
+    }
+
     case CustomPaymentMethod.blik:
       if (ctPayment.amountPlanned.currencyCode.toLowerCase() !== 'pln') {
         logger.error(`SCTM - PAYMENT PROCESSING - Currency Code must be PLN for payment method BLIK`, {

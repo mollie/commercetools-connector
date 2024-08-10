@@ -7,6 +7,8 @@ import {
   LIBRARY_NAME,
   LIBRARY_VERSION,
   PAY_LATER_ENUMS,
+  DUE_DATE_PATTERN,
+  DEFAULT_DUE_DATE,
 } from '../../src/utils/constant.utils';
 import { version } from '../../package.json';
 
@@ -66,5 +68,14 @@ describe('Test constant.utils.ts', () => {
     expect(PAY_LATER_ENUMS).toBeDefined();
     expect(PAY_LATER_ENUMS).toContain('klarnapaylater');
     expect(PAY_LATER_ENUMS).toContain('klarnasliceit');
+  });
+
+  test('should return correct {DUE_DATE_PATTERN} pattern', () => {
+    expect(DUE_DATE_PATTERN).toBeDefined();
+  });
+
+  test('should return correct {DEFAULT_DUE_DATE} pattern', () => {
+    expect(DEFAULT_DUE_DATE).toBeDefined();
+    expect(DEFAULT_DUE_DATE).toBe(14);
   });
 });

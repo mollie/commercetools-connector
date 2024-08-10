@@ -29,5 +29,6 @@ export type ConnectorEnvVars = {
     profileId: string;
     debug: string;
     cardComponent: string;
+    bankTransferDueDate: string;
   };
 };

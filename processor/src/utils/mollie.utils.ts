@@ -2,6 +2,9 @@ import { CentPrecisionMoney } from '@commercetools/platform-sdk';
 import { Amount } from '@mollie/api-client/dist/types/src/data/global';
 import { CTMoney, CTTransactionState } from '../types/commercetools.types';
 import { PaymentStatus, RefundStatus } from '@mollie/api-client';
+import { DEFAULT_DUE_DATE, DUE_DATE_PATTERN } from './constant.utils';
+import { logger } from './logger.utils';
+import CustomError from '../errors/custom.error';
 
 const convertCTToMollieAmountValue = (ctValue: number, fractionDigits = 2): string => {
   const divider = Math.pow(10, fractionDigits);
@@ -94,3 +97,27 @@ export const shouldRefundStatusUpdate = (
   }
   return shouldUpdate;
 };
+
+export const calculateDueDate = (input?: string): string => {
+  if (!input) {
+    input = DEFAULT_DUE_DATE + 'd';
+  }
+
+  const match = input.match(DUE_DATE_PATTERN);
+
+  if (match) {
+      const days = parseInt(match[1]);
+      if (!isNaN(days)) {
+          const today = new Date();
+          const futureDate = new Date(today.getTime() + days * 24 * 60 * 60 * 1000);
+
+          return futureDate.toISOString().split('T')[0] as string;
+      }
+  }
+
+  const errorMessage = `SCTM - calculateDueDate - Failed to calculate the due date, input: ${input}`;
+
+  logger.error(errorMessage);
+
+  throw new CustomError(400, errorMessage);
+}
