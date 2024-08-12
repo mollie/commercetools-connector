@@ -9,7 +9,7 @@ import { CTTransactionState, CTTransactionType } from '../types/commercetools.ty
 import { parseStringToJsonObject, validateEmail } from '../utils/app.utils';
 import { readConfiguration } from '../utils/config.utils';
 import { toBoolean } from 'validator';
-import { CustomPaymentMethod } from '../types/mollie.types';
+import { CustomPaymentMethod, SupportedPaymentMethods } from '../types/mollie.types';
 
 /**
  * Checks if the given action is either 'Create' or 'Update'.
@@ -51,7 +51,7 @@ export const checkPaymentInterface = (ctPayment: CTPayment): true | SkipError =>
  * @return {boolean} Returns true if the method is supported by Mollie
  */
 export const hasValidPaymentMethod: (method: string | undefined) => boolean = (method: string | undefined): boolean => {
-  return !!MolliePaymentMethods[method as MolliePaymentMethods] || !!CustomPaymentMethod[method as CustomPaymentMethod];
+  return !!SupportedPaymentMethods[method as SupportedPaymentMethods];
 };
 
 /**

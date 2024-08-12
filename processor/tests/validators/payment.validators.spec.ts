@@ -145,11 +145,15 @@ describe('hasValidPaymentMethod', () => {
   it('should return true if the payment method is defined and is supported by Mollie', () => {
     expect(hasValidPaymentMethod('applepay')).toBe(true);
     expect(hasValidPaymentMethod('paypal')).toBe(true);
-    expect(hasValidPaymentMethod('dummy')).toBe(true);
   });
 
   it('should return false if the payment method is defined and is not supported by Mollie', () => {
     expect(hasValidPaymentMethod('test')).toBe(false);
+    expect(hasValidPaymentMethod('dummy')).toBe(false);
+    expect(hasValidPaymentMethod('eps')).toBe(false);
+    expect(hasValidPaymentMethod('twint')).toBe(false);
+    expect(hasValidPaymentMethod('bancomat')).toBe(false);
+    expect(hasValidPaymentMethod('trustly')).toBe(false);
   });
 });
 
@@ -232,7 +236,7 @@ describe('checkPaymentMethodInput', () => {
       transactions: [],
       interfaceInteractions: [],
       paymentMethodInfo: {
-        method: 'dummy',
+        method: 'paypal',
       },
     };
 
