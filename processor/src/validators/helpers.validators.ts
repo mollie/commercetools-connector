@@ -3,6 +3,7 @@
 
 import validator from 'validator';
 import { ValidatorCreator, Wrapper } from '../types/index.types';
+import { DUE_DATE_PATTERN } from '../utils/constant.utils';
 
 /**
  * File used to create helpers to validate the fields
@@ -19,6 +20,30 @@ export const standardString: ValidatorCreator = (path, message, overrideConfig =
 ];
 
 export const standardEmail: ValidatorCreator = (path, message) => [path, [[required(validator.isEmail), message]]];
+
+export const standardDueDate = (path, message) => [
+  path,
+  [
+    [
+      required((value) => {
+        if (!value) {
+          return true;
+        }
+
+        const match = value.match(DUE_DATE_PATTERN);
+
+        if (match) {
+          const days = parseInt(match[1]);
+
+          return days >= 1 && days <= 100;
+        }
+
+        return false;
+      }),
+      message,
+    ],
+  ],
+];
 
 export const standardNaturalNumber = (path, message) => [
   path,
