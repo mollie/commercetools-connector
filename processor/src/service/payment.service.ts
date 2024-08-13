@@ -82,16 +82,11 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
       );
     }
 
-    methods.splice(
-      methods.findIndex((method: Method) => {
-        return !SupportedPaymentMethods[method.id.toString() as SupportedPaymentMethods];
-      }),
-      1,
-    );
-
     const availableMethods = JSON.stringify({
       count: methods.length,
-      methods: methods.length ? methods : [],
+      methods: methods.length
+        ? methods.filter((method: Method) => SupportedPaymentMethods[method.id.toString() as SupportedPaymentMethods])
+        : [],
     });
 
     ctUpdateActions.push(
