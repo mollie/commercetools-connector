@@ -2,8 +2,6 @@ import { readConfiguration } from '../../src/utils/config.utils';
 import CustomError from '../../src/errors/custom.error';
 import { describe, expect, test } from '@jest/globals';
 
-const env = process.env;
-
 describe('Test src/utils/config.utils.ts', () => {
   test('should return the correct configuration when all env vars are valid', () => {
     const config = readConfiguration();
