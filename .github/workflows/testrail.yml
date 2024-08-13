@@ -1,5 +1,9 @@
 name: TestRail
 
+permissions:
+  actions: read
+  contents: read
+
 on:
   workflow_run:
     workflows: ["Build"]
@@ -19,6 +23,8 @@ jobs:
       - name: Download code coverage results
         uses: actions/download-artifact@v4
         with:
+          name: code-coverage-report
+          github-token: ${{ github.token }}
           run-id: ${{ github.event.workflow_run.id }}
 
       - name: Upload Test Results to TestRail
