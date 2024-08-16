@@ -1643,6 +1643,11 @@ describe('Test handleGetApplePaySession', () => {
         value:
           '{"domain":"pay.mywebshop.com","validationUrl":"https://apple-pay-gateway-cert.apple.com/paymentservices/paymentSession"}',
       },
+      {
+        action: 'setCustomField',
+        name: 'sctm_apple_pay_session_request',
+        value: '',
+      },
     ]);
   });
 
