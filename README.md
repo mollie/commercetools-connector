@@ -28,6 +28,11 @@ We started 20 years ago when we launched a more direct, affordable way for compa
 - Cancelations
 - Refunds
 
+## Prerequisite
+
+1. Commercetools composable commerce account
+2. [Mollie account](https://www.mollie.com/dashboard/)
+
 ## 📐 Architecture Principles
 
 This repository contains two standalone modules that interact with commercetools and Mollie.
