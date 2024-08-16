@@ -543,7 +543,10 @@ export const handleGetApplePaySession = async (ctPayment: Payment): Promise<Cont
 
   const session: ApplePaySession = await getApplePaySession(requestOptions);
 
-  const ctActions: UpdateAction[] = [setCustomFields(CustomFields.applePay.session.response, JSON.stringify(session))];
+  const ctActions: UpdateAction[] = [
+    setCustomFields(CustomFields.applePay.session.response, JSON.stringify(session)),
+    setCustomFields(CustomFields.applePay.session.request, ''),
+  ];
 
   return {
     statusCode: 200,

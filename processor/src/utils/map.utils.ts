@@ -69,7 +69,7 @@ export const mapCommercetoolsPaymentCustomFieldsToMollieListParams = async (
 const getSpecificPaymentParams = (method: PaymentMethod | CustomPaymentMethod, paymentRequest: any) => {
   switch (method) {
     case PaymentMethod.applepay:
-      return { applePayPaymentToken: paymentRequest.applePayPaymentToken ?? '' };
+      return { applePayPaymentToken: JSON.stringify(paymentRequest.applePayPaymentToken ?? {}) };
     case PaymentMethod.banktransfer:
       return {
         dueDate: calculateDueDate(readConfiguration().mollie.bankTransferDueDate),

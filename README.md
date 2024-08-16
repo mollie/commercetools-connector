@@ -65,6 +65,6 @@ Distributed under the MIT License. See LICENSE for more information.
 
 [Mollie's support page](https://help.mollie.com/hc/en-us)
 
-[Project Link](https://github.com/mollie/commercetools)
+[Get in touch with us](https://www.mollie.com/de/contact/merchants)
 
 <div align="center"> <b>Happy Coding! 🚀</b> </div>

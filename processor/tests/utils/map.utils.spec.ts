@@ -535,7 +535,7 @@ describe('createMollieCreatePaymentParams', () => {
       redirectUrl: customFieldObject.redirectUrl,
       webhookUrl: extensionUrl,
       description: customFieldObject.description,
-      applePayPaymentToken: customFieldObject.applePayPaymentToken,
+      applePayPaymentToken: JSON.stringify(customFieldObject.applePayPaymentToken),
     });
   });
 
