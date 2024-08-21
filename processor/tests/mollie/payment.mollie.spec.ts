@@ -10,7 +10,7 @@ import {
 import { MollieApiError, PaymentCreateParams } from '@mollie/api-client';
 import { logger } from '../../src/utils/logger.utils';
 import CustomError from '../../src/errors/custom.error';
-import { VERSION_STRING } from '../../src/utils/constant.utils';
+import { MOLLIE_VERSION_STRINGS } from '../../src/utils/constant.utils';
 import { getApiKey } from '../../src/utils/config.utils';
 import fetch from 'node-fetch';
 
@@ -136,7 +136,7 @@ describe('createPaymentWithCustomMethod', () => {
     const headers = {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${getApiKey()}`,
-      versionStrings: `${VERSION_STRING}`,
+      versionStrings: MOLLIE_VERSION_STRINGS,
     };
 
     (fetch as unknown as jest.Mock).mockImplementation(async () =>
@@ -174,7 +174,7 @@ describe('createPaymentWithCustomMethod', () => {
     const headers = {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${getApiKey()}`,
-      versionStrings: `${VERSION_STRING}`,
+      versionStrings: MOLLIE_VERSION_STRINGS,
     };
 
     const response = {
@@ -239,7 +239,7 @@ describe('createPaymentWithCustomMethod', () => {
     const headers = {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${getApiKey()}`,
-      versionStrings: `${VERSION_STRING}`,
+      versionStrings: MOLLIE_VERSION_STRINGS,
     };
 
     const response = {
@@ -295,7 +295,7 @@ describe('createPaymentWithCustomMethod', () => {
     const headers = {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${getApiKey()}`,
-      versionStrings: `${VERSION_STRING}`,
+      versionStrings: MOLLIE_VERSION_STRINGS,
     };
 
     const errorMessage = 'SCTM - createPaymentWithCustomMethod - Failed to create a payment with unknown errors';

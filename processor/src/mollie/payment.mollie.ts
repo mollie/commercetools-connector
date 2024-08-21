@@ -13,7 +13,7 @@ import { logger } from '../utils/logger.utils';
 import { ApplePaySessionRequest, CustomPayment } from '../types/mollie.types';
 import ApplePaySession from '@mollie/api-client/dist/types/src/data/applePaySession/ApplePaySession';
 import { getApiKey } from '../utils/config.utils';
-import { VERSION_STRING } from '../utils/constant.utils';
+import { MOLLIE_VERSION_STRINGS } from '../utils/constant.utils';
 import fetch from 'node-fetch';
 
 /**
@@ -111,7 +111,7 @@ export const createPaymentWithCustomMethod = async (paymentParams: PaymentCreate
     const headers = {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${getApiKey()}`,
-      versionStrings: `${VERSION_STRING}`,
+      versionStrings: MOLLIE_VERSION_STRINGS,
     };
 
     const response = await fetch('https://api.mollie.com/v2/payments', {

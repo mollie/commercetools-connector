@@ -1,6 +1,6 @@
 import createMollieClient, { MollieClient } from '@mollie/api-client';
 import { getApiKey, readConfiguration } from '../utils/config.utils';
-import { VERSION_STRING } from '../utils/constant.utils';
+import { MOLLIE_VERSION_STRINGS } from '../utils/constant.utils';
 
 /**
  * Initializes the Mollie client using the API key from the configuration.
@@ -10,13 +10,13 @@ import { VERSION_STRING } from '../utils/constant.utils';
 export const initMollieClient = (): MollieClient => {
   return createMollieClient({
     apiKey: getApiKey(),
-    versionStrings: `${VERSION_STRING}`,
+    versionStrings: MOLLIE_VERSION_STRINGS,
   });
 };
 
 export const initMollieClientForApplePaySession = (): MollieClient => {
   return createMollieClient({
     apiKey: readConfiguration().mollie.liveApiKey,
-    versionStrings: `${VERSION_STRING}`,
+    versionStrings: MOLLIE_VERSION_STRINGS,
   });
 };

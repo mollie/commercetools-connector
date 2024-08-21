@@ -2,7 +2,7 @@ import { getApiKey } from '../../src/utils/config.utils';
 import { initMollieClient } from '../../src/client/mollie.client';
 import createMollieClient, { MollieClient } from '@mollie/api-client';
 import { describe, jest, expect, it } from '@jest/globals';
-import { LIBRARY_NAME, LIBRARY_VERSION } from '../../src/utils/constant.utils';
+import { MOLLIE_VERSION_STRINGS } from '../../src/utils/constant.utils';
 
 jest.mock('@mollie/api-client', () => ({
   // @ts-expect-error ignore type error
@@ -30,7 +30,7 @@ describe('Test mollie.client.ts', () => {
     expect(mockGetApiKey).toHaveBeenCalled();
     expect(mockCreateMollieClient).toHaveBeenCalledWith({
       apiKey: 'test-api-key',
-      versionStrings: `${LIBRARY_NAME}/${LIBRARY_VERSION}`,
+      versionStrings: MOLLIE_VERSION_STRINGS,
     });
     expect(client).toBe(mockMollieClient);
   });
