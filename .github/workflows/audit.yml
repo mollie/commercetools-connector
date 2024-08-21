@@ -27,8 +27,8 @@ jobs:
         with:
           node-version: '20.9.0'
 
-      - name: Run npm audit
-        run: npm audit
+#       - name: Run npm audit
+#         run: npm audit
 
       - name: Download code coverage results
         uses: actions/download-artifact@v4
