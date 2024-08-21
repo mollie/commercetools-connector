@@ -5,7 +5,11 @@ export const LIBRARY_NAME = 'ShopmacherCommercetoolsMollieConnector';
 
 export const LIBRARY_VERSION = PACKAGE_VERSION;
 
+export const MOLLIE_AGENT_INFO = 'uap/NJTCs6RvSnqbvawh';
+
 export const VERSION_STRING = `${LIBRARY_NAME}/${LIBRARY_VERSION}`;
+
+export const MOLLIE_VERSION_STRINGS = [VERSION_STRING, MOLLIE_AGENT_INFO];
 
 export const CustomFields = {
   payment: {
