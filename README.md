@@ -1,4 +1,4 @@
-[![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![GitHub Actions](https://github.com/mollie/commercetools-connector/actions/workflows/build.yml/badge.svg)](https://github.com/mollie/commercetools-connector/actions/workflows/build.yml/badge.svg)
 [![GitHub Actions](https://github.com/mollie/commercetools-connector/actions/workflows/audit.yml/badge.svg)](https://github.com/mollie/commercetools-connector/actions/workflows/audit.yml/badge.svg)
 
