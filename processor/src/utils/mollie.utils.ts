@@ -33,9 +33,7 @@ export const makeCTMoney = (mollieAmount: Amount): CTMoney => {
 };
 
 export const isPayment = (resourceId: string): boolean => {
-  const paymentRegex = new RegExp('^tr_');
-
-  return paymentRegex.test(resourceId);
+  return resourceId.startsWith('tr_');
 };
 
 export const shouldPaymentStatusUpdate = (
@@ -111,7 +109,7 @@ export const calculateDueDate = (input?: string): string => {
       const today = new Date();
       const futureDate = new Date(today.getTime() + days * 24 * 60 * 60 * 1000);
 
-      return futureDate.toISOString().split('T')[0] as string;
+      return futureDate.toISOString().split('T')[0];
     }
   }
 
