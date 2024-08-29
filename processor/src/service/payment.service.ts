@@ -309,11 +309,11 @@ export const getCreatePaymentUpdateAction = async (molliePayment: MPayment | Cus
     };
 
     const interfaceInteractionParams = {
-      sctmActionType: ConnectorActions.CreatePayment,
-      sctmRequest: JSON.stringify(interfaceInteractionRequest),
-      sctmResponse: JSON.stringify(interfaceInteractionResponse),
-      sctmId: uuid(),
-      sctmCreatedAt: molliePayment.createdAt,
+      sctm_action_type: ConnectorActions.CreatePayment,
+      sctm_request: JSON.stringify(interfaceInteractionRequest),
+      sctm_response: JSON.stringify(interfaceInteractionResponse),
+      sctm_id: uuid(),
+      sctm_created_at: molliePayment.createdAt,
     };
 
     return Promise.resolve([

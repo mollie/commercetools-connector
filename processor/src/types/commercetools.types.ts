@@ -73,11 +73,11 @@ export type CTTransaction = {
 };
 
 export type CreateInterfaceInteractionParams = {
-  sctmActionType: ConnectorActions;
-  sctmRequest: string;
-  sctmResponse: string;
-  sctmId?: string;
-  sctmCreatedAt?: string;
+  sctm_action_type: ConnectorActions;
+  sctm_request: string;
+  sctm_response: string;
+  sctm_id?: string;
+  sctm_created_at?: string;
 };
 
 export type Action = {
