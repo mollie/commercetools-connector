@@ -59,11 +59,11 @@ describe('Test actions.utils.ts', () => {
     };
 
     const params: CreateInterfaceInteractionParams = {
-      id: '123456789',
-      actionType: ConnectorActions.CreatePayment,
-      requestValue: JSON.stringify(requestValueObject),
-      responseValue: JSON.stringify(responseValueObject),
-      timestamp: '2024-07-04T14:07:35+00:00',
+      sctmId: '123456789',
+      sctmActionType: ConnectorActions.CreatePayment,
+      sctmRequest: JSON.stringify(requestValueObject),
+      sctmResponse: JSON.stringify(responseValueObject),
+      sctmCreatedAt: '2024-07-04T14:07:35+00:00',
     };
 
     const actual = addInterfaceInteraction(params);
@@ -74,11 +74,11 @@ describe('Test actions.utils.ts', () => {
         key: 'sctm_interface_interaction_type',
       },
       fields: {
-        id: params.id,
-        actionType: params.actionType,
-        createdAt: params.timestamp,
-        request: params.requestValue,
-        response: params.responseValue,
+        sctmId: params.sctmId,
+        sctmActionType: params.sctmActionType,
+        sctmCreatedAt: params.sctmCreatedAt,
+        sctmRequest: params.sctmRequest,
+        sctmResponse: params.sctmResponse,
       },
     });
   });

@@ -29,21 +29,21 @@ export const setCustomFields = (fieldName: string, fieldValue: string) => {
  * If the responseValue is an API response, JSON Stringify it before passing it
  */
 export const addInterfaceInteraction = (params: CreateInterfaceInteractionParams) => {
-  const { actionType, requestValue, responseValue, id, timestamp } = params;
-  const interfaceInteractionId = id ? id : uuid();
-  const interfaceInteractionTimestamp = timestamp ? timestamp : createDateNowString();
+  const { sctmActionType, sctmRequest, sctmResponse, sctmId, sctmCreatedAt } = params;
+  const interfaceInteractionId = sctmId ? sctmId : uuid();
+  const interfaceInteractionTimestamp = sctmCreatedAt ? sctmCreatedAt : createDateNowString();
 
   return {
     action: 'addInterfaceInteraction',
     type: {
-      key: CustomFields.createPayment.interfaceInteraction,
+      key: CustomFields.createPayment.interfaceInteraction.key,
     },
     fields: {
-      id: interfaceInteractionId,
-      actionType,
-      createdAt: interfaceInteractionTimestamp,
-      request: requestValue,
-      response: responseValue,
+      sctmId: interfaceInteractionId,
+      sctmActionType,
+      sctmCreatedAt: interfaceInteractionTimestamp,
+      sctmRequest: sctmRequest,
+      sctmResponse: sctmResponse,
     },
   };
 };

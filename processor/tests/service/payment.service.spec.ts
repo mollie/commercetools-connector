@@ -528,14 +528,14 @@ describe('Test getCreatePaymentUpdateAction', () => {
         key: 'sctm_interface_interaction_type',
       },
       fields: {
-        id: uuid,
-        actionType: ConnectorActions.CreatePayment,
-        createdAt: molliePayment.createdAt,
-        request: JSON.stringify({
+        sctmId: uuid,
+        sctmActionType: ConnectorActions.CreatePayment,
+        sctmCreatedAt: molliePayment.createdAt,
+        sctmRequest: JSON.stringify({
           transactionId: CTPayment.transactions[0].id,
           paymentMethod: CTPayment.paymentMethodInfo.method,
         }),
-        response: JSON.stringify({
+        sctmResponse: JSON.stringify({
           molliePaymentId: molliePayment.id,
           checkoutUrl: molliePayment._links.checkout?.href,
           transactionId: CTPayment.transactions[0].id,
@@ -660,11 +660,11 @@ describe('Test handleCreatePayment', () => {
         action: 'addInterfaceInteraction',
         type: { key: 'sctm_interface_interaction_type' },
         fields: {
-          id: '5c8b0375-305a-4f19-ae8e-07806b101999',
-          actionType: 'createPayment',
-          createdAt: '2024-03-20T09:13:37+00:00',
-          request: '{"transactionId":"5c8b0375-305a-4f19-ae8e-07806b101999","paymentMethod":"creditcard"}',
-          response:
+          sctmId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          sctmActionType: 'createPayment',
+          sctmCreatedAt: '2024-03-20T09:13:37+00:00',
+          sctmRequest: '{"transactionId":"5c8b0375-305a-4f19-ae8e-07806b101999","paymentMethod":"creditcard"}',
+          sctmResponse:
             '{"molliePaymentId":"tr_7UhSN1zuXS","checkoutUrl":"https://www.mollie.com/checkout/select-method/7UhSN1zuXS","transactionId":"5c8b0375-305a-4f19-ae8e-07806b101999"}',
         },
       },
@@ -749,11 +749,11 @@ describe('Test handleCreatePayment', () => {
         action: 'addInterfaceInteraction',
         type: { key: 'sctm_interface_interaction_type' },
         fields: {
-          id: '5c8b0375-305a-4f19-ae8e-07806b101999',
-          actionType: 'createPayment',
-          createdAt: '2024-03-20T09:13:37+00:00',
-          request: '{"transactionId":"5c8b0375-305a-4f19-ae8e-07806b101999","paymentMethod":"creditcard"}',
-          response:
+          sctmId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          sctmActionType: 'createPayment',
+          sctmCreatedAt: '2024-03-20T09:13:37+00:00',
+          sctmRequest: '{"transactionId":"5c8b0375-305a-4f19-ae8e-07806b101999","paymentMethod":"creditcard"}',
+          sctmResponse:
             '{"molliePaymentId":"tr_7UhSN1zuXS","checkoutUrl":"https://www.mollie.com/checkout/select-method/7UhSN1zuXS","transactionId":"5c8b0375-305a-4f19-ae8e-07806b101999"}',
         },
       },
