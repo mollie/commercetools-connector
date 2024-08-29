@@ -2,7 +2,12 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import { assertError, assertString } from '../utils/assert.utils';
-import { createCustomPaymentInterfaceInteractionType } from '../commercetools/customFields.commercetools';
+import {
+  createCustomPaymentInterfaceInteractionType,
+  createCustomPaymentTransactionCancelReasonType,
+  createCustomPaymentType,
+} from '../commercetools/customFields.commercetools';
+import { createPaymentExtension } from '../commercetools/extensions.commercetools';
 
 const CONNECT_APPLICATION_URL_KEY = 'CONNECT_SERVICE_URL';
 
@@ -11,10 +16,10 @@ async function postDeploy(properties: Map<string, unknown>): Promise<void> {
 
   assertString(applicationUrl, CONNECT_APPLICATION_URL_KEY);
 
-  // await createPaymentExtension(applicationUrl);
-  // await createCustomPaymentType();
+  await createPaymentExtension(applicationUrl);
+  await createCustomPaymentType();
   await createCustomPaymentInterfaceInteractionType();
-  // await createCustomPaymentTransactionCancelReasonType();
+  await createCustomPaymentTransactionCancelReasonType();
 }
 
 async function run(): Promise<void> {
