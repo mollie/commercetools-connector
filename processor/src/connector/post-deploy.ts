@@ -2,12 +2,12 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import { assertError, assertString } from '../utils/assert.utils';
-import { createPaymentExtension } from '../commercetools/extensions.commercetools';
 import {
   createCustomPaymentInterfaceInteractionType,
   createCustomPaymentTransactionCancelReasonType,
   createCustomPaymentType,
 } from '../commercetools/customFields.commercetools';
+import { createPaymentExtension } from '../commercetools/extensions.commercetools';
 
 const CONNECT_APPLICATION_URL_KEY = 'CONNECT_SERVICE_URL';
 
