@@ -36,7 +36,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 - Filter options for listing payment methods
 - Create/cancel payment via Payment API
 - Refund/cancel refund payment via Refund API
-- Webhooks for payment ... 
+- Webhooks for payment status update, cancel payment, refund payment
 - Unit tests via Jest
 - Possibility to manage the due date period for bank transfering
 - Postman collection for developers
