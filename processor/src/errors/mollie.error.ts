@@ -31,8 +31,19 @@ export const formatErrorResponse = (error: any) => {
   const ctCode = error.ctCode;
   const status = error.status || error.statusCode;
 
-  formattedError.code = status === 400 && ctCode ? ctCode : CTEnumErrors.General;
-  formattedError.message = error.message || (status === 400 ? 'Please see logs for more details' : '');
+  switch (status) {
+    case 400:
+      formattedError.code = ctCode ?? CTEnumErrors.SyntaxError;
+      break;
+    case 500:
+      formattedError.code = CTEnumErrors.General;
+      break;
+    default:
+      formattedError.code = CTEnumErrors.General;
+      break;
+  }
+
+  formattedError.message = error.message || 'Please see logs for more details';
 
   const extraInfo = getExtraInfo(error);
   if (Object.keys(extraInfo).length) formattedError.extensionExtraInfo = extraInfo;

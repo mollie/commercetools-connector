@@ -33,7 +33,7 @@ export const makeCTMoney = (mollieAmount: Amount): CTMoney => {
 };
 
 export const isPayment = (resourceId: string): boolean => {
-  return resourceId.startsWith('tr_');
+  return resourceId?.startsWith('tr_');
 };
 
 export const shouldPaymentStatusUpdate = (
