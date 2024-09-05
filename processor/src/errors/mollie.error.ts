@@ -24,24 +24,27 @@ export const getExtraInfo = ({ status, statusCode, links, title, field }: any): 
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 export const formatErrorResponse = (error: any) => {
-  let formattedError = {} as CTError;
+  const formattedError: CTError = {
+    code: CTEnumErrors.General,
+    message: 'Please see logs for more details',
+  };
   const ctCode = error.ctCode;
   const status = error.status || error.statusCode;
-  switch (true) {
-    case status === 400:
-      formattedError = {
-        code: ctCode ?? CTEnumErrors.SyntaxError,
-        message: error.message,
-      };
-      break;
 
+  switch (status) {
+    case 400:
+      formattedError.code = ctCode ?? CTEnumErrors.SyntaxError;
+      break;
+    case 500:
+      formattedError.code = CTEnumErrors.General;
+      break;
     default:
-      //5xx
-      formattedError = {
-        code: CTEnumErrors.General,
-        message: error.message ?? 'Please see logs for more details',
-      };
+      formattedError.code = CTEnumErrors.General;
+      break;
   }
+
+  formattedError.message = error.message || 'Please see logs for more details';
+
   const extraInfo = getExtraInfo(error);
   if (Object.keys(extraInfo).length) formattedError.extensionExtraInfo = extraInfo;
 
