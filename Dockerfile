@@ -1,22 +1,30 @@
 FROM node:18-alpine AS builder
 
-WORKDIR /processor
+WORKDIR /app
+
+COPY ./processor/package*.json ./
+
+RUN npm install --production --frozen-lockfile
 
 COPY ./processor .
-
-RUN npm install
 
 RUN npm run build
 
 FROM node:18-alpine AS runner
 
-WORKDIR /processor
+WORKDIR /app
 
-COPY --from=builder /processor .
+# Copy only the necessary built files from the builder stage
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
 
 EXPOSE 8080
 
-CMD [ "npm", "run", "start" ]
+ENV NODE_ENV=production
 
+CMD ["npm", "run", "start"]
+
+# Metadata
 LABEL org.opencontainers.image.authors="Mollie B.V. <info@mollie.com>" \
     copyright="Copyright (c) 2024 Mollie B.V. All rights reserved."
