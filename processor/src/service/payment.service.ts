@@ -12,6 +12,7 @@ import {
   cancelPayment,
   createMolliePayment,
   createPaymentWithCustomMethod,
+  getApplePaySession,
   getPaymentById,
   listPaymentMethods,
 } from '../mollie/payment.mollie';
@@ -54,7 +55,9 @@ import {
 import { getPaymentExtension } from '../commercetools/extensions.commercetools';
 import { HttpDestination } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/extension';
 import { cancelPaymentRefund, createPaymentRefund, getPaymentRefund } from '../mollie/refund.mollie';
-import { CustomPayment } from '../types/mollie.types';
+import { ApplePaySessionRequest, CustomPayment, SupportedPaymentMethods } from '../types/mollie.types';
+import { parseStringToJsonObject } from '../utils/app.utils';
+import ApplePaySession from '@mollie/api-client/dist/types/src/data/applePaySession/ApplePaySession';
 
 /**
  * Handles listing payment methods by payment.
@@ -81,7 +84,9 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
 
     const availableMethods = JSON.stringify({
       count: methods.length,
-      methods: methods.length ? methods : [],
+      methods: methods.length
+        ? methods.filter((method: Method) => SupportedPaymentMethods[method.id.toString() as SupportedPaymentMethods])
+        : [],
     });
 
     ctUpdateActions.push(
@@ -525,5 +530,26 @@ export const handleCancelPayment = async (ctPayment: Payment): Promise<Controlle
   return {
     statusCode: 200,
     actions: [],
+  };
+};
+
+export const handleGetApplePaySession = async (ctPayment: Payment): Promise<ControllerResponseType> => {
+  const requestOptions: ApplePaySessionRequest = parseStringToJsonObject(
+    ctPayment.custom?.fields[CustomFields.applePay.session.request],
+    CustomFields.applePay.session.request,
+    'SCTM - handleGetApplePaySession',
+    ctPayment.id,
+  );
+
+  const session: ApplePaySession = await getApplePaySession(requestOptions);
+
+  const ctActions: UpdateAction[] = [
+    setCustomFields(CustomFields.applePay.session.response, JSON.stringify(session)),
+    setCustomFields(CustomFields.applePay.session.request, ''),
+  ];
+
+  return {
+    statusCode: 200,
+    actions: ctActions,
   };
 };

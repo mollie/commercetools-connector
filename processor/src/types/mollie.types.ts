@@ -10,6 +10,10 @@ export type ParsedMethodsRequestType = {
   sequenceType?: string;
 };
 
+export type ApplePaySessionRequest = {
+  domain: string;
+  validationUrl: string;
+};
 export enum CustomPaymentMethod {
   blik = 'blik',
 }
@@ -19,3 +23,16 @@ export type CustomPayment = Readonly<
     method: CustomPaymentMethod;
   }
 >;
+
+export enum SupportedPaymentMethods {
+  ideal = 'ideal',
+  creditcard = 'creditcard',
+  bancontact = 'bancontact',
+  banktransfer = 'banktransfer',
+  przelewy24 = 'przelewy24',
+  kbc = 'kbc',
+  blik = 'blik',
+  applepay = 'applepay',
+  paypal = 'paypal',
+  giftcard = 'giftcard',
+}

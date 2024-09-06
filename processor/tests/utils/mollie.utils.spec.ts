@@ -7,9 +7,12 @@ import {
   isPayment,
   shouldPaymentStatusUpdate,
   shouldRefundStatusUpdate,
+  calculateDueDate,
 } from '../../src/utils/mollie.utils';
 import { Amount } from '@mollie/api-client/dist/types/src/data/global';
-import { expect, describe, it } from '@jest/globals';
+import { expect, describe, it, test, jest } from '@jest/globals';
+import { logger } from '../../src/utils/logger.utils';
+import CustomError from '../../src/errors/custom.error';
 
 describe('Test mollie.utils.ts', () => {
   describe('convertCTToMollieAmountValue', () => {
@@ -177,6 +180,31 @@ describe('Test mollie.utils.ts', () => {
 
     test('returns false for unknown mollieRefundStatus', () => {
       expect(shouldRefundStatusUpdate('unknown' as RefundStatus, CTTransactionState.Pending)).toBe(false);
+    });
+  });
+
+  describe('Test calculateDueDate', () => {
+    test('return the date which is 14 days later in format YYYY-MM-DD when the input is not defined', () => {
+      jest.useFakeTimers().setSystemTime(new Date('2024-01-01'));
+
+      expect(calculateDueDate()).toEqual('2024-01-15');
+    });
+
+    test('return the date which is to day + input day in format YYYY-MM-DD when the input is defined', () => {
+      jest.useFakeTimers().setSystemTime(new Date('2024-01-01'));
+
+      expect(calculateDueDate('5d')).toEqual('2024-01-06');
+    });
+
+    test('should throw error if no matches', () => {
+      try {
+        calculateDueDate('5');
+      } catch (error: unknown) {
+        expect(logger.error).toBeCalledTimes(1);
+        expect(logger.error).toBeCalledWith('SCTM - calculateDueDate - Failed to calculate the due date, input: 5');
+
+        expect(error).toBeInstanceOf(CustomError);
+      }
     });
   });
 });

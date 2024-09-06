@@ -1,5 +1,6 @@
-[![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
-[![GitHub Actions](https://github.com/mollie/commercetools-connector/actions/workflows/ci.yml/badge.svg)](https://github.com/mollie/commercetools-connector/actions/workflows/ci.yml/badge.svg)
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![GitHub Actions](https://github.com/mollie/commercetools-connector/actions/workflows/build.yml/badge.svg)](https://github.com/mollie/commercetools-connector/actions/workflows/build.yml/badge.svg)
+[![GitHub Actions](https://github.com/mollie/commercetools-connector/actions/workflows/audit.yml/badge.svg)](https://github.com/mollie/commercetools-connector/actions/workflows/audit.yml/badge.svg)
 
 # 🚀 COMMERCETOOLS MOLLIE CONNECTOR 🚀
 
@@ -26,6 +27,11 @@ We started 20 years ago when we launched a more direct, affordable way for compa
 - Making payments
 - Cancelations
 - Refunds
+
+## Prerequisite
+
+1. Commercetools composable commerce account
+2. [Mollie account](https://www.mollie.com/dashboard/)
 
 ## 📐 Architecture Principles
 
@@ -64,6 +70,6 @@ Distributed under the MIT License. See LICENSE for more information.
 
 [Mollie's support page](https://help.mollie.com/hc/en-us)
 
-[Project Link](https://github.com/mollie/commercetools)
+[Get in touch with us](https://www.mollie.com/de/contact/merchants)
 
 <div align="center"> <b>Happy Coding! 🚀</b> </div>

@@ -1,11 +1,12 @@
 import { CustomFields } from './constant.utils';
 import { logger } from './logger.utils';
-import { makeMollieAmount } from './mollie.utils';
+import { calculateDueDate, makeMollieAmount } from './mollie.utils';
 import { CustomPaymentMethod, ParsedMethodsRequestType } from '../types/mollie.types';
 import { Payment } from '@commercetools/platform-sdk';
 import CustomError from '../errors/custom.error';
 import { MethodsListParams, PaymentCreateParams, PaymentMethod } from '@mollie/api-client';
 import { parseStringToJsonObject, removeEmptyProperties } from './app.utils';
+import { readConfiguration } from './config.utils';
 
 const extractMethodsRequest = (ctPayment: Payment): ParsedMethodsRequestType | undefined => {
   return ctPayment?.custom?.fields?.[CustomFields.payment.request];
@@ -68,11 +69,12 @@ export const mapCommercetoolsPaymentCustomFieldsToMollieListParams = async (
 const getSpecificPaymentParams = (method: PaymentMethod | CustomPaymentMethod, paymentRequest: any) => {
   switch (method) {
     case PaymentMethod.applepay:
-      return { applePayPaymentToken: paymentRequest.applePayPaymentToken ?? '' };
+      return paymentRequest.applePayPaymentToken
+        ? { applePayPaymentToken: JSON.stringify(paymentRequest.applePayPaymentToken) }
+        : {};
     case PaymentMethod.banktransfer:
       return {
-        dueDate: paymentRequest.dueDate ?? '',
-        billingEmail: paymentRequest.billingEmail ?? '',
+        dueDate: calculateDueDate(readConfiguration().mollie.bankTransferDueDate),
       };
     case PaymentMethod.przelewy24:
       return { billingEmail: paymentRequest.billingEmail ?? '' };

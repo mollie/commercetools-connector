@@ -1,12 +1,19 @@
-import { describe, test, expect, it } from '@jest/globals';
+import { describe, test, expect, it, jest } from '@jest/globals';
 import {
   createMollieCreatePaymentParams,
   mapCommercetoolsPaymentCustomFieldsToMollieListParams,
 } from '../../src/utils/map.utils';
 import { Payment } from '@commercetools/platform-sdk';
 import { MethodsListParams, PaymentCreateParams, PaymentMethod } from '@mollie/api-client';
-import { makeMollieAmount } from '../../src/utils/mollie.utils';
+import { calculateDueDate, makeMollieAmount } from '../../src/utils/mollie.utils';
 import { CustomPaymentMethod } from '../../src/types/mollie.types';
+
+jest.mock('../../src/utils/mollie.utils.ts', () => ({
+  // @ts-expect-error ignore type error
+  ...jest.requireActual('../../src/utils/mollie.utils.ts'),
+  // __esModule: true,
+  calculateDueDate: jest.fn(),
+}));
 
 describe('Test map.utils.ts', () => {
   let mockCtPayment: Payment;
@@ -267,8 +274,9 @@ describe('createMollieCreatePaymentParams', () => {
       locale: 'en_GB',
       redirectUrl: 'https://example.com/success',
       webhookUrl: 'https://example.com/webhook',
-      dueDate: '2024-01-01',
-      billingEmail: 'test@mollie.com',
+      billingAddress: {
+        email: 'test@mollie.com',
+      },
     };
 
     const CTPayment: Payment = {
@@ -300,7 +308,11 @@ describe('createMollieCreatePaymentParams', () => {
     };
     const extensionUrl = 'https://example.com/webhook';
 
+    const dueDate = '2024-01-01';
+    (calculateDueDate as jest.Mock).mockReturnValueOnce(dueDate);
+
     const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
+
     expect(mollieCreatePaymentParams).toEqual({
       method: PaymentMethod.banktransfer,
       amount: {
@@ -311,8 +323,8 @@ describe('createMollieCreatePaymentParams', () => {
       redirectUrl: customFieldObject.redirectUrl,
       webhookUrl: extensionUrl,
       description: customFieldObject.description,
-      dueDate: customFieldObject.dueDate,
-      billingEmail: customFieldObject.billingEmail,
+      billingAddress: customFieldObject.billingAddress,
+      dueDate,
     });
   });
 
@@ -523,7 +535,7 @@ describe('createMollieCreatePaymentParams', () => {
       redirectUrl: customFieldObject.redirectUrl,
       webhookUrl: extensionUrl,
       description: customFieldObject.description,
-      applePayPaymentToken: customFieldObject.applePayPaymentToken,
+      applePayPaymentToken: JSON.stringify(customFieldObject.applePayPaymentToken),
     });
   });
 

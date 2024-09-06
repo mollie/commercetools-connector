@@ -1,4 +1,4 @@
-import { optional, standardKey, standardString, region } from './helpers.validators';
+import { optional, standardKey, standardString, region, standardDueDate } from './helpers.validators';
 
 /**
  * Create here your own validators
@@ -46,9 +46,15 @@ const envValidators = [
     referencedBy: 'environmentVariables',
   }),
 
-  standardKey(['mollie', 'apiKey'], {
-    code: 'InvalidMollieApiKey',
-    message: 'Mollie API key should be a valid string.',
+  standardKey(['mollie', 'testApiKey'], {
+    code: 'InvalidMollieTestApiKey',
+    message: 'Mollie test API key should be a valid string.',
+    referencedBy: 'environmentVariables',
+  }),
+
+  standardKey(['mollie', 'liveApiKey'], {
+    code: 'InvalidMollieLiveApiKey',
+    message: 'Mollie live API key should be a valid string.',
     referencedBy: 'environmentVariables',
   }),
 
@@ -83,6 +89,25 @@ const envValidators = [
       max: 1,
     },
   ),
+
+  standardString(
+    ['mollie', 'mode'],
+    {
+      code: 'InvalidMode',
+      message: 'Mode should be a valid string of either "test" or "live".',
+      referencedBy: 'environmentVariables',
+    },
+    {
+      min: 1,
+      max: 4,
+    },
+  ),
+  standardDueDate(['mollie', 'bankTransferDueDate'], {
+    code: 'InvalidBankTransferDueDate',
+    message:
+      'Bank transfer due date must be from 1d to 100d, the number must be an integer. If it was not set, the default will be 14d',
+    referencedBy: 'environmentVariables',
+  }),
 ];
 
 export default envValidators;

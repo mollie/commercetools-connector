@@ -5,6 +5,12 @@ export const LIBRARY_NAME = 'ShopmacherCommercetoolsMollieConnector';
 
 export const LIBRARY_VERSION = PACKAGE_VERSION;
 
+export const MOLLIE_AGENT_INFO = 'uap/NJTCs6RvSnqbvawh';
+
+export const VERSION_STRING = `${LIBRARY_NAME}/${LIBRARY_VERSION}`;
+
+export const MOLLIE_VERSION_STRINGS = [VERSION_STRING, MOLLIE_AGENT_INFO];
+
 export const CustomFields = {
   payment: {
     error: 'sctm_payment_methods_error',
@@ -17,6 +23,12 @@ export const CustomFields = {
     interfaceInteraction: 'sctm_interface_interaction_type',
   },
   paymentCancelReason: 'sctm_payment_cancel_reason',
+  applePay: {
+    session: {
+      request: 'sctm_apple_pay_session_request',
+      response: 'sctm_apple_pay_session_response',
+    },
+  },
 };
 
 export enum ConnectorActions {
@@ -26,6 +38,7 @@ export enum ConnectorActions {
   CreateRefund = 'createRefund',
   CancelRefund = 'cancelRefund',
   NoAction = 'noAction',
+  GetApplePaySession = 'getApplePaySession',
 }
 
 export const ErrorMessages = {
@@ -35,3 +48,7 @@ export const ErrorMessages = {
 export const PAY_LATER_ENUMS = [PaymentMethod.klarnapaylater, PaymentMethod.klarnasliceit];
 
 export const CancelStatusText = 'Cancelled from shop side';
+
+export const DUE_DATE_PATTERN = /^(\d+)d$/;
+
+export const DEFAULT_DUE_DATE = 14;

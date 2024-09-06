@@ -7,12 +7,13 @@ import {
   PaymentCreateParams,
   PaymentEmbed,
 } from '@mollie/api-client';
-import { initMollieClient } from '../client/mollie.client';
+import { initMollieClient, initMollieClientForApplePaySession } from '../client/mollie.client';
 import CustomError from '../errors/custom.error';
 import { logger } from '../utils/logger.utils';
-import { readConfiguration } from '../utils/config.utils';
-import { LIBRARY_NAME, LIBRARY_VERSION } from '../utils/constant.utils';
-import { CustomPayment } from '../types/mollie.types';
+import { ApplePaySessionRequest, CustomPayment } from '../types/mollie.types';
+import ApplePaySession from '@mollie/api-client/dist/types/src/data/applePaySession/ApplePaySession';
+import { getApiKey } from '../utils/config.utils';
+import { MOLLIE_VERSION_STRINGS } from '../utils/constant.utils';
 import fetch from 'node-fetch';
 
 /**
@@ -107,12 +108,10 @@ export const createPaymentWithCustomMethod = async (paymentParams: PaymentCreate
   let errorMessage;
 
   try {
-    const { mollie } = readConfiguration();
-
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${mollie.apiKey}`,
-      versionStrings: `${LIBRARY_NAME}/${LIBRARY_VERSION}`,
+      Authorization: `Bearer ${getApiKey()}`,
+      versionStrings: MOLLIE_VERSION_STRINGS,
     };
 
     const response = await fetch('https://api.mollie.com/v2/payments', {
@@ -146,6 +145,24 @@ export const createPaymentWithCustomMethod = async (paymentParams: PaymentCreate
       });
     }
 
+    throw new CustomError(400, errorMessage);
+  }
+};
+
+export const getApplePaySession = async (options: ApplePaySessionRequest): Promise<ApplePaySession> => {
+  try {
+    return await initMollieClientForApplePaySession().applePay.requestPaymentSession(options);
+  } catch (error: unknown) {
+    let errorMessage;
+    if (error instanceof MollieApiError) {
+      errorMessage = `SCTM - getApplePaySession - error: ${error.message}, field: ${error.field}`;
+    } else {
+      errorMessage = `SCTM - getApplePaySession - Failed to get ApplePay session with unknown errors`;
+    }
+
+    logger.error(errorMessage, {
+      error,
+    });
     throw new CustomError(400, errorMessage);
   }
 };

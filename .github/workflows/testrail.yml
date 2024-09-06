@@ -1,0 +1,46 @@
+name: TestRail
+
+permissions:
+  actions: read
+  contents: read
+
+on:
+  workflow_run:
+    workflows: ["Build"]
+    types:
+      - completed
+
+jobs:
+  testrail:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Download code coverage results
+        uses: actions/download-artifact@v4
+        with:
+          name: code-coverage-report
+          github-token: ${{ github.token }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Upload Test Results to TestRail
+        env:
+          TR_INSTANCE: ${{ secrets.TR_INSTANCE }}
+          TR_PROJECT_NAME: ${{ secrets.TR_PROJECT_NAME }}
+          TR_USER_EMAIL: ${{ secrets.TR_USER_EMAIL }}
+          TR_PASSWORD: ${{ secrets.TR_PASSWORD }}
+        run: |
+          pip install trcli
+          trcli -y \
+            -h "https://$TR_INSTANCE.testrail.io" \
+            --project "$TR_PROJECT_NAME" \
+            -u $TR_USER_EMAIL \
+            -p $TR_PASSWORD \
+            parse_junit \
+            --title "Automated Tests - ${{ github.sha }}" \
+            --run-description ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} \
+            -f "junit-report.xml"

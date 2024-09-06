@@ -5,18 +5,20 @@ import {
   createPaymentWithCustomMethod,
   getPaymentById,
   listPaymentMethods,
+  getApplePaySession,
 } from '../../src/mollie/payment.mollie';
 import { MollieApiError, PaymentCreateParams } from '@mollie/api-client';
 import { logger } from '../../src/utils/logger.utils';
 import CustomError from '../../src/errors/custom.error';
-import { LIBRARY_NAME, LIBRARY_VERSION } from '../../src/utils/constant.utils';
-import { readConfiguration } from '../../src/utils/config.utils';
+import { MOLLIE_VERSION_STRINGS } from '../../src/utils/constant.utils';
+import { getApiKey } from '../../src/utils/config.utils';
 import fetch from 'node-fetch';
 
 const mockPaymentsCreate = jest.fn();
 const mockPaymentsGet = jest.fn();
 const mockPaymentsList = jest.fn();
 const mockPaymentCancel = jest.fn();
+const mockRequestPaymentSession = jest.fn();
 
 jest.mock('../../src/client/mollie.client', () => ({
   initMollieClient: jest.fn(() => ({
@@ -27,6 +29,11 @@ jest.mock('../../src/client/mollie.client', () => ({
     },
     methods: {
       list: mockPaymentsList,
+    },
+  })),
+  initMollieClientForApplePaySession: jest.fn(() => ({
+    applePay: {
+      requestPaymentSession: mockRequestPaymentSession,
     },
   })),
 }));
@@ -128,8 +135,8 @@ describe('createPaymentWithCustomMethod', () => {
     const createPaymentEndpoint = 'https://api.mollie.com/v2/payments';
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${readConfiguration().mollie.apiKey}`,
-      versionStrings: `${LIBRARY_NAME}/${LIBRARY_VERSION}`,
+      Authorization: `Bearer ${getApiKey()}`,
+      versionStrings: MOLLIE_VERSION_STRINGS,
     };
 
     (fetch as unknown as jest.Mock).mockImplementation(async () =>
@@ -166,8 +173,8 @@ describe('createPaymentWithCustomMethod', () => {
     const createPaymentEndpoint = 'https://api.mollie.com/v2/payments';
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${readConfiguration().mollie.apiKey}`,
-      versionStrings: `${LIBRARY_NAME}/${LIBRARY_VERSION}`,
+      Authorization: `Bearer ${getApiKey()}`,
+      versionStrings: MOLLIE_VERSION_STRINGS,
     };
 
     const response = {
@@ -231,8 +238,8 @@ describe('createPaymentWithCustomMethod', () => {
     const createPaymentEndpoint = 'https://api.mollie.com/v2/payments';
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${readConfiguration().mollie.apiKey}`,
-      versionStrings: `${LIBRARY_NAME}/${LIBRARY_VERSION}`,
+      Authorization: `Bearer ${getApiKey()}`,
+      versionStrings: MOLLIE_VERSION_STRINGS,
     };
 
     const response = {
@@ -287,8 +294,8 @@ describe('createPaymentWithCustomMethod', () => {
     const createPaymentEndpoint = 'https://api.mollie.com/v2/payments';
     const headers = {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${readConfiguration().mollie.apiKey}`,
-      versionStrings: `${LIBRARY_NAME}/${LIBRARY_VERSION}`,
+      Authorization: `Bearer ${getApiKey()}`,
+      versionStrings: MOLLIE_VERSION_STRINGS,
     };
 
     const errorMessage = 'SCTM - createPaymentWithCustomMethod - Failed to create a payment with unknown errors';
@@ -469,5 +476,70 @@ describe('cancelPayment', () => {
     const response = await cancelPayment('tr_WDqYK6vllg');
     expect(response).toBe(undefined);
     expect(logger.error).toBeCalledTimes(0);
+  });
+});
+
+describe('getApplePaySession', () => {
+  afterEach(() => {
+    jest.clearAllMocks(); // Clear all mocks after each test
+  });
+
+  it('should call getApplePaySession with the correct parameters', async () => {
+    await getApplePaySession({
+      domain: 'pay.mywebshop.com',
+      validationUrl: 'https://apple-pay-gateway-cert.apple.com/paymentservices/paymentSession',
+    });
+
+    expect(mockRequestPaymentSession).toHaveBeenCalledTimes(1);
+    expect(mockRequestPaymentSession).toHaveBeenCalledWith({
+      domain: 'pay.mywebshop.com',
+      validationUrl: 'https://apple-pay-gateway-cert.apple.com/paymentservices/paymentSession',
+    });
+  });
+
+  it('should be able to return a proper error message when error which is an instance of MollieApiError occurred', async () => {
+    const errorMessage = 'Something wrong happened';
+    const mollieApiError = new MollieApiError(errorMessage, { field: 'validationUrl' });
+
+    (mockRequestPaymentSession as jest.Mock).mockImplementation(() => {
+      throw mollieApiError;
+    });
+
+    try {
+      await getApplePaySession({
+        domain: 'pay.mywebshop.com',
+        validationUrl: '',
+      });
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith(`SCTM - getApplePaySession - error: ${errorMessage}, field: validationUrl`, {
+        error: mollieApiError,
+      });
+    }
+  });
+
+  it('should be able to return a proper error message when error which is not an instance of MollieApiError occurred', async () => {
+    const unexpectedError = new CustomError(400, 'dummy message');
+
+    (mockRequestPaymentSession as jest.Mock).mockImplementation(() => {
+      throw unexpectedError;
+    });
+
+    try {
+      await getApplePaySession({
+        domain: '',
+        validationUrl: '',
+      });
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith(
+        'SCTM - getApplePaySession - Failed to get ApplePay session with unknown errors',
+        {
+          error: unexpectedError,
+        },
+      );
+    }
   });
 });
