@@ -8,12 +8,6 @@ import CustomError from '../errors/custom.error';
 import SkipError from '../errors/skip.error';
 import { apiError } from '../api/error.api';
 import { formatErrorResponse } from '../errors/mollie.error';
-import { createPaymentExtension, deletePaymentExtension } from '../commercetools/extensions.commercetools';
-import {
-  createCustomPaymentInterfaceInteractionType,
-  createCustomPaymentTransactionCancelReasonType,
-  createCustomPaymentType,
-} from '../commercetools/customFields.commercetools';
 
 /**
  * Exposed service endpoint.
@@ -58,45 +52,6 @@ export const post = async (request: Request, response: Response) => {
 
     logger.debug('SCTM - Processor - Unexpected error occurred when processing request', error);
 
-    return apiError(response, formatErrorResponse(error).errors);
-  }
-};
-
-/**
- * Exposed service endpoint.
- * - Creates the Mollie payment extension, CustomPaymentType, CustomPaymentInterfaceInteractionType and CustomPaymentTransactionCancelReasonType.
- *
- * @param {Request} request The express request
- * @param {Response} response The express response
- * @returns
- */
-export const installation = async (request: Request, response: Response) => {
-  const { extensionUrl } = request.body;
-
-  if (!extensionUrl) {
-    logger.debug('SCTM - installation - Missing body parameters {extensionUrl}.');
-    return apiError(response, formatErrorResponse(new CustomError(400, 'Missing body parameters.')).errors);
-  }
-
-  try {
-    await createPaymentExtension(extensionUrl);
-    await createCustomPaymentType();
-    await createCustomPaymentInterfaceInteractionType();
-    await createCustomPaymentTransactionCancelReasonType();
-    logger.debug('SCTM - installation - Finish processing installation requests');
-    return apiSuccess(200, response, []);
-  } catch (error) {
-    logger.debug('SCTM - installation - Unexpected error occurred when processing request', error);
-    return apiError(response, formatErrorResponse(error).errors);
-  }
-};
-
-export const uninstallation = async (request: Request, response: Response) => {
-  try {
-    deletePaymentExtension();
-    return apiSuccess(200, response, []);
-  } catch (error) {
-    logger.debug('SCTM - uninstallation - Unexpected error occurred when processing request', error);
     return apiError(response, formatErrorResponse(error).errors);
   }
 };
