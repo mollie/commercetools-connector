@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { post } from '../controllers/processor.controller';
+import { post, installation, uninstallation } from '../controllers/processor.controller';
 
 const serviceRouter = Router();
 
@@ -8,5 +8,9 @@ serviceRouter.get('/health-check', async (req, res) => {
 });
 
 serviceRouter.post('/', post);
+
+serviceRouter.post('/install', installation);
+
+serviceRouter.post('/uninstall', uninstallation);
 
 export default serviceRouter;
