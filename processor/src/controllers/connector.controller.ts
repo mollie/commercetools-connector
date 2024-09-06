@@ -9,7 +9,7 @@ import { createExtensionAndCustomFields, removeExtension } from '../service/conn
 export const healthCheck = async (request: Request, response: Response) => {
   try {
     logger.debug('SCTM - healthCheck - The connector is running healthily.');
-    return apiSuccess(200, response.status(200).send('The connector is running healthily.'), []);
+    return apiSuccess(200, response, []);
   } catch (error) {
     logger.error('SCTM - healthCheck - Unexpected error occurred when processing request', error);
     return apiError(response, formatErrorResponse(error).errors);

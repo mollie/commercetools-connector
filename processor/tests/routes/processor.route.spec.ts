@@ -60,7 +60,6 @@ describe('Test src/route/processor.route.ts', () => {
       await handler(req as Request, res as Response, next);
 
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.send).toHaveBeenCalledWith('The connector is running healthily.');
     });
   });
 

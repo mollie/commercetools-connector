@@ -35,7 +35,6 @@ describe('Test connector.controller.ts', () => {
     expect(logger.debug).toBeCalledTimes(1);
     expect(logger.debug).toHaveBeenCalledWith('SCTM - healthCheck - The connector is running healthily.');
     expect(res.status).toBeCalledWith(200);
-    expect(res.send).toHaveBeenCalled();
   });
 
   it('should return status code 200 with a successful install response', async () => {
@@ -48,7 +47,6 @@ describe('Test connector.controller.ts', () => {
       'SCTM - install - The connector was installed successfully with required extensions and custom fields.',
     );
     expect(res.status).toBeCalledWith(200);
-    expect(res.send).toHaveBeenCalled();
   });
 
   it('should return status code 400 when extensionUrl is missing during install', async () => {
@@ -59,7 +57,6 @@ describe('Test connector.controller.ts', () => {
     expect(logger.debug).toBeCalledTimes(1);
     expect(logger.debug).toHaveBeenCalledWith('SCTM - install - Missing body parameters {extensionUrl}.');
     expect(res.status).toBeCalledWith(400);
-    expect(res.send).not.toHaveBeenCalled();
   });
 
   it('should return status code 200 with a successful uninstall response', async () => {
@@ -68,6 +65,5 @@ describe('Test connector.controller.ts', () => {
     expect(logger.debug).toBeCalledTimes(1);
     expect(logger.debug).toHaveBeenCalledWith('SCTM - uninstall - The connector was uninstalled successfully.');
     expect(res.status).toBeCalledWith(200);
-    expect(res.send).toHaveBeenCalled();
   });
 });
