@@ -11,6 +11,67 @@ import { readConfiguration } from '../utils/config.utils';
 import { toBoolean } from 'validator';
 import { CustomPaymentMethod, SupportedPaymentMethods } from '../types/mollie.types';
 
+const throwError = (process: string, errorMessage: string, ctPayment?: CTPayment): void => {
+  logger.error(`SCTM - ${process} - ${errorMessage}`, {
+    commerceToolsPayment: ctPayment ?? {},
+  });
+
+  throw new CustomError(400, `SCTM - ${process} - ${errorMessage}`);
+};
+
+const throwSkipError = (process: string, errorMessage: string): void => {
+  logger.info(`SCTM - ${process} - ${errorMessage}`);
+  throw new SkipError(`SCTM - ${process} - ${errorMessage}`);
+};
+
+const validateCardToken = (cardToken: string | undefined, ctPayment: CTPayment): void => {
+  if (!cardToken) {
+    throwError('validateCardToken', 'cardToken is required for payment method creditcard.', ctPayment);
+  }
+
+  if (typeof cardToken !== 'string' || cardToken.trim() === '') {
+    throwError(
+      'validateCardToken',
+      'cardToken must be a string and not empty for payment method creditcard.',
+      ctPayment,
+    );
+  }
+};
+
+const validateBanktransfer = (paymentCustomFields: any, ctPayment: CTPayment): void => {
+  if (!paymentCustomFields?.billingAddress || !paymentCustomFields?.billingAddress?.email) {
+    throwError(
+      'validateBanktransfer',
+      'email is required for payment method banktransfer. Please make sure you have sent it in billingAddress.email of the custom field.',
+      ctPayment,
+    );
+  }
+
+  if (!validateEmail(paymentCustomFields.billingAddress.email)) {
+    throwError('validateBanktransfer', 'email must be a valid email address.', ctPayment);
+  }
+};
+
+const validateBlik = (paymentCustomFields: any, ctPayment: CTPayment): void => {
+  if (ctPayment.amountPlanned.currencyCode.toLowerCase() !== 'pln') {
+    throwError('validateBlik', 'Currency Code must be PLN for payment method BLIK.', ctPayment);
+  }
+
+  if (!paymentCustomFields?.billingEmail) {
+    throwError('validateBlik', 'billingEmail is required for payment method BLIK.', ctPayment);
+  }
+
+  if (!validateEmail(paymentCustomFields.billingEmail)) {
+    throwError('validateBlik', 'billingEmail must be a valid email address.', ctPayment);
+  }
+};
+
+const paymentMethodRequiredExtraParameters = (method: string): method is MolliePaymentMethods | CustomPaymentMethod => {
+  return [MolliePaymentMethods.creditcard, CustomPaymentMethod.blik].includes(
+    method as MolliePaymentMethods | CustomPaymentMethod,
+  );
+};
+
 /**
  * Checks if the given action is either 'Create' or 'Update'.
  *
@@ -19,7 +80,7 @@ import { CustomPaymentMethod, SupportedPaymentMethods } from '../types/mollie.ty
  */
 export const checkExtensionAction = (action: string): true | SkipError => {
   if (!['Create', 'Update'].includes(action)) {
-    throw new SkipError(`Skip processing for action "${action}"`);
+    throwSkipError('checkExtensionAction', `Skip processing for action "${action}".`);
   }
 
   return true;
@@ -36,8 +97,9 @@ export const checkPaymentInterface = (ctPayment: CTPayment): true | SkipError =>
     !ctPayment.paymentMethodInfo?.paymentInterface ||
     ctPayment.paymentMethodInfo?.paymentInterface.toLowerCase() !== 'mollie'
   ) {
-    throw new SkipError(
-      `SCTM - PAYMENT PROCESSING - Skip processing for payment interface "${ctPayment.paymentMethodInfo?.paymentInterface}"`,
+    throwSkipError(
+      'checkPaymentInterface',
+      `Skip processing for payment interface "${ctPayment.paymentMethodInfo?.paymentInterface}".`,
     );
   }
 
@@ -71,36 +133,20 @@ export const checkPaymentMethodInput = (
   const [method] = CTPaymentMethod.split(',');
 
   if (!method) {
-    logger.error(
-      `SCTM - PAYMENT PROCESSING - Payment method must be set in order to create a Mollie payment, CommerceTools Payment ID: ${ctPayment.id}.`,
-      {
-        commerceToolsPaymentId: ctPayment.id,
-      },
-    );
-    throw new CustomError(
-      400,
-      `SCTM - PAYMENT PROCESSING - Payment method must be set in order to create a Mollie payment, CommerceTools Payment ID: ${ctPayment.id}.`,
+    throwError(
+      'checkPaymentMethodInput',
+      `Payment method must be set in order to create a Mollie payment, CommerceTools Payment ID: ${ctPayment.id}.`,
     );
   }
 
   if (!hasValidPaymentMethod(ctPayment.paymentMethodInfo?.method)) {
-    logger.error(
-      `SCTM - PAYMENT PROCESSING - Invalid paymentMethodInfo.method "${method}", CommerceTools Payment ID: ${ctPayment.id}.`,
-      {
-        commerceToolsPaymentId: ctPayment.id,
-      },
-    );
-    throw new CustomError(
-      400,
-      `SCTM - PAYMENT PROCESSING - Invalid paymentMethodInfo.method "${method}", CommerceTools Payment ID: ${ctPayment.id}.`,
+    throwError(
+      'checkPaymentMethodInput',
+      `Invalid paymentMethodInfo.method "${method}", CommerceTools Payment ID: ${ctPayment.id}.`,
     );
   }
 
-  if (
-    [MolliePaymentMethods.creditcard, CustomPaymentMethod.blik].includes(
-      method as MolliePaymentMethods | CustomPaymentMethod,
-    )
-  ) {
+  if (paymentMethodRequiredExtraParameters(method)) {
     checkPaymentMethodSpecificParameters(ctPayment, method);
   }
 
@@ -119,12 +165,9 @@ export const checkValidSuccessChargeTransaction = (ctPayment: CTPayment): boolea
   );
 
   if (!successChargeTransaction?.interactionId) {
-    logger.error(
-      `SCTM - handleCreateRefund - No successful charge transaction found, CommerceTools Transaction ID: ${successChargeTransaction?.id}.`,
-    );
-    throw new CustomError(
-      400,
-      `SCTM - handleCreateRefund - No successful charge transaction found, CommerceTools Transaction ID: ${successChargeTransaction?.id}.`,
+    throwError(
+      'checkValidSuccessChargeTransaction',
+      `No successful charge transaction found, CommerceTools Transaction ID: ${successChargeTransaction?.id}.`,
     );
   }
 
@@ -144,17 +187,13 @@ export const checkValidRefundTransactionForCreate = (ctPayment: CTPayment): bool
   );
 
   if (!initialRefundTransaction) {
-    logger.error(`SCTM - handleCreateRefund - No initial refund transaction found.`);
-    throw new CustomError(400, 'SCTM - handleCreateRefund - No initial refund transaction found');
+    throwError('checkValidRefundTransactionForCreate', 'No initial refund transaction found.');
   }
 
   if (!initialRefundTransaction?.amount || !initialRefundTransaction?.amount.centAmount) {
-    logger.error(
-      `SCTM - handleCreateRefund - No amount found in initial refund transaction, CommerceTools Transaction ID: ${initialRefundTransaction?.id}`,
-    );
-    throw new CustomError(
-      400,
-      `SCTM - handleCreateRefund - No amount found in initial refund transaction, CommerceTools Transaction ID: ${initialRefundTransaction?.id}`,
+    throwError(
+      'checkValidRefundTransactionForCreate',
+      `No amount found in initial refund transaction, CommerceTools Transaction ID: ${initialRefundTransaction?.id}.`,
     );
   }
 
@@ -167,17 +206,13 @@ export const checkValidRefundTransactionForCancel = (ctPayment: CTPayment): bool
   );
 
   if (!pendingRefundTransaction) {
-    logger.error('SCTM - handleCancelRefund - No pending refund transaction found');
-    throw new CustomError(400, 'SCTM - handleCancelRefund - No pending refund transaction found');
+    throwError('checkValidRefundTransactionForCancel', 'No pending refund transaction found.');
   }
 
   if (!pendingRefundTransaction?.interactionId || pendingRefundTransaction?.interactionId.trim() === '') {
-    logger.error(
-      `SCTM - handleCancelRefund - Cannot get the Mollie refund ID from CommerceTools transaction, transaction ID: ${pendingRefundTransaction?.id}`,
-    );
-    throw new CustomError(
-      400,
-      `SCTM - handleCancelRefund - Cannot get the Mollie refund ID from CommerceTools transaction, transaction ID: ${pendingRefundTransaction?.id}`,
+    throwError(
+      'checkValidRefundTransactionForCancel',
+      `Cannot get the Mollie refund ID from CommerceTools transaction, transaction ID: ${pendingRefundTransaction?.id}.`,
     );
   }
 
@@ -197,12 +232,9 @@ export const checkValidSuccessAuthorizationTransaction = (ctPayment: CTPayment):
   );
 
   if (!successAuthorizationTransaction?.interactionId) {
-    logger.error(
-      `SCTM - handleCancelPayment - Cannot get the Mollie payment ID from CommerceTools transaction, CommerceTools Transaction ID: ${successAuthorizationTransaction?.id}.`,
-    );
-    throw new CustomError(
-      400,
-      `SCTM - handleCancelPayment - Cannot get the Mollie payment ID from CommerceTools transaction, CommerceTools Transaction ID: ${successAuthorizationTransaction?.id}.`,
+    throwError(
+      'checkValidSuccessAuthorizationTransaction',
+      `Cannot get the Mollie payment ID from CommerceTools transaction, CommerceTools Transaction ID: ${successAuthorizationTransaction?.id}.`,
     );
   }
 
@@ -228,109 +260,26 @@ export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, metho
     ctPayment.id,
   );
 
-  switch (method) {
-    case MolliePaymentMethods.creditcard: {
-      const cardComponentEnabled = toBoolean(readConfiguration().mollie.cardComponent, true);
+  if (method === MolliePaymentMethods.creditcard) {
+    const cardComponentEnabled = toBoolean(readConfiguration().mollie.cardComponent, true);
 
-      if (cardComponentEnabled) {
-        if (!paymentCustomFields?.cardToken) {
-          logger.error(
-            `SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard, CommerceTools Payment ID: ${ctPayment.id}`,
-            {
-              commerceToolsPaymentId: ctPayment.id,
-              cardToken: paymentCustomFields?.cardToken,
-            },
-          );
-
-          throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - cardToken is required for payment method creditcard');
-        }
-
-        if (typeof paymentCustomFields?.cardToken !== 'string' || paymentCustomFields?.cardToken.trim() === '') {
-          logger.error(
-            `SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard, CommerceTools Payment ID: ${ctPayment.id}`,
-            {
-              commerceToolsPaymentId: ctPayment.id,
-              cardToken: paymentCustomFields?.cardToken,
-            },
-          );
-
-          throw new CustomError(
-            400,
-            'SCTM - PAYMENT PROCESSING - cardToken must be a string and not empty for payment method creditcard',
-          );
-        }
-      }
-
-      break;
+    if (cardComponentEnabled) {
+      validateCardToken(paymentCustomFields?.cardToken, ctPayment);
     }
-
-    case MolliePaymentMethods.banktransfer: {
-      if (!paymentCustomFields?.billingAddress || !paymentCustomFields?.billingAddress?.email) {
-        logger.error(
-          `SCTM - PAYMENT PROCESSING - email is required for payment method banktransfer. Please make sure you have sent it in billingAddress.email of the custom field`,
-          {
-            commerceToolsPayment: ctPayment,
-          },
-        );
-
-        throw new CustomError(
-          400,
-          'SCTM - PAYMENT PROCESSING - email is required for payment method banktransfer. Please make sure you have sent it in billingAddress.email of the custom field',
-        );
-      }
-
-      if (!validateEmail(paymentCustomFields.billingAddress.email)) {
-        logger.error(`SCTM - PAYMENT PROCESSING - email must be a valid email address`, {
-          commerceToolsPayment: ctPayment,
-        });
-
-        throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - email must be a valid email address');
-      }
-
-      break;
-    }
-
-    case CustomPaymentMethod.blik:
-      if (ctPayment.amountPlanned.currencyCode.toLowerCase() !== 'pln') {
-        logger.error(`SCTM - PAYMENT PROCESSING - Currency Code must be PLN for payment method BLIK`, {
-          commerceToolsPayment: ctPayment,
-        });
-
-        throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - Currency Code must be PLN for payment method BLIK');
-      }
-
-      if (!paymentCustomFields?.billingEmail) {
-        logger.error(`SCTM - PAYMENT PROCESSING - billingEmail is required for payment method BLIK`, {
-          commerceToolsPayment: ctPayment,
-        });
-
-        throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - billingEmail is required for payment method BLIK');
-      }
-
-      if (!validateEmail(paymentCustomFields.billingEmail)) {
-        logger.error(`SCTM - PAYMENT PROCESSING - billingEmail must be a valid email address`, {
-          commerceToolsPayment: ctPayment,
-        });
-
-        throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - billingEmail must be a valid email address');
-      }
-
-      break;
-
-    default:
-      break;
+  } else if (method === MolliePaymentMethods.banktransfer) {
+    validateBanktransfer(paymentCustomFields, ctPayment);
+  } else if (method === CustomPaymentMethod.blik) {
+    validateBlik(paymentCustomFields, ctPayment);
   }
 };
 
 export const checkAmountPlanned = (ctPayment: CTPayment): true | CustomError => {
   if (!ctPayment?.amountPlanned) {
-    logger.error(
-      `SCTM - PAYMENT PROCESSING - Payment {amountPlanned} not found, commerceToolsPaymentId: ${ctPayment.id}.`,
-      {
-        commerceToolsPaymentId: ctPayment.id,
-      },
+    throwError(
+      'checkAmountPlanned',
+      `Payment {amountPlanned} not found, commerceToolsPaymentId: ${ctPayment.id}.`,
+      ctPayment,
     );
-    throw new CustomError(400, 'SCTM - PAYMENT PROCESSING - Payment {amountPlanned} not found.');
   }
 
   return true;

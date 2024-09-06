@@ -27,14 +27,13 @@ export const post = async (request: Request, response: Response) => {
     }
 
     let data: ControllerResponseType;
-    switch (resource.typeId) {
-      case 'payment':
-        logger.debug('SCTM - Processor - Processing payment requests');
-        data = (await paymentController(action, resource)) as ControllerResponseType;
-        logger.debug('SCTM - Processor - Finish processing payment requests');
-        break;
-      default:
-        throw new CustomError(500, `Internal Server Error - Resource not recognized. Allowed values are 'payment'.`);
+
+    if (resource.typeId === 'payment') {
+      logger.debug('SCTM - Processor - Processing payment requests');
+      data = await paymentController(action, resource);
+      logger.debug('SCTM - Processor - Finish processing payment requests');
+    } else {
+      throw new CustomError(500, `Internal Server Error - Resource not recognized. Allowed values are 'payment'.`);
     }
 
     return apiSuccess(200, response, data?.actions);
