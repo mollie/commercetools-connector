@@ -46,7 +46,7 @@ export const uninstall = async (request: Request, response: Response) => {
     logger.debug('SCTM - uninstall - The connector was uninstalled successfully.');
     return apiSuccess(200, response.status(200).send('The connector was uninstalled successfully.'), []);
   } catch (error) {
-    logger.debug('SCTM - uninstallation - Unexpected error occurred when processing request', error);
+    logger.error('SCTM - uninstallation - Unexpected error occurred when processing request', error);
     return apiError(response, formatErrorResponse(error).errors);
   }
 };
