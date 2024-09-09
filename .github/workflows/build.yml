@@ -41,8 +41,14 @@ jobs:
       - name: Run tests
         run: npm run test
 
+      - name: Archive junit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-report
+          path: processor/junit-report.xml
+
       - name: Archive code coverage results
         uses: actions/upload-artifact@v4
         with:
           name: code-coverage-report
-          path: processor/junit-report.xml
+          path: processor/coverage/lcov.info
