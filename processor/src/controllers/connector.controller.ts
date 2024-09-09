@@ -1,4 +1,3 @@
-import { apiSuccess } from '../api/success.api';
 import { logger } from '../utils/logger.utils';
 import { Request, Response } from 'express';
 import CustomError from '../errors/custom.error';
