@@ -23,11 +23,11 @@ export const CustomFields = {
     interfaceInteraction: {
       key: 'sctm_interface_interaction_type',
       fields: {
-        id: 'sctm_id',
-        actionType: 'sctm_action_type',
-        createdAt: 'sctm_created_at',
-        request: 'sctm_request',
-        response: 'sctm_response',
+        id: 'id',
+        actionType: 'actionType',
+        createdAt: 'createdAt',
+        request: 'request',
+        response: 'response',
       },
     },
   },
