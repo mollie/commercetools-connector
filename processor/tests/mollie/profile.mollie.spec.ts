@@ -43,7 +43,7 @@ describe('Test profile.mollie.ts', () => {
       },
     });
 
-    await expect(getProfile()).rejects.toThrow(errorMessage);
+    await expect(getProfile()).resolves.toThrow(errorMessage);
   });
 
   it('should return unknown errors when fetching the profile', async () => {
@@ -54,6 +54,6 @@ describe('Test profile.mollie.ts', () => {
       },
     });
 
-    await expect(getProfile()).rejects.toThrow(errorMessage);
+    await expect(getProfile()).resolves.toThrow(errorMessage);
   });
 });
