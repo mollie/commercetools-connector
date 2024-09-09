@@ -9,7 +9,7 @@ import { createExtensionAndCustomFields, removeExtension } from '../service/conn
 export const healthCheck = async (request: Request, response: Response) => {
   try {
     logger.debug('SCTM - healthCheck - The connector is running healthily.');
-    return apiSuccess(200, response, []);
+    return response.status(200).json('The connector is running healthily.');
   } catch (error) {
     logger.error('SCTM - healthCheck - Unexpected error occurred when processing request', error);
     return apiError(response, formatErrorResponse(error).errors);
@@ -29,7 +29,9 @@ export const install = async (request: Request, response: Response) => {
     logger.debug(
       'SCTM - install - The connector was installed successfully with required extensions and custom fields.',
     );
-    return apiSuccess(200, response, []);
+    return response
+      .status(200)
+      .json('The connector was installed successfully with required extensions and custom fields.');
   } catch (error) {
     logger.error('SCTM - install - Unexpected error occurred when processing request', error);
     return apiError(response, formatErrorResponse(error).errors);
@@ -40,7 +42,7 @@ export const uninstall = async (request: Request, response: Response) => {
   try {
     await removeExtension();
     logger.debug('SCTM - uninstall - The connector was uninstalled successfully.');
-    return apiSuccess(200, response, []);
+    return response.status(200).json('The connector was uninstalled successfully.');
   } catch (error) {
     logger.error('SCTM - uninstallation - Unexpected error occurred when processing request', error);
     return apiError(response, formatErrorResponse(error).errors);
