@@ -33,23 +33,24 @@ export const post = async (request: Request, response: Response) => {
       data = await paymentController(action, resource);
       logger.debug('SCTM - Processor - Finish processing payment requests');
     } else {
+      logger.debug(`SCTM - Processor - Internal Server Error - Resource not recognized. Allowed values are 'payment'.`);
       throw new CustomError(500, `Internal Server Error - Resource not recognized. Allowed values are 'payment'.`);
     }
 
     return apiSuccess(200, response, data?.actions);
   } catch (error) {
     if (error instanceof SkipError) {
-      logger.debug('Skip action', error.message);
+      logger.debug('SCTM - Processor - Skip action', error.message);
 
       return apiSuccess(200, response, []);
     }
     if (error instanceof CustomError) {
-      logger.debug('Error occurred when processing request', error);
+      logger.debug('SCTM - Processor - Error occurred when processing request', error);
 
       return apiError(response, error.errors);
     }
 
-    logger.debug('Unexpected error occurred when processing request', error);
+    logger.debug('SCTM - Processor - Unexpected error occurred when processing request', error);
 
     return apiError(response, formatErrorResponse(error).errors);
   }

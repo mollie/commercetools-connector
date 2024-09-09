@@ -1,3 +1,4 @@
+import { describe, it, jest, expect, afterEach, beforeAll } from '@jest/globals';
 import { createClient } from '../../src/client/build.client';
 import { createApiBuilderFromCtpClient } from '@commercetools/platform-sdk';
 import { readConfiguration } from '../../src/utils/config.utils';
@@ -12,7 +13,7 @@ jest.mock('../../src/utils/config.utils');
 const mockApiBuilder = {
   withProjectKey: jest.fn().mockReturnThis(),
   get: jest.fn().mockReturnThis(),
-  execute: jest.fn().mockResolvedValue('mock-response'),
+  execute: jest.fn().mockReturnValueOnce('mock-response'),
 };
 
 describe('createApiRoot', () => {
