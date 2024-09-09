@@ -1,0 +1,2126 @@
+{
+	"info": {
+		"_postman_id": "8fb1a9c2-1d84-49cb-8871-5c80b3d92e15",
+		"name": "SCTM Collection v1.0.1",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "14200932",
+		"_collection_link": "https://adventure-1591.postman.co/workspace/Adventure-Workspace~471ca30a-668a-4dde-88b2-8fa80e5dae88/collection/14200932-8fb1a9c2-1d84-49cb-8871-5c80b3d92e15?action=share&source=collection_link&creator=14200932"
+	},
+	"item": [
+		{
+			"name": "I. Presequites",
+			"item": [
+				{
+					"name": "Obtain access token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"var data = JSON.parse(responseBody);",
+									"if(data.access_token){",
+									"    pm.environment.set(\"ctp_access_token\", data.access_token);",
+									"}",
+									"if (data.scope) {",
+									"    parts = data.scope.split(\" \");",
+									"    parts = parts.filter(scope => scope.includes(\":\")).map(scope => scope.split(\":\"))",
+									"    if (parts.length > 0) {",
+									"        scopeParts = parts[0];",
+									"        pm.environment.set(\"project-key\", scopeParts[1]);",
+									"        parts = parts.filter(scope => scope.length >= 3)",
+									"        if (parts.length > 0) {",
+									"            scopeParts = parts[0];",
+									"            pm.environment.set(\"store-key\", scopeParts[2]);",
+									"        }",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{client_id}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{client_secret}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{auth_url}}/oauth/token?grant_type=client_credentials",
+							"host": [
+								"{{auth_url}}"
+							],
+							"path": [
+								"oauth",
+								"token"
+							],
+							"query": [
+								{
+									"key": "grant_type",
+									"value": "client_credentials"
+								}
+							]
+						},
+						"description": "Use this request to obtain an access token for your commercetools platform project via Client Credentials Flow. As a prerequisite you must have filled out environment variables in Postman for projectKey, client_id and client_secret to use this."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Extension",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Status code \" + responseCode.code] = responseCode.code === 200 || responseCode.code === 201;",
+									"var data = JSON.parse(responseBody);",
+									"if(data.results && data.results[0] && data.results[0].id && data.results[0].version){",
+									"    pm.environment.set(\"extension-id\", data.results[0].id); ",
+									"    pm.environment.set(\"extension-version\", data.results[0].version);",
+									"}",
+									"if(data.results && data.results[0] && data.results[0].key){",
+									"    pm.environment.set(\"extension-key\", data.results[0].key); ",
+									"}",
+									"if(data.version){",
+									"    pm.environment.set(\"extension-version\", data.version);",
+									"}",
+									"if(data.id){",
+									"    pm.environment.set(\"extension-id\", data.id); ",
+									"}",
+									"if(data.key){",
+									"    pm.environment.set(\"extension-key\", data.key);",
+									"}",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "accessToken",
+									"value": "{{ctp_access_token}}",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								},
+								{
+									"key": "tokenType",
+									"value": "Bearer",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"destination\" : {\n    \"type\" : \"HTTP\",\n    \"url\" : \"https://efd6-115-74-115-119.ngrok-free.app/processor\"\n  },\n  \"triggers\" : [ {\n    \"resourceTypeId\" : \"payment\",\n    \"actions\" : [ \"Create\", \"Update\" ]\n  } ],\n  \"key\" : \"sctm-payment-create-update-extension\"\n}"
+						},
+						"url": {
+							"raw": "{{host}}/{{project-key}}/extensions",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"{{project-key}}",
+								"extensions"
+							]
+						},
+						"description": "null"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Custom Fields on Payment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Status code \" + responseCode.code] = responseCode.code === 200 || responseCode.code === 201;",
+									"var data = JSON.parse(responseBody);",
+									"if(data.results && data.results[0] && data.results[0].id && data.results[0].version){",
+									"    pm.environment.set(\"type-id\", data.results[0].id); ",
+									"    pm.environment.set(\"type-version\", data.results[0].version);",
+									"}",
+									"if(data.results && data.results[0] && data.results[0].key){",
+									"    pm.environment.set(\"type-key\", data.results[0].key); ",
+									"}",
+									"if(data.version){",
+									"    pm.environment.set(\"type-version\", data.version);",
+									"}",
+									"if(data.id){",
+									"    pm.environment.set(\"type-id\", data.id); ",
+									"}",
+									"if(data.key){",
+									"    pm.environment.set(\"type-key\", data.key);",
+									"}",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "accessToken",
+									"value": "{{ctp_access_token}}",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								},
+								{
+									"key": "tokenType",
+									"value": "Bearer",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"key\": \"sctm-payment-custom-type\",\n    \"name\": {\n        \"en\": \"SCTM - Payment method custom fields\",\n        \"de\": \"SCTM - Benutzerdefinierte Felder der Zahlungsmethode\"\n    },\n    \"resourceTypeIds\": [\"payment\"],\n    \"fieldDefinitions\": [\n        {\n        \"name\": \"sctm_mollie_profile_id\",\n        \"label\": {\n            \"en\": \"Profile ID\",\n            \"de\": \"Profil-ID\"\n        },\n        \"required\": false,\n        \"type\": {\n            \"name\": \"String\"\n        },\n        \"inputHint\": \"MultiLine\"\n        },\n        {\n        \"name\": \"sctm_payment_methods_request\",\n        \"label\": {\n            \"en\": \"The request object for listing payment methods\",\n            \"de\": \"Das Anforderungsobjekt für die Auflistung der Zahlwege\"\n        },\n        \"required\": false,\n        \"type\": {\n            \"name\": \"String\"\n        },\n        \"inputHint\": \"MultiLine\"\n        },\n        {\n        \"name\": \"sctm_payment_methods_response\",\n        \"label\": {\n            \"en\": \"List of available payment methods\",\n            \"de\": \"Liste der verfügbaren Zahlungsarten\"\n        },\n        \"required\": false,\n        \"type\": {\n            \"name\": \"String\"\n        },\n        \"inputHint\": \"MultiLine\"\n        },\n        {\n        \"name\": \"sctm_create_payment_request\",\n        \"label\": {\n            \"en\": \"The request object for create Mollie payment\",\n            \"de\": \"Das Anforderungsobjekt zum Erstellen der Mollie-Zahlung\"\n        },\n        \"required\": false,\n        \"type\": {\n            \"name\": \"String\"\n        },\n        \"inputHint\": \"MultiLine\"\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{host}}/{{project-key}}/types",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"{{project-key}}",
+								"types"
+							],
+							"query": [
+								{
+									"key": "expand",
+									"value": "",
+									"disabled": true
+								}
+							]
+						},
+						"description": "null"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Custom Fields on Interface Interaction of Payment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Status code \" + responseCode.code] = responseCode.code === 200 || responseCode.code === 201;",
+									"var data = JSON.parse(responseBody);",
+									"if(data.results && data.results[0] && data.results[0].id && data.results[0].version){",
+									"    pm.environment.set(\"type-id\", data.results[0].id); ",
+									"    pm.environment.set(\"type-version\", data.results[0].version);",
+									"}",
+									"if(data.results && data.results[0] && data.results[0].key){",
+									"    pm.environment.set(\"type-key\", data.results[0].key); ",
+									"}",
+									"if(data.version){",
+									"    pm.environment.set(\"type-version\", data.version);",
+									"}",
+									"if(data.id){",
+									"    pm.environment.set(\"type-id\", data.id); ",
+									"}",
+									"if(data.key){",
+									"    pm.environment.set(\"type-key\", data.key);",
+									"}",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "accessToken",
+									"value": "{{ctp_access_token}}",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								},
+								{
+									"key": "tokenType",
+									"value": "Bearer",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\" : \"sctm_interface_interaction_type\",\n  \"name\" : {\n    \"de\": \"SCTM - Benutzerdefinierte Felder im Warenkorb\",\n    \"en\" : \"SCTM - Mollie Payment Interface\"\n  },\n  \"description\" : {\n    \"en\" : \"Mollie Payment Interface Interaction\",\n    \"de\" : \"Interaktion mit der Mollie-Zahlungsschnittstelle\"\n  },\n  \"resourceTypeIds\" : [ \"payment-interface-interaction\" ],\n  \"fieldDefinitions\" : [ {\n    \"name\" : \"sctmId\",\n    \"label\" : {\n      \"en\" : \"Interface Interaction ID\",\n      \"de\" : \"Schnittstelleninteraktions-ID\"\n    },\n    \"required\" : false,\n    \"type\" : {\n      \"name\" : \"String\"\n    },\n    \"inputHint\" : \"MultiLine\"\n  }, {\n    \"name\" : \"sctmActionType\",\n    \"label\" : {\n      \"en\" : \"Action Type\",\n      \"de\" : \"Aktionstyp\"\n    },\n    \"required\" : false,\n    \"type\" : {\n      \"name\" : \"String\"\n    },\n    \"inputHint\" : \"MultiLine\"\n  }, {\n    \"name\" : \"sctmCreatedAt\",\n    \"label\" : {\n      \"en\" : \"Created At\",\n      \"de\" : \"Hergestellt in\"\n    },\n    \"required\" : false,\n    \"type\" : {\n      \"name\" : \"String\"\n    },\n    \"inputHint\" : \"MultiLine\"\n  }, {\n    \"name\" : \"sctmRequest\",\n    \"label\" : {\n      \"en\" : \"Interface Interaction Request\",\n      \"de\" : \"Schnittstelleninteraktionsanforderung\"\n    },\n    \"required\" : false,\n    \"type\" : {\n      \"name\" : \"String\"\n    },\n    \"inputHint\" : \"MultiLine\"\n  }, {\n    \"name\" : \"sctmResponse\",\n    \"label\" : {\n      \"en\" : \"Interface Interaction Response\",\n      \"de\" : \"Schnittstelleninteraktionsantwort\"\n    },\n    \"required\" : false,\n    \"type\" : {\n      \"name\" : \"String\"\n    },\n    \"inputHint\" : \"MultiLine\"\n  } ]\n}"
+						},
+						"url": {
+							"raw": "{{host}}/{{project-key}}/types",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"{{project-key}}",
+								"types"
+							],
+							"query": [
+								{
+									"key": "expand",
+									"value": "",
+									"disabled": true
+								}
+							]
+						},
+						"description": "null"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Custom Fields on Tranasction of Payment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Status code \" + responseCode.code] = responseCode.code === 200 || responseCode.code === 201;",
+									"var data = JSON.parse(responseBody);",
+									"if(data.results && data.results[0] && data.results[0].id && data.results[0].version){",
+									"    pm.environment.set(\"type-id\", data.results[0].id); ",
+									"    pm.environment.set(\"type-version\", data.results[0].version);",
+									"}",
+									"if(data.results && data.results[0] && data.results[0].key){",
+									"    pm.environment.set(\"type-key\", data.results[0].key); ",
+									"}",
+									"if(data.version){",
+									"    pm.environment.set(\"type-version\", data.version);",
+									"}",
+									"if(data.id){",
+									"    pm.environment.set(\"type-id\", data.id); ",
+									"}",
+									"if(data.key){",
+									"    pm.environment.set(\"type-key\", data.key);",
+									"}",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "accessToken",
+									"value": "{{ctp_access_token}}",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								},
+								{
+									"key": "tokenType",
+									"value": "Bearer",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\" : \"sctm_interface_interaction_type\",\n  \"name\" : {\n    \"de\": \"SCTM - Zahlung stornieren Rückerstattung bei benutzerdefinierten Transaktionsfeldern\",\n    \"en\" : \"SCTM - Payment Cancel Refund on Transaction custom fields\"\n  },\n  \"description\" : {\n    \"en\" : \"Showing the reason of cancelling and identifying if the cancel action came from CommerceTools or Mollie\",\n    \"de\" : \"Anzeige des Kündigungsgrundes und Identifizierung, ob die Kündigung von CommerceTools oder Mollie erfolgte\"\n  },\n  \"resourceTypeIds\" : [ \"transaction\" ],\n  \"fieldDefinitions\": [{\n    \"name\": \"reasonText\",\n    \"label\": {\n      \"en\": \"The reason of cancelling the refund, include the user name\",\n      \"de\": \"Der Grund für die Stornierung der Rückerstattung, den Benutzernamen einschließen\"\n    },\n    \"required\": false,\n    \"type\": {\n      \"name\": \"String\"\n    },\n    \"inputHint\": \"MultiLine\"\n  },\n  {\n    \"name\": \"statusText\",\n    \"label\": {\n      \"en\": \"To differentiate between the “failure” from CommerceTools and the real status\",\n      \"de\": \"Um zwischen dem „Fehler“ von CommerceTools und dem tatsächlichen Status zu unterscheiden\"\n    },\n    \"required\": false,\n    \"type\": {\n      \"name\": \"String\"\n    },\n    \"inputHint\": \"MultiLine\"\n  }]\n}"
+						},
+						"url": {
+							"raw": "{{host}}/{{project-key}}/types",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"{{project-key}}",
+								"types"
+							],
+							"query": [
+								{
+									"key": "expand",
+									"value": "",
+									"disabled": true
+								}
+							]
+						},
+						"description": "null"
+					},
+					"response": []
+				}
+			],
+			"description": "To be able to use the connector as well as making the API calls in the next sections to trigger the connector to do its job, you must follow these points below:\n\n1. Install the connector to your merchant center:\n    \n    1. Installing the connector to your merchant center will trigger creating an API extension to listen the changes on `Create` and `Update` a CommerceTools Payment\n        \n    2. It will also create some specific connector's custom fields, here is the list (will be updated continously):\n        \n        1. `sctm-payment-custom-type` on **Payment**, it includes the fields: `sctm_mollie_profile_id`, `sctm_payment_methods_request`, `sctm_payment_methods_response`, `sctm_create_payment_request`\n            \n        2. `sctm_interface_interaction_type` on **Interface Interaction of Payment**, it includes the fields: `sctmId`, `sctmActionType`, `sctmCreatedAt`, `sctmRequest`, `sctmResponse`\n            \n        3. `sctm_payment_cancel_refund` on **Transaction of Payment**, it includes the fields: `reasonText`, `statusText`\n            \n        4. In case you want to have a look at the details of creating process or want to re-run it manually when got trouble, we have put all the requests you need in this folder, please have a look if necessary.\n            \n2. Update the environments in Postman collection to adapt with your CommerceTools and Mollie credentials\n    \n3. To able to make API calls to CommerceTools endpoints, you absolutely need to obtain the access token from your account, we provide you a request to do that in this folder, just make sure you have updated all your credentials and then you are good to go, whenever a request failed because of invalid token, just need to call it again."
+		},
+		{
+			"name": "II. Connector Requests",
+			"item": [
+				{
+					"name": "Get payment methods",
+					"item": [
+						{
+							"name": "Get Payment Methods by Create",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"tests[\"Status code \" + responseCode.code] = responseCode.code === 200 || responseCode.code === 201;",
+											"var data = JSON.parse(responseBody);",
+											"if(data.results && data.results[0] && data.results[0].id && data.results[0].version){",
+											"    pm.environment.set(\"payment-id\", data.results[0].id); ",
+											"    pm.environment.set(\"payment-version\", data.results[0].version);",
+											"}",
+											"if(data.results && data.results[0] && data.results[0].key){",
+											"    pm.environment.set(\"payment-key\", data.results[0].key); ",
+											"}",
+											"if(data.version){",
+											"    pm.environment.set(\"payment-version\", data.version);",
+											"}",
+											"if(data.id){",
+											"    pm.environment.set(\"payment-id\", data.id); ",
+											"}",
+											"if(data.key){",
+											"    pm.environment.set(\"payment-key\", data.key);",
+											"}",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{ctp_access_token}}",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "tokenType",
+											"value": "Bearer",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "User-Agent",
+										"value": "Mozilla/5.0 (iPhone13,3; U; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) Version/10.0 Mobile/15E148 Safari/602.1 ",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"amountPlanned\" : {\n    \"currencyCode\" : \"EUR\",\n    \"centAmount\" : 1000,\n    \"fractionDigits\": 2\n  },\n  \"paymentMethodInfo\" : {\n    \"paymentInterface\" : \"Mollie\" // required to be verify with our connector\n  },\n  \"custom\": {\n    \"type\": {\n        \"typeId\": \"type\",\n        \"key\": \"sctm-payment-custom-type\"\n    },\n    \"fields\": {\n        // hold all the filter options\n        \"sctm_payment_methods_request\": \"{\\\"locale\\\":\\\"de_DE\\\",\\\"billingCountry\\\":\\\"DE\\\",\\\"includeWallets\\\":\\\"applepay\\\",\\\"sequenceType\\\":\\\"oneoff\\\",\\\"orderLineCategories\\\":\\\"\\\",\\\"include\\\":\\\"\\\"}\",\n        \"sctm_payment_methods_response\": \"\" // hold the payment list from Mollie response\n    }\n  }\n}"
+								},
+								"url": {
+									"raw": "{{host}}/{{project-key}}/payments",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"{{project-key}}",
+										"payments"
+									],
+									"query": [
+										{
+											"key": "expand",
+											"value": "",
+											"disabled": true
+										}
+									]
+								},
+								"description": "Creating a Payment produces the [PaymentCreated](ctp:api:type:PaymentCreatedMessage) Message.\n"
+							},
+							"response": []
+						},
+						{
+							"name": "Get Payment Methods by Update",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"tests[\"Status code \" + responseCode.code] = responseCode.code === 200 || responseCode.code === 201;",
+											"var data = JSON.parse(responseBody);",
+											"if(data.results && data.results[0] && data.results[0].id && data.results[0].version){",
+											"    pm.environment.set(\"payment-id\", data.results[0].id); ",
+											"    pm.environment.set(\"payment-version\", data.results[0].version);",
+											"}",
+											"if(data.results && data.results[0] && data.results[0].key){",
+											"    pm.environment.set(\"payment-key\", data.results[0].key); ",
+											"}",
+											"if(data.version){",
+											"    pm.environment.set(\"payment-version\", data.version);",
+											"}",
+											"if(data.id){",
+											"    pm.environment.set(\"payment-id\", data.id); ",
+											"}",
+											"if(data.key){",
+											"    pm.environment.set(\"payment-key\", data.key);",
+											"}",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{ctp_access_token}}",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "tokenType",
+											"value": "Bearer",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"version\": 3,\n    \"actions\": [\n        {\n            // kindly adjust centAmount value to your preference\n            \"action\": \"changeAmountPlanned\",\n            \"amount\": {\n                \"type\": \"centPrecision\",\n                \"currencyCode\": \"EUR\",\n                \"centAmount\": 2000\n            }\n        },\n        {\n            // should be empty to refresh the payment list\n            \"action\": \"setCustomField\",\n            \"name\": \"sctm_payment_methods_response\",\n            \"value\": \"\"\n        },\n        {\n            // update any specific filter options as needed\n            \"action\": \"setCustomField\",\n            \"name\": \"sctm_payment_methods_request\",\n            \"value\": \"{\\\"locale\\\":\\\"de_DE\\\",\\\"billingCountry\\\":\\\"DE\\\",\\\"includeWallets\\\":\\\"applepay\\\",\\\"sequenceType\\\":\\\"oneoff\\\",\\\"orderLineCategories\\\":\\\"\\\",\\\"include\\\":\\\"\\\"}\"\n        },\n        {\n            // should be empty to revalidate the card component method\n            \"action\": \"setCustomField\",\n            \"name\": \"sctm_mollie_profile_id\",\n            \"value\": \"\"\n        }\n    ]\n}"
+								},
+								"url": {
+									"raw": "{{host}}/{{project-key}}/payments/bbfe6983-b37e-4302-a39d-f6960dd2bf0e",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"{{project-key}}",
+										"payments",
+										"bbfe6983-b37e-4302-a39d-f6960dd2bf0e"
+									],
+									"query": [
+										{
+											"key": "expand",
+											"value": "",
+											"disabled": true
+										}
+									]
+								},
+								"description": "Creating a Payment produces the [PaymentCreated](ctp:api:type:PaymentCreatedMessage) Message.\n"
+							},
+							"response": []
+						}
+					],
+					"description": "## GET PAYMENT METHODS\n\n**Integration steps**\n\nNo matter when payment methods is retrieved, the `payment` object has to be **create/update** for the connector procedure to be triggered\n\n1. A `payment` object must be instantiated/modified via CT extension actions\n    \n2. The object has several parameters as described in the table below\n    \n3. The connector will return the corresponding update actions to this `payment` object\n    \n4. Then, these update actions will be consumed and update the `payment` object with its Mollie responses\n    \n\n**Parameters**\n\n| **Name** | **Required** | **Note** |\n| --- | --- | --- |\n| amountPlanned | √ | To detemine Mollie payment amount |\n| paymentMethodInfo.paymentInterface | √ | To be verified by the connector |\n| custom.fields.sctm_payment_methods_response | √ | To trigger the listing payment method action - **its value should be empty** |\n| custom.fields.sctm_payment_methods_request | √ | To hold all the listing option for Mollie |\n| custom.fields.sctm_payment_methods_request.sequenceType |  | To hold Mollie `sequenceType` option |\n| custom.fields.sctm_payment_methods_request.locale |  | To hold Mollie `locale` option |\n| custom.fields.sctm_payment_methods_request.resource |  | To hold Mollie `resource` option |\n| custom.fields.sctm_payment_methods_request.billingCountry |  | To hold Mollie `billingCountry` option |\n| custom.fields.sctm_payment_methods_request.includeWallets |  | To hold Mollie `includeWallets` option |\n| custom.fields.sctm_payment_methods_request.orderLineCategories |  | To hold Mollie `orderLineCategories` option |\n| custom.fields.sctm_payment_methods_request.include |  | To hold Mollie `include` option |\n\n_Example payload_\n\n``` json\n{\n  \"action\": \"Create\",\n  \"resource\": {\n    \"typeId\": \"payment\",\n    \"id\": \"PM-112555\",\n    \"obj\": {\n      \"id\": \"PID-123456\",\n      \"amountPlanned\": {\n        \"type\": \"centPrecision\",\n        \"currencyCode\": \"EUR\",\n        \"centAmount\": 1000,\n        \"fractionDigits\": 2\n      },\n      \"paymentMethodInfo\": {\n        \"paymentInterface\": \"Mollie\"\n      },\n      \"custom\": {\n        \"fields\": {\n          \"sctm_payment_methods_request\": {\n            \"sequenceType\": \"oneoff\",\n            \"locale\": \"de_DE\",\n            \"resource\": \"payments\",\n            \"billingCountry\": \"DE\",\n            \"includeWallets\": \"applepay\"\n          },\n          \"sctm_payment_methods_response: {}\n        }\n      }\n    }\n  }\n}\n\n ```\n\n**Response**\n\n_Status:_ 200\n\n_Body:_\n\n``` json\n{\n  \"actions\": [\n    {\n      \"action\": \"setCustomField\",\n      \"name\": \"sctm_payment_methods_response\",\n      \"value\": \"{\\\"count\\\":11,\\\"methods\\\":[{\\\"resource\\\":\\\"method\\\",\\\"id\\\":\\\"applepay\\\",\\\"description\\\":\\\"Apple Pay\\\",\\\"minimumAmount\\\":{\\\"value\\\":\\\"0.01\\\",\\\"currency\\\":\\\"EUR\\\"},\\\"maximumAmount\\\":{\\\"value\\\":\\\"10000.00\\\",\\\"currency\\\":\\\"EUR\\\"},\\\"image\\\":{\\\"size1x\\\":\\\"https://www.mollie.com/external/icons/payment-methods/applepay.png\\\",\\\"size2x\\\":\\\"https://www.mollie.com/external/icons/payment-methods/applepay<mention value=\"2\">2</mention>x.png\\\",\\\"svg\\\":\\\"https://www.mollie.com/external/icons/payment-methods/applepay.svg\\\"},\\\"status\\\":\\\"activated\\\",\\\"_links\\\":{\\\"self\\\":{\\\"href\\\":\\\"https://api.mollie.com/v2/methods/applepay\\\",\\\"type\\\":\\\"application/hal+json\\\"}}},{\\\"resource\\\":\\\"method\\\",\\\"id\\\":\\\"creditcard\\\",\\\"description\\\":\\\"Karte\\\",\\\"minimumAmount\\\":{\\\"value\\\":\\\"0.01\\\",\\\"currency\\\":\\\"EUR\\\"},\\\"maximumAmount\\\":{\\\"value\\\":\\\"10000.00\\\",\\\"currency\\\":\\\"EUR\\\"},\\\"image\\\":{\\\"size1x\\\":\\\"https://www.mollie.com/external/icons/payment-methods/creditcard.png\\\",\\\"size2x\\\":\\\"https://www.mollie.com/external/icons/payment-methods/creditcard<mention value=\"2\">2</mention>x.png\\\",\\\"svg\\\":\\\"https://www.mollie.com/external/icons/payment-methods/creditcard.svg\\\"},\\\"status\\\":\\\"activated\\\",\\\"_links\\\":{\\\"self\\\":{\\\"href\\\":\\\"https://api.mollie.com/v2/methods/creditcard\\\",\\\"type\\\":\\\"application/hal+json\\\"}}},{\\\"resource\\\":\\\"method\\\",\\\"id\\\":\\\"paypal\\\",\\\"description\\\":\\\"PayPal\\\",\\\"minimumAmount\\\":{\\\"value\\\":\\\"0.01\\\",\\\"currency\\\":\\\"EUR\\\"},\\\"maximumAmount\\\":null,\\\"image\\\":{\\\"size1x\\\":\\\"https://www.mollie.com/external/icons/payment-methods/paypal.png\\\",\\\"size2x\\\":\\\"https://www.mollie.com/external/icons/payment-methods/paypal<mention value=\"2\">2</mention>x.png\\\",\\\"svg\\\":\\\"https://www.mollie.com/external/icons/payment-methods/paypal.svg\\\"},\\\"status\\\":\\\"activated\\\",\\\"_links\\\":{\\\"self\\\":{\\\"href\\\":\\\"https://api.mollie.com/v2/methods/paypal\\\",\\\"type\\\":\\\"application/hal+json\\\"}}},{\\\"resource\\\":\\\"method\\\",\\\"id\\\":\\\"banktransfer\\\",\\\"description\\\":\\\"Überweisung\\\",\\\"minimumAmount\\\":{\\\"value\\\":\\\"0.01\\\",\\\"currency\\\":\\\"EUR\\\"},\\\"maximumAmount\\\":{\\\"value\\\":\\\"1000000.00\\\",\\\"currency\\\":\\\"EUR\\\"},\\\"image\\\":{\\\"size1x\\\":\\\"https://www.mollie.com/external/icons/payment-methods/banktransfer.png\\\",\\\"size2x\\\":\\\"https://www.mollie.com/external/icons/payment-methods/banktransfer<mention value=\"2\">2</mention>x.png\\\",\\\"svg\\\":\\\"https://www.mollie.com/external/icons/payment-methods/banktransfer.svg\\\"},\\\"status\\\":\\\"activated\\\",\\\"_links\\\":{\\\"self\\\":{\\\"href\\\":\\\"https://api.mollie.com/v2/methods/banktransfer\\\",\\\"type\\\":\\\"application/hal+json\\\"}}},{\\\"resource\\\":\\\"method\\\",\\\"id\\\":\\\"ideal\\\",\\\"description\\\":\\\"iDEAL\\\",\\\"minimumAmount\\\":{\\\"value\\\":\\\"0.01\\\",\\\"currency\\\":\\\"EUR\\\"},\\\"maximumAmount\\\":{\\\"value\\\":\\\"50000.00\\\",\\\"currency\\\":\\\"EUR\\\"},\\\"image\\\":{\\\"size1x\\\":\\\"https://www.mollie.com/external/icons/payment-methods/ideal.png\\\",\\\"size2x\\\":\\\"https://www.mollie.com/external/icons/payment-methods/ideal<mention value=\"2\">2</mention>x.png\\\",\\\"svg\\\":\\\"https://www.mollie.com/external/icons/payment-methods/ideal.svg\\\"},\\\"status\\\":\\\"activated\\\",\\\"_links\\\":{\\\"self\\\":{\\\"href\\\":\\\"https://api.mollie.com/v2/methods/ideal\\\",\\\"type\\\":\\\"application/hal+json\\\"}}},{\\\"resource\\\":\\\"method\\\",\\\"id\\\":\\\"bancontact\\\",\\\"description\\\":\\\"Bancontact\\\",\\\"minimumAmount\\\":{\\\"value\\\":\\\"0.02\\\",\\\"currency\\\":\\\"EUR\\\"},\\\"maximumAmount\\\":{\\\"value\\\":\\\"50000.00\\\",\\\"currency\\\":\\\"EUR\\\"},\\\"image\\\":{\\\"size1x\\\":\\\"https://www.mollie.com/external/icons/payment-methods/bancontact.png\\\",\\\"size2x\\\":\\\"https://www.mollie.com/external/icons/payment-methods/bancontact<mention value=\"2\">2</mention>x.png\\\",\\\"svg\\\":\\\"https://www.mollie.com/external/icons/payment-methods/bancontact.svg\\\"},\\\"status\\\":\\\"activated\\\",\\\"_links\\\":{\\\"self\\\":{\\\"href\\\":\\\"https://api.mollie.com/v2/methods/bancontact\\\",\\\"type\\\":\\\"application/hal+json\\\"}}},{\\\"resource\\\":\\\"method\\\",\\\"id\\\":\\\"eps\\\",\\\"description\\\":\\\"eps\\\",\\\"minimumAmount\\\":{\\\"value\\\":\\\"1.00\\\",\\\"currency\\\":\\\"EUR\\\"},\\\"maximumAmount\\\":{\\\"value\\\":\\\"50000.00\\\",\\\"currency\\\":\\\"EUR\\\"},\\\"image\\\":{\\\"size1x\\\":\\\"https://www.mollie.com/external/icons/payment-methods/eps.png\\\",\\\"size2x\\\":\\\"https://www.mollie.com/external/icons/payment-methods/eps<mention value=\"2\">2</mention>x.png\\\",\\\"svg\\\":\\\"https://www.mollie.com/external/icons/payment-methods/eps.svg\\\"},\\\"status\\\":\\\"activated\\\",\\\"_links\\\":{\\\"self\\\":{\\\"href\\\":\\\"https://api.mollie.com/v2/methods/eps\\\",\\\"type\\\":\\\"application/hal+json\\\"}}},{\\\"resource\\\":\\\"method\\\",\\\"id\\\":\\\"przelewy24\\\",\\\"description\\\":\\\"Przelewy24\\\",\\\"minimumAmount\\\":{\\\"value\\\":\\\"0.01\\\",\\\"currency\\\":\\\"EUR\\\"},\\\"maximumAmount\\\":{\\\"value\\\":\\\"12815.00\\\",\\\"currency\\\":\\\"EUR\\\"},\\\"image\\\":{\\\"size1x\\\":\\\"https://www.mollie.com/external/icons/payment-methods/przelewy24.png\\\",\\\"size2x\\\":\\\"https://www.mollie.com/external/icons/payment-methods/przelewy24<mention value=\"2\">2</mention>x.png\\\",\\\"svg\\\":\\\"https://www.mollie.com/external/icons/payment-methods/przelewy24.svg\\\"},\\\"status\\\":\\\"activated\\\",\\\"_links\\\":{\\\"self\\\":{\\\"href\\\":\\\"https://api.mollie.com/v2/methods/przelewy24\\\",\\\"type\\\":\\\"application/hal+json\\\"}}},{\\\"resource\\\":\\\"method\\\",\\\"id\\\":\\\"kbc\\\",\\\"description\\\":\\\"KBC/CBC Zahlungsbutton\\\",\\\"minimumAmount\\\":{\\\"value\\\":\\\"0.01\\\",\\\"currency\\\":\\\"EUR\\\"},\\\"maximumAmount\\\":{\\\"value\\\":\\\"50000.00\\\",\\\"currency\\\":\\\"EUR\\\"},\\\"image\\\":{\\\"size1x\\\":\\\"https://www.mollie.com/external/icons/payment-methods/kbc.png\\\",\\\"size2x\\\":\\\"https://www.mollie.com/external/icons/payment-methods/kbc<mention value=\"2\">2</mention>x.png\\\",\\\"svg\\\":\\\"https://www.mollie.com/external/icons/payment-methods/kbc.svg\\\"},\\\"status\\\":\\\"activated\\\",\\\"_links\\\":{\\\"self\\\":{\\\"href\\\":\\\"https://api.mollie.com/v2/methods/kbc\\\",\\\"type\\\":\\\"application/hal+json\\\"}}},{\\\"resource\\\":\\\"method\\\",\\\"id\\\":\\\"belfius\\\",\\\"description\\\":\\\"Belfius Pay Button\\\",\\\"minimumAmount\\\":{\\\"value\\\":\\\"0.01\\\",\\\"currency\\\":\\\"EUR\\\"},\\\"maximumAmount\\\":{\\\"value\\\":\\\"50000.00\\\",\\\"currency\\\":\\\"EUR\\\"},\\\"image\\\":{\\\"size1x\\\":\\\"https://www.mollie.com/external/icons/payment-methods/belfius.png\\\",\\\"size2x\\\":\\\"https://www.mollie.com/external/icons/payment-methods/belfius<mention value=\"2\">2</mention>x.png\\\",\\\"svg\\\":\\\"https://www.mollie.com/external/icons/payment-methods/belfius.svg\\\"},\\\"status\\\":\\\"activated\\\",\\\"_links\\\":{\\\"self\\\":{\\\"href\\\":\\\"https://api.mollie.com/v2/methods/belfius\\\",\\\"type\\\":\\\"application/hal+json\\\"}}},{\\\"resource\\\":\\\"method\\\",\\\"id\\\":\\\"bancomatpay\\\",\\\"description\\\":\\\"Bancomat Pay\\\",\\\"minimumAmount\\\":{\\\"value\\\":\\\"0.01\\\",\\\"currency\\\":\\\"EUR\\\"},\\\"maximumAmount\\\":{\\\"value\\\":\\\"50000.00\\\",\\\"currency\\\":\\\"EUR\\\"},\\\"image\\\":{\\\"size1x\\\":\\\"https://www.mollie.com/external/icons/payment-methods/bancomatpay.png\\\",\\\"size2x\\\":\\\"https://www.mollie.com/external/icons/payment-methods/bancomatpay<mention value=\"2\">2</mention>x.png\\\",\\\"svg\\\":\\\"https://www.mollie.com/external/icons/payment-methods/bancomatpay.svg\\\"},\\\"status\\\":\\\"activated\\\",\\\"_links\\\":{\\\"self\\\":{\\\"href\\\":\\\"https://api.mollie.com/v2/methods/bancomatpay\\\",\\\"type\\\":\\\"application/hal+json\\\"}}}]}\"\n    },\n    {\n      \"action\": \"setCustomField\",\n      \"name\": \"sctm_mollie_profile_id\",\n      \"value\": \"pfl_SPkYGiEQjf\"\n    }\n  ]\n}\n\n ```"
+				},
+				{
+					"name": "Create Payment",
+					"item": [
+						{
+							"name": "Create Payment With Specific Parameters",
+							"item": [
+								{
+									"name": "Create Payment With Banktransfer",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"tests[\"Status code \" + responseCode.code] = responseCode.code === 200 || responseCode.code === 201;",
+													"var data = JSON.parse(responseBody);",
+													"if(data.results && data.results[0] && data.results[0].id && data.results[0].version){",
+													"    pm.environment.set(\"payment-id\", data.results[0].id); ",
+													"    pm.environment.set(\"payment-version\", data.results[0].version);",
+													"}",
+													"if(data.results && data.results[0] && data.results[0].key){",
+													"    pm.environment.set(\"payment-key\", data.results[0].key); ",
+													"}",
+													"if(data.version){",
+													"    pm.environment.set(\"payment-version\", data.version);",
+													"}",
+													"if(data.id){",
+													"    pm.environment.set(\"payment-id\", data.id); ",
+													"}",
+													"if(data.key){",
+													"    pm.environment.set(\"payment-key\", data.key);",
+													"}",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "oauth2",
+											"oauth2": [
+												{
+													"key": "accessToken",
+													"value": "{{ctp_access_token}}",
+													"type": "string"
+												},
+												{
+													"key": "addTokenTo",
+													"value": "header",
+													"type": "string"
+												},
+												{
+													"key": "tokenType",
+													"value": "Bearer",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"amountPlanned\" : {\n    \"currencyCode\" : \"EUR\",\n    \"centAmount\" : 1000,\n    \"fractionDigits\": 2\n  },\n  \"paymentMethodInfo\" : {\n    \"paymentInterface\" : \"Mollie\",\n    \"method\" : \"banktransfer\",\n    \"name\" : {\n      \"en\" : \"Bank Transfer\"\n    }\n  },\n  \"transactions\" : [ {\n    \"timestamp\" : \"2015-10-20T08:54:24.000Z\",\n    \"type\" : \"Charge\",\n    \"amount\" : {\n      \"currencyCode\" : \"USD\",\n      \"centAmount\" : 1000\n    },\n    \"state\" : \"Initial\"\n  } ],\n  \"custom\": {\n    \"type\": {\n        \"typeId\": \"type\",\n        \"key\": \"sctm-payment-custom-type\"\n    },\n    \"fields\": {\n        \"sctm_create_payment_request\": \"{\\\"description\\\":\\\"Test payment\\\",\\\"locale\\\":\\\"en_GB\\\",\\\"redirectUrl\\\":\\\"https://www.google.com/\\\",\\\"billingEmail\\\":\\\"n.tran@shopmacher.de\\\",\\\"dueDate\\\":\\\"2024-09-10\\\"}\"\n    }\n  }\n}"
+										},
+										"url": {
+											"raw": "{{host}}/{{project-key}}/payments",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"{{project-key}}",
+												"payments"
+											],
+											"query": [
+												{
+													"key": "expand",
+													"value": "",
+													"disabled": true
+												}
+											]
+										},
+										"description": "Creating a Payment produces the [PaymentCreated](ctp:api:type:PaymentCreatedMessage) Message.\n"
+									},
+									"response": []
+								}
+							],
+							"description": "Play around with the Postman request:\n\n- Here I have described an example to make a payment with method banktransfer. From the payload, please update the `billingEmail` and/or `dueDate` custom.fields.sctm_create_payment_request\n    \n\n<img src=\"https://content.pstmn.io/be0ef0fe-269d-4093-8b54-7f6b0f3ab212/aW1hZ2UucG5n\" width=\"1314\" height=\"130\">\n\n- Next, pressing on Send button, after response returned successfully, you will see the `checkoutUrl` in `interfaceInteractions.fields`, please access it via the browser and process the checkout.\n    \n- After finishing, you will receive an email to your specified email address which is to notify that the payment has been made. Which means that the billingEmail and the dueDate has been sent along with our request to the targeted Mollie endpoint when creating the payment"
+						},
+						{
+							"name": "With Method Blik",
+							"item": [
+								{
+									"name": "Create Payment",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"tests[\"Status code \" + responseCode.code] = responseCode.code === 200 || responseCode.code === 201;",
+													"var data = JSON.parse(responseBody);",
+													"if(data.results && data.results[0] && data.results[0].id && data.results[0].version){",
+													"    pm.environment.set(\"payment-id\", data.results[0].id); ",
+													"    pm.environment.set(\"payment-version\", data.results[0].version);",
+													"}",
+													"if(data.results && data.results[0] && data.results[0].key){",
+													"    pm.environment.set(\"payment-key\", data.results[0].key); ",
+													"}",
+													"if(data.version){",
+													"    pm.environment.set(\"payment-version\", data.version);",
+													"}",
+													"if(data.id){",
+													"    pm.environment.set(\"payment-id\", data.id); ",
+													"}",
+													"if(data.key){",
+													"    pm.environment.set(\"payment-key\", data.key);",
+													"}",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "oauth2",
+											"oauth2": [
+												{
+													"key": "accessToken",
+													"value": "{{ctp_access_token}}",
+													"type": "string"
+												},
+												{
+													"key": "addTokenTo",
+													"value": "header",
+													"type": "string"
+												},
+												{
+													"key": "tokenType",
+													"value": "Bearer",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"amountPlanned\": {\n        \"currencyCode\": \"EUR\",\n        \"centAmount\": 2000,\n        \"fractionDigits\": 2\n    },\n    \"paymentMethodInfo\": {\n        \"paymentInterface\": \"Mollie\",\n        \"method\": \"creditcard\",\n        \"name\": {\n            \"en\": \"creditcard\"\n        }\n    },\n    \"transactions\": [\n        {\n            \"timestamp\": \"2015-10-20T08:54:24.000Z\",\n            \"type\": \"Charge\",\n            \"amount\": {\n                \"currencyCode\": \"EUR\",\n                \"centAmount\": 2000\n            },\n            \"state\": \"Initial\"\n        }\n    ],\n    \"custom\": {\n        \"type\": {\n            \"typeId\": \"type\",\n            \"key\": \"sctm-payment-custom-type\"\n        },\n        \"fields\": {\n            \"sctm_create_payment_request\": \"{\\\"description\\\":\\\"Test payment method blik\\\",\\\"locale\\\":\\\"en_GB\\\",\\\"redirectUrl\\\":\\\"https://www.google.com/\\\",\\\"billingEmail\\\":\\\"n.tran+w@shopmacher.de\\\"}\"\n        }\n    }\n}"
+										},
+										"url": {
+											"raw": "{{host}}/{{project-key}}/payments",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"{{project-key}}",
+												"payments"
+											],
+											"query": [
+												{
+													"key": "expand",
+													"value": "",
+													"disabled": true
+												}
+											]
+										},
+										"description": "Creating a Payment produces the [PaymentCreated](ctp:api:type:PaymentCreatedMessage) Message.\n"
+									},
+									"response": []
+								}
+							],
+							"description": "Play around with Postman request:\n\n- Make a call with the `Create Payment` request in this folder. Note that the Blik method is only available with the currency code: PLN and you also have to specify the `billingEmail` as well\n    \n- After the response returned successfully, you will see the `checkoutUrl` and `molliePaymentId` in `interfaceInteractions.fields`, please access the checkout URL and process the payment and select the status as you want to, then go to the Mollie Dashboard and use the value of molliePaymentId to search for the payment, it should indicate the status that you selected."
+						},
+						{
+							"name": "With Method Bank Transfer",
+							"item": [
+								{
+									"name": "Create Payment",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"tests[\"Status code \" + responseCode.code] = responseCode.code === 200 || responseCode.code === 201;",
+													"var data = JSON.parse(responseBody);",
+													"if(data.results && data.results[0] && data.results[0].id && data.results[0].version){",
+													"    pm.environment.set(\"payment-id\", data.results[0].id); ",
+													"    pm.environment.set(\"payment-version\", data.results[0].version);",
+													"}",
+													"if(data.results && data.results[0] && data.results[0].key){",
+													"    pm.environment.set(\"payment-key\", data.results[0].key); ",
+													"}",
+													"if(data.version){",
+													"    pm.environment.set(\"payment-version\", data.version);",
+													"}",
+													"if(data.id){",
+													"    pm.environment.set(\"payment-id\", data.id); ",
+													"}",
+													"if(data.key){",
+													"    pm.environment.set(\"payment-key\", data.key);",
+													"}",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "oauth2",
+											"oauth2": [
+												{
+													"key": "accessToken",
+													"value": "{{ctp_access_token}}",
+													"type": "string"
+												},
+												{
+													"key": "addTokenTo",
+													"value": "header",
+													"type": "string"
+												},
+												{
+													"key": "tokenType",
+													"value": "Bearer",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"amountPlanned\": {\n        \"currencyCode\": \"EUR\",\n        \"centAmount\": 2000,\n        \"fractionDigits\": 2\n    },\n    \"paymentMethodInfo\": {\n        \"paymentInterface\": \"Mollie\",\n        \"method\": \"banktransfer\",\n        \"name\": {\n            \"en\": \"banktransfer\"\n        }\n    },\n    \"transactions\": [\n        {\n            \"timestamp\": \"2015-10-20T08:54:24.000Z\",\n            \"type\": \"Charge\",\n            \"amount\": {\n                \"currencyCode\": \"EUR\",\n                \"centAmount\": 2000\n            },\n            \"state\": \"Initial\"\n        }\n    ],\n    \"custom\": {\n        \"type\": {\n            \"typeId\": \"type\",\n            \"key\": \"sctm-payment-custom-type\"\n        },\n        \"fields\": {\n            \"sctm_create_payment_request\": \"{\\\"description\\\":\\\"Test payment method banktransfer with duedate was set by configuration\\\",\\\"locale\\\":\\\"en_GB\\\",\\\"redirectUrl\\\":\\\"https://www.google.com/\\\",\\\"billingAddress\\\":{\\\"email\\\":\\\"n.tran@shopmacher.de\\\"}}\"\n        }\n    }\n}"
+										},
+										"url": {
+											"raw": "{{host}}/{{project-key}}/payments",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"{{project-key}}",
+												"payments"
+											],
+											"query": [
+												{
+													"key": "expand",
+													"value": "",
+													"disabled": true
+												}
+											]
+										},
+										"description": "Creating a Payment produces the [PaymentCreated](ctp:api:type:PaymentCreatedMessage) Message.\n"
+									},
+									"response": []
+								}
+							],
+							"description": "Play around with Postman request:\n\n- First, go to the connector settings, you should able to see a configuration name MOLLIE_BANK_TRANSFER_DUE_DATE, it is set by default to be 14d which mean the payment will be expired after 14 days from the day payment created. You can update it to be in the range from 1d to 100d, just make sure to redeploy the connector again after changing it.\n    \n\n<img src=\"https://content.pstmn.io/16259465-a085-4406-a5f3-17c2b7a01320/aW1hZ2UucG5n\" alt=\"\" height=\"898\" width=\"2732\">\n\n- Make a call with the `Create Payment` request in this folder, please update the email in `custom.fields.sctm_create_payment_request` of the request body before doing that.\n    \n\n<img src=\"https://content.pstmn.io/50cd208e-d1d0-4351-848d-8399303b28c0/aW1hZ2UucG5n\" width=\"2250\" height=\"696\">\n\n- After the response returned successfully, you will see the `checkoutUrl` and `molliePaymentId` in `interfaceInteractions.fields`, please access the checkout URL and process the payment and select the status as you want to, then go to the Mollie Dashboard and use the value of molliePaymentId to search for the payment, it should indicate the status that you selected.\n    \n- You should have receive an email which will include the due date, it should be calculated correctly ( = today + due date set on connector config)"
+						},
+						{
+							"name": "With Method ApplePay",
+							"item": [
+								{
+									"name": "Create Payment",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"tests[\"Status code \" + responseCode.code] = responseCode.code === 200 || responseCode.code === 201;",
+													"var data = JSON.parse(responseBody);",
+													"if(data.results && data.results[0] && data.results[0].id && data.results[0].version){",
+													"    pm.environment.set(\"payment-id\", data.results[0].id); ",
+													"    pm.environment.set(\"payment-version\", data.results[0].version);",
+													"}",
+													"if(data.results && data.results[0] && data.results[0].key){",
+													"    pm.environment.set(\"payment-key\", data.results[0].key); ",
+													"}",
+													"if(data.version){",
+													"    pm.environment.set(\"payment-version\", data.version);",
+													"}",
+													"if(data.id){",
+													"    pm.environment.set(\"payment-id\", data.id); ",
+													"}",
+													"if(data.key){",
+													"    pm.environment.set(\"payment-key\", data.key);",
+													"}",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"auth": {
+											"type": "oauth2",
+											"oauth2": [
+												{
+													"key": "accessToken",
+													"value": "{{ctp_access_token}}",
+													"type": "string"
+												},
+												{
+													"key": "addTokenTo",
+													"value": "header",
+													"type": "string"
+												},
+												{
+													"key": "tokenType",
+													"value": "Bearer",
+													"type": "string"
+												}
+											]
+										},
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n  \"amountPlanned\" : {\n    \"currencyCode\" : \"GBP\",\n    \"centAmount\" : 2000,\n    \"fractionDigits\": 2\n  },\n  \"paymentMethodInfo\" : {\n    \"paymentInterface\" : \"Mollie\",\n    \"method\" : \"applepay\",\n    \"name\" : {\n      \"en\" : \"Apple Pay\"\n    }\n  },\n  \"transactions\" : [ {\n    \"timestamp\" : \"2015-10-20T08:54:24.000Z\",\n    \"type\" : \"Charge\",\n    \"amount\" : {\n      \"currencyCode\" : \"GBP\",\n      \"centAmount\" : 2000\n    },\n    \"state\" : \"Initial\"\n  } ],\n  \"custom\": {\n    \"type\": {\n        \"typeId\": \"type\",\n        \"key\": \"sctm-payment-custom-type\"\n    },\n    \"fields\": {\n        // replace applePayPaymentToken with your token 0\n        \"sctm_create_payment_request\": \"{\\\"description\\\":\\\"Test payment method applepay\\\",\\\"locale\\\":\\\"en_GB\\\",\\\"redirectUrl\\\":\\\"https://www.google.com/\\\",\\\"billingEmail\\\":\\\"demo@shopmacher.de\\\",\\\"applePayPaymentToken\\\":\\\"{\\\\\\\"your\\\\\\\":\\\\\\\"token\\\\\\\"}\\\"}\"\n    }\n  }\n}"
+										},
+										"url": {
+											"raw": "{{host}}/{{project-key}}/payments",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"{{project-key}}",
+												"payments"
+											],
+											"query": [
+												{
+													"key": "expand",
+													"value": "",
+													"disabled": true
+												}
+											]
+										},
+										"description": "Creating a Payment produces the [PaymentCreated](ctp:api:type:PaymentCreatedMessage) Message.\n"
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Create Payment with one transaction",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"tests[\"Status code \" + responseCode.code] = responseCode.code === 200 || responseCode.code === 201;",
+											"var data = JSON.parse(responseBody);",
+											"if(data.results && data.results[0] && data.results[0].id && data.results[0].version){",
+											"    pm.environment.set(\"payment-id\", data.results[0].id); ",
+											"    pm.environment.set(\"payment-version\", data.results[0].version);",
+											"}",
+											"if(data.results && data.results[0] && data.results[0].key){",
+											"    pm.environment.set(\"payment-key\", data.results[0].key); ",
+											"}",
+											"if(data.version){",
+											"    pm.environment.set(\"payment-version\", data.version);",
+											"}",
+											"if(data.id){",
+											"    pm.environment.set(\"payment-id\", data.id); ",
+											"}",
+											"if(data.key){",
+											"    pm.environment.set(\"payment-key\", data.key);",
+											"}",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{ctp_access_token}}",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "tokenType",
+											"value": "Bearer",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"amountPlanned\" : {\n    \"currencyCode\" : \"EUR\",\n    \"centAmount\" : 1000,\n    \"fractionDigits\": 2\n  },\n  \"paymentMethodInfo\" : {\n    \"paymentInterface\" : \"Mollie\",\n    \"method\" : \"creditcard\",\n    \"name\" : {\n      \"en\" : \"Credit Card\"\n    }\n  },\n  \"transactions\" : [ {\n    \"timestamp\" : \"2015-10-20T08:54:24.000Z\",\n    \"type\" : \"Charge\",\n    \"amount\" : {\n      \"currencyCode\" : \"USD\",\n      \"centAmount\" : 1000\n    },\n    \"state\" : \"Initial\"\n  } ],\n  \"custom\": {\n    \"type\": {\n        \"typeId\": \"type\",\n        \"key\": \"sctm-payment-custom-type\"\n    },\n    \"fields\": {\n        \"sctm_create_payment_request\": \"{\\\"description\\\":\\\"Test\\\",\\\"locale\\\":\\\"en_GB\\\",\\\"redirectUrl\\\":\\\"https://www.google.com/\\\"}\"\n    }\n  }\n}"
+								},
+								"url": {
+									"raw": "{{host}}/{{project-key}}/payments",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"{{project-key}}",
+										"payments"
+									],
+									"query": [
+										{
+											"key": "expand",
+											"value": "",
+											"disabled": true
+										}
+									]
+								},
+								"description": "Creating a Payment produces the [PaymentCreated](ctp:api:type:PaymentCreatedMessage) Message.\n"
+							},
+							"response": []
+						},
+						{
+							"name": "Create Payment with more than one transaction",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"tests[\"Status code \" + responseCode.code] = responseCode.code === 200 || responseCode.code === 201;",
+											"var data = JSON.parse(responseBody);",
+											"if(data.results && data.results[0] && data.results[0].id && data.results[0].version){",
+											"    pm.environment.set(\"payment-id\", data.results[0].id); ",
+											"    pm.environment.set(\"payment-version\", data.results[0].version);",
+											"}",
+											"if(data.results && data.results[0] && data.results[0].key){",
+											"    pm.environment.set(\"payment-key\", data.results[0].key); ",
+											"}",
+											"if(data.version){",
+											"    pm.environment.set(\"payment-version\", data.version);",
+											"}",
+											"if(data.id){",
+											"    pm.environment.set(\"payment-id\", data.id); ",
+											"}",
+											"if(data.key){",
+											"    pm.environment.set(\"payment-key\", data.key);",
+											"}",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{ctp_access_token}}",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "tokenType",
+											"value": "Bearer",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"amountPlanned\" : {\n    \"currencyCode\" : \"EUR\",\n    \"centAmount\" : 1000,\n    \"fractionDigits\": 2\n  },\n  \"paymentMethodInfo\" : {\n    \"paymentInterface\" : \"Mollie\",\n    \"method\" : \"creditcard\",\n    \"name\" : {\n      \"en\" : \"Credit Card\"\n    }\n  },\n  \"transactions\" : [ \n    {\n        \"timestamp\" : \"2015-10-20T08:54:24.000Z\",\n        \"type\" : \"Charge\",\n        \"amount\" : {\n        \"currencyCode\" : \"USD\",\n        \"centAmount\" : 200\n        },\n        \"state\" : \"Failure\"\n    },\n    {\n        \"timestamp\" : \"2015-10-20T08:54:24.000Z\",\n        \"type\" : \"Charge\",\n        \"amount\" : {\n        \"currencyCode\" : \"USD\",\n        \"centAmount\" : 330\n        },\n        \"state\" : \"Initial\"\n    }\n  ],\n  \"custom\": {\n    \"type\": {\n        \"typeId\": \"type\",\n        \"key\": \"sctm-payment-custom-type\"\n    },\n    \"fields\": {\n        \"sctm_create_payment_request\": \"{\\\"description\\\":\\\"Test\\\",\\\"locale\\\":\\\"en_GB\\\",\\\"redirectUrl\\\":\\\"https://www.google.com/\\\"}\"\n    }\n  }\n}"
+								},
+								"url": {
+									"raw": "{{host}}/{{project-key}}/payments",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"{{project-key}}",
+										"payments"
+									],
+									"query": [
+										{
+											"key": "expand",
+											"value": "",
+											"disabled": true
+										}
+									]
+								},
+								"description": "Creating a Payment produces the [PaymentCreated](ctp:api:type:PaymentCreatedMessage) Message.\n"
+							},
+							"response": []
+						}
+					],
+					"description": "## Overview\n\nThis functionality is used to create a new Payment on Mollie:\n\nThis calls Mollie's [create payment](https://docs.mollie.com/reference/create-payment) endpoint.\n\n## Conditions\n\nAdding a new transaction to an existing order with type `Charge` and state `Initial` triggers create order payment.\n\nThere should be only one transaction with type `Charge` and state `Initial` in your CommerceTools Payment object.\n\nAnd also, the targeted Payment object should not have any transactions with type `Charge` and state is `Pending` or `Success`.\n\n## Parameters map\n\n| CT `Payment` object | Parameter (Mollie Payment) | Required |\n| --- | --- | --- |\n| `paymentMethodInfo.method: \"applepay\"` | `method: applepay` | YES |\n| `amountPlanned.currencyCode: \"EUR\"` | `amount.currency: EUR` | YES |\n| `amountPlanned.centAmount: \"1000\"` and `amountPlanned.fractionDigits: \"2\"` | `amount.value: \"10.00\"` | YES |\n| `custom.fields.sctm_create_payment_request.redirectUrl: \"https://webshop.example.org/order/12345/\"` | `redirectUrl: \"https://webshop.example.org/order/12345/\"` | YES |\n| `custom.fields.sctm_create_payment_request.description: \"Testing creating Mollie Payment\"` | `description: \"Testing creating Mollie Payment\"` | YES |\n\nThe others params which listed [here](https://docs.mollie.com/reference/create-payment) can be passed through the custom field of the Payment object name **sctm_create_payment_request** with exactly the same format like the field `redirectUrl` above\n\n## Representation: CommerceTools Payment\n\nExample CommerceTools Payment object triggering creating a Mollie Payment\n\n## Creating CommerceTools actions from Mollie's response\n\nWhen create order payment is successfully added on Mollie, we update CommerceTools payment with following actions\n\n| Action name (CT) | Value |\n| --- | --- |\n| `changeTransactionState` | `transactionId: , state: 'Pending'` |\n| `changeTransactionTimestamp` | `transactionId: , timestamp:` |\n| `changeTransactionInteractionId` | `transactionId: , interactionId:` |\n| `addInterfaceInteraction` | `actionType: \"CreatePayment\", id: , timestamp: , requestValue: {, responseValue:` |\n\n\\* Actions will always use first `Initial` transaction. There should only be one per payment. Transaction id will be the ID of the transaction which triggered the create payment.\n\n## **Demo with Postman**\n\nIn here we will just focus on the change on CommerceTools Payment object which will trigger our connector to create a Mollie Payment.\n\nIn the real project, it would be more complex when we will have a cart, then attach/create the Payment object for it then update the Payment object. But in general, the trigger point is that creating/updating the Payment object which satisfies the conditions above.\n\n**Steps to trigger the connector to create a Mollie Payment:**\n\n1\\. Obtain the access token:\n\n- Open the `Obtain access token` request, press on the send button to send request. After sending the request succesfully, it will automatically store the access_token in the response for later use\n    \n\n2.\n\na. Create Payment with one transaction\n\n- Represent for the case that the user want to make a payment right after shopping.\n    \n- Response expectation:\n    \n    - Transaction state will be updated to `Pending`\n        \n    - Transaction timestamp will be updated\n        \n    - Transaction `interactionId` will have a value like tr_XXXXXX, this is the Mollie Payment ID\n        \n    - interfaceInteractions now will have a custom field, that custom fieldset will include:\n        \n        - id: Unique string generated by the connector\n            \n        - actionType: will be `createPayment` in this case\n            \n        - requestValue: JSON string contain CommerceTools transaction ID and payment method\n            \n        - resoponeValue: JSON string contain Mollie Payment ID, Checkout URL and the CommerceTools transaction ID\n            \n\nb. Create Payment with more than one transaction\n\n- Represent the case that the user could made a payment before but failed or something like that, therefor he wants to make a new payment again, therefor our CommerceTools Payment object will have at least 2 transactions: the first one is the failed one (called transaction A) and the second one represent for the current creating payment process (call transaction B)\n    \n- Response expectation: really the same with the 2.a, except that the only target transaction (the one which will be updated) is the transaction B above"
+				},
+				{
+					"name": "Cancel Payment",
+					"item": [
+						{
+							"name": "Create Payment with captureMode = manual",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"tests[\"Status code \" + responseCode.code] = responseCode.code === 200 || responseCode.code === 201;",
+											"var data = JSON.parse(responseBody);",
+											"if(data.results && data.results[0] && data.results[0].id && data.results[0].version){",
+											"    pm.environment.set(\"payment-id\", data.results[0].id); ",
+											"    pm.environment.set(\"payment-version\", data.results[0].version);",
+											"}",
+											"if(data.results && data.results[0] && data.results[0].key){",
+											"    pm.environment.set(\"payment-key\", data.results[0].key); ",
+											"}",
+											"if(data.version){",
+											"    pm.environment.set(\"payment-version\", data.version);",
+											"}",
+											"if(data.id){",
+											"    pm.environment.set(\"payment-id\", data.id); ",
+											"}",
+											"if(data.key){",
+											"    pm.environment.set(\"payment-key\", data.key);",
+											"}",
+											"if (data.transactions && data.transactions[0] && data.transactions[0].interactionId) {",
+											"    pm.environment.set(\"payment-interactionId\", data.transactions[0].interactionId);",
+											"}",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{ctp_access_token}}",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "tokenType",
+											"value": "Bearer",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"amountPlanned\" : {\n    \"currencyCode\" : \"EUR\",\n    \"centAmount\" : 1200,\n    \"fractionDigits\": 2\n  },\n  \"paymentMethodInfo\" : {\n    \"paymentInterface\" : \"Mollie\",\n    \"method\" : \"creditcard\",\n    \"name\" : {\n      \"en\" : \"Credit Card\"\n    }\n  },\n  \"transactions\" : [ {\n    \"timestamp\" : \"2015-10-20T08:54:24.000Z\",\n    \"type\" : \"Charge\",\n    \"amount\" : {\n      \"currencyCode\" : \"USD\",\n      \"centAmount\" : 1000\n    },\n    \"state\" : \"Initial\"\n  } ],\n  \"custom\": {\n    \"type\": {\n        \"typeId\": \"type\",\n        \"key\": \"sctm-payment-custom-type\"\n    },\n    \"fields\": {\n        \"sctm_create_payment_request\": \"{\\\"description\\\":\\\"Test\\\",\\\"locale\\\":\\\"en_GB\\\",\\\"redirectUrl\\\":\\\"https://www.google.com/\\\",\\\"captureMode\\\":\\\"manual\\\"}\"\n    }\n  }\n}"
+								},
+								"url": {
+									"raw": "{{host}}/{{project-key}}/payments",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"{{project-key}}",
+										"payments"
+									],
+									"query": [
+										{
+											"key": "expand",
+											"value": "",
+											"disabled": true
+										}
+									]
+								},
+								"description": "Creating a Payment produces the [PaymentCreated](ctp:api:type:PaymentCreatedMessage) Message.\n"
+							},
+							"response": []
+						},
+						{
+							"name": "Cancel Payment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var data = JSON.parse(responseBody);",
+											"",
+											"if(data.version){",
+											"    pm.environment.set(\"payment-version\", data.version);",
+											"}",
+											"",
+											"if(data.id){",
+											"    pm.environment.set(\"payment-id\", data.id); ",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let currentVersion = pm.environment.get('payment-version');",
+											"",
+											"pm.environment.set('payment-targeted-version', parseInt(currentVersion) + 1);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{ctp_access_token}}",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "tokenType",
+											"value": "Bearer",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"version\" : {{payment-targeted-version}},\n  \"actions\" : [ {\n    \"action\" : \"addTransaction\",\n    \"transaction\": {\n    \"type\": \"CancelAuthorization\",\n    \"amount\": {\n      \"currencyCode\" : \"EUR\",\n      \"centAmount\" : 1100\n    },\n    \"state\": \"Initial\",\n    \"custom\": {\n        \"type\": {\n            \"typeId\": \"type\",\n            \"key\": \"sctm_payment_cancel_reason\"\n        },\n        \"fields\": {\n            \"reasonText\": \"Testing cancel payment\"\n        }\n    }\n  }\n  } ]\n}"
+								},
+								"url": {
+									"raw": "{{host}}/{{project-key}}/payments/{{payment-id}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"{{project-key}}",
+										"payments",
+										"{{payment-id}}"
+									],
+									"query": [
+										{
+											"key": "expand",
+											"value": "",
+											"disabled": true
+										}
+									]
+								},
+								"description": "Creating a Payment produces the [PaymentCreated](ctp:api:type:PaymentCreatedMessage) Message.\n"
+							},
+							"response": []
+						},
+						{
+							"name": "Get Payment by id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"tests[\"Status code \" + responseCode.code] = responseCode.code === 200 || responseCode.code === 201;",
+											"var data = JSON.parse(responseBody);",
+											"if(data.results && data.results[0] && data.results[0].id && data.results[0].version){",
+											"    pm.environment.set(\"payment-id\", data.results[0].id); ",
+											"    pm.environment.set(\"payment-version\", data.results[0].version);",
+											"}",
+											"if(data.results && data.results[0] && data.results[0].key){",
+											"    pm.environment.set(\"payment-key\", data.results[0].key); ",
+											"}",
+											"if(data.version){",
+											"    pm.environment.set(\"payment-version\", data.version);",
+											"}",
+											"if(data.id){",
+											"    pm.environment.set(\"payment-id\", data.id); ",
+											"}",
+											"if(data.key){",
+											"    pm.environment.set(\"payment-key\", data.key);",
+											"}",
+											""
+										]
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{ctp_access_token}}",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "tokenType",
+											"value": "Bearer",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{host}}/{{project-key}}/payments/{{payment-id}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"{{project-key}}",
+										"payments",
+										"{{payment-id}}"
+									],
+									"query": [
+										{
+											"key": "expand",
+											"value": "",
+											"disabled": true
+										}
+									]
+								},
+								"description": "null"
+							},
+							"response": []
+						}
+					],
+					"description": "## Prerequisite\n\nIn Connector's configuration, You need to set the MOLLIE_CARD_COMPONENT = 0\n\n<img src=\"https://content.pstmn.io/76b9bd58-d352-4aa0-bb55-34f7fbf9af15/aW1hZ2UucG5n\" width=\"2754\" height=\"1304\">\n\nYou can use [Mollie Test Card](https://docs.mollie.com/reference/testing#testing-different-types-of-cards) with random card holder, expiry date and CCV to perform the checkout\n\n## Play around with the Postman request:\n\n- First, send a rquest via the request `Create Payment with captureMode = manual` in this folder, it will create a CommerceTools Payment object -> create a new Mollie payment\n    \n- After response returned, you should able to see the checkoutUrl in the `interfaceInteractions` field, please copy and access the URL via your browser, perform checkout and select `Authorized` as the status\n    \n\n<img src=\"https://content.pstmn.io/6bfee5ad-8d1f-4d17-b923-879ce0536b56/aW1hZ2UucG5n\" width=\"2074\" height=\"832\">\n\n- After that, you can also have a look at the created payment on [Mollie dashboard](https://my.mollie.com/dashboard/org_19120223/payments) by using the `molliePaymentId` which also returned in `interfaceInteractions`, use it to search on our Mollie Payment dashboard, the status at this point should be `Authorized`\n    \n- Then move to the request `Cancel Payment`, send it. After this point, you can refresh the payment page on Mollie and see that its status changed to Canceled, which is as expected.\n    \n- About the CommerceTools Payment state, right about after 1 minute, please execute the call `Get Payment by id` on this folder, it should return the payment with 3 transactions: 1 Failure Charge, 1 Success Authorization and 1 Success CancelAuthorization. The Failure Charge transaction should also contain the cancellation reason in the Failure Charge transaction."
+				},
+				{
+					"name": "Create Refund",
+					"item": [
+						{
+							"name": "Create Payment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"tests[\"Status code \" + responseCode.code] = responseCode.code === 200 || responseCode.code === 201;",
+											"var data = JSON.parse(responseBody);",
+											"if(data.results && data.results[0] && data.results[0].id && data.results[0].version){",
+											"    pm.environment.set(\"payment-id\", data.results[0].id); ",
+											"    pm.environment.set(\"payment-version\", data.results[0].version);",
+											"}",
+											"if(data.results && data.results[0] && data.results[0].key){",
+											"    pm.environment.set(\"payment-key\", data.results[0].key); ",
+											"}",
+											"if(data.version){",
+											"    pm.environment.set(\"payment-version\", data.version);",
+											"}",
+											"if(data.id){",
+											"    pm.environment.set(\"payment-id\", data.id); ",
+											"}",
+											"if(data.key){",
+											"    pm.environment.set(\"payment-key\", data.key);",
+											"}",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{ctp_access_token}}",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "tokenType",
+											"value": "Bearer",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"amountPlanned\" : {\n    \"currencyCode\" : \"EUR\",\n    \"centAmount\" : 2000,\n    \"fractionDigits\": 2\n  },\n  \"paymentMethodInfo\" : {\n    \"paymentInterface\" : \"Mollie\",\n    \"method\" : \"ideal\",\n    \"name\" : {\n      \"en\" : \"iDEAL\"\n    }\n  },\n  \"transactions\" : [ {\n    \"timestamp\" : \"2015-10-20T08:54:24.000Z\",\n    \"type\" : \"Charge\",\n    \"amount\" : {\n      \"currencyCode\" : \"USD\",\n      \"centAmount\" : 1000\n    },\n    \"state\" : \"Initial\"\n  } ],\n  \"custom\": {\n    \"type\": {\n        \"typeId\": \"type\",\n        \"key\": \"sctm-payment-custom-type\"\n    },\n    \"fields\": {\n        \"sctm_create_payment_request\": \"{\\\"description\\\":\\\"Test\\\",\\\"locale\\\":\\\"en_GB\\\",\\\"redirectUrl\\\":\\\"https://www.google.com/\\\"}\"\n    }\n  }\n}"
+								},
+								"url": {
+									"raw": "{{host}}/{{project-key}}/payments",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"{{project-key}}",
+										"payments"
+									],
+									"query": [
+										{
+											"key": "expand",
+											"value": "",
+											"disabled": true
+										}
+									]
+								},
+								"description": "Creating a Payment produces the [PaymentCreated](ctp:api:type:PaymentCreatedMessage) Message.\n"
+							},
+							"response": []
+						},
+						{
+							"name": "Create Refund",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var data = JSON.parse(responseBody);",
+											"",
+											"if(data.version){",
+											"    pm.environment.set(\"payment-version\", data.version);",
+											"}",
+											"",
+											"if(data.id){",
+											"    pm.environment.set(\"payment-id\", data.id); ",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let currentVersion = pm.environment.get('payment-version');",
+											"",
+											"pm.environment.set('payment-targeted-version', parseInt(currentVersion) + 1);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{ctp_access_token}}",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "tokenType",
+											"value": "Bearer",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"version\" : {{payment-targeted-version}},\n  \"actions\" : [ {\n    \"action\" : \"addTransaction\",\n    \"transaction\": {\n    \"type\": \"Refund\",\n    \"amount\": {\n      \"centAmount\": 2000,\n      \"currencyCode\": \"EUR\"\n    },\n    \"state\": \"Initial\"\n  }\n  } ]\n}"
+								},
+								"url": {
+									"raw": "{{host}}/{{project-key}}/payments/{{payment-id}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"{{project-key}}",
+										"payments",
+										"{{payment-id}}"
+									],
+									"query": [
+										{
+											"key": "expand",
+											"value": "",
+											"disabled": true
+										}
+									]
+								},
+								"description": "Creating a Payment produces the [PaymentCreated](ctp:api:type:PaymentCreatedMessage) Message.\n"
+							},
+							"response": []
+						},
+						{
+							"name": "Get Payment by id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"tests[\"Status code \" + responseCode.code] = responseCode.code === 200 || responseCode.code === 201;",
+											"var data = JSON.parse(responseBody);",
+											"if(data.results && data.results[0] && data.results[0].id && data.results[0].version){",
+											"    pm.environment.set(\"payment-id\", data.results[0].id); ",
+											"    pm.environment.set(\"payment-version\", data.results[0].version);",
+											"}",
+											"if(data.results && data.results[0] && data.results[0].key){",
+											"    pm.environment.set(\"payment-key\", data.results[0].key); ",
+											"}",
+											"if(data.version){",
+											"    pm.environment.set(\"payment-version\", data.version);",
+											"}",
+											"if(data.id){",
+											"    pm.environment.set(\"payment-id\", data.id); ",
+											"}",
+											"if(data.key){",
+											"    pm.environment.set(\"payment-key\", data.key);",
+											"}",
+											""
+										]
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{ctp_access_token}}",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "tokenType",
+											"value": "Bearer",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{host}}/{{project-key}}/payments/{{payment-id}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"{{project-key}}",
+										"payments",
+										"{{payment-id}}"
+									],
+									"query": [
+										{
+											"key": "expand",
+											"value": "",
+											"disabled": true
+										}
+									]
+								},
+								"description": "null"
+							},
+							"response": []
+						}
+					],
+					"description": "Play around with the Postman requests:\n\n- As usual, you need to create a payment object first, you will do that by sending a request via `Create Payment` in this folder.\n    \n- It will return the `checkoutUrl` and the `molliePaymentId` inside `interfaceInteractions`, please access the `checkoutUrl` via your browser and process checkout, select Paid as the status.\n    \n- After that, you can access our Mollie Dashboard, use the value from `molliePaymentId` to check the details of the payment. Its status here should be Paid.\n    \n- Next, make a new request with the `Create Refund` request in this folder. After the response returned successfully, please have a look at the Mollie Payment details page again, the History on the right side of the page should be updated, it should say about a Refund created.\n    \n- Finally, you can have a look at the CommerceTools final state if you want to by making a request with `Get Payment by id` in this folder, it is expected to have 2 transactions: 1 Success Charge, 1 Pending Refund."
+				},
+				{
+					"name": "Cancel Refund",
+					"item": [
+						{
+							"name": "Create Payment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"tests[\"Status code \" + responseCode.code] = responseCode.code === 200 || responseCode.code === 201;",
+											"var data = JSON.parse(responseBody);",
+											"if(data.results && data.results[0] && data.results[0].id && data.results[0].version){",
+											"    pm.environment.set(\"payment-id\", data.results[0].id); ",
+											"    pm.environment.set(\"payment-version\", data.results[0].version);",
+											"}",
+											"if(data.results && data.results[0] && data.results[0].key){",
+											"    pm.environment.set(\"payment-key\", data.results[0].key); ",
+											"}",
+											"if(data.version){",
+											"    pm.environment.set(\"payment-version\", data.version);",
+											"}",
+											"if(data.id){",
+											"    pm.environment.set(\"payment-id\", data.id); ",
+											"}",
+											"if(data.key){",
+											"    pm.environment.set(\"payment-key\", data.key);",
+											"}",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{ctp_access_token}}",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "tokenType",
+											"value": "Bearer",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"amountPlanned\" : {\n    \"currencyCode\" : \"EUR\",\n    \"centAmount\" : 2000,\n    \"fractionDigits\": 2\n  },\n  \"paymentMethodInfo\" : {\n    \"paymentInterface\" : \"Mollie\",\n    \"method\" : \"ideal\",\n    \"name\" : {\n      \"en\" : \"iDEAL\"\n    }\n  },\n  \"transactions\" : [ {\n    \"timestamp\" : \"2015-10-20T08:54:24.000Z\",\n    \"type\" : \"Charge\",\n    \"amount\" : {\n      \"currencyCode\" : \"USD\",\n      \"centAmount\" : 1000\n    },\n    \"state\" : \"Initial\"\n  } ],\n  \"custom\": {\n    \"type\": {\n        \"typeId\": \"type\",\n        \"key\": \"sctm-payment-custom-type\"\n    },\n    \"fields\": {\n        \"sctm_create_payment_request\": \"{\\\"description\\\":\\\"Test\\\",\\\"locale\\\":\\\"en_GB\\\",\\\"redirectUrl\\\":\\\"https://www.google.com/\\\"}\"\n    }\n  }\n}"
+								},
+								"url": {
+									"raw": "{{host}}/{{project-key}}/payments",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"{{project-key}}",
+										"payments"
+									],
+									"query": [
+										{
+											"key": "expand",
+											"value": "",
+											"disabled": true
+										}
+									]
+								},
+								"description": "Creating a Payment produces the [PaymentCreated](ctp:api:type:PaymentCreatedMessage) Message.\n"
+							},
+							"response": []
+						},
+						{
+							"name": "Create Refund",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var data = JSON.parse(responseBody);",
+											"",
+											"if(data.version){",
+											"    pm.environment.set(\"payment-version\", data.version);",
+											"}",
+											"",
+											"if(data.id){",
+											"    pm.environment.set(\"payment-id\", data.id); ",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let currentVersion = pm.environment.get('payment-version');",
+											"",
+											"pm.environment.set('payment-targeted-version', parseInt(currentVersion) + 1);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{ctp_access_token}}",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "tokenType",
+											"value": "Bearer",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"version\" : {{payment-targeted-version}},\n  \"actions\" : [ {\n    \"action\" : \"addTransaction\",\n    \"transaction\": {\n    \"type\": \"Refund\",\n    \"amount\": {\n      \"centAmount\": 2000,\n      \"currencyCode\": \"EUR\"\n    },\n    \"state\": \"Initial\"\n  }\n  } ]\n}"
+								},
+								"url": {
+									"raw": "{{host}}/{{project-key}}/payments/{{payment-id}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"{{project-key}}",
+										"payments",
+										"{{payment-id}}"
+									],
+									"query": [
+										{
+											"key": "expand",
+											"value": "",
+											"disabled": true
+										}
+									]
+								},
+								"description": "Creating a Payment produces the [PaymentCreated](ctp:api:type:PaymentCreatedMessage) Message.\n"
+							},
+							"response": []
+						},
+						{
+							"name": "Cancel Refund",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if(data.version){",
+											"    pm.environment.set(\"payment-version\", data.version);",
+											"}",
+											"",
+											"if(data.id){",
+											"    pm.environment.set(\"payment-id\", data.id); ",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{ctp_access_token}}",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "tokenType",
+											"value": "Bearer",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"version\" : {{payment-version}},\n  \"actions\" : [ {\n    \"action\" : \"addTransaction\",\n    \"transaction\": {\n    \"type\": \"CancelAuthorization\",\n    \"amount\": {\n      \"centAmount\": 2000,\n      \"currencyCode\": \"EUR\"\n    },\n    \"state\": \"Initial\",\n    \"custom\": {\n        \"type\": {\n            \"typeId\": \"type\",\n            \"key\": \"sctm_payment_cancel_reason\"\n        },\n        \"fields\": {\n            \"reasonText\": \"Testing cancel payment\"\n        }\n    }\n  }\n  } ]\n}"
+								},
+								"url": {
+									"raw": "{{host}}/{{project-key}}/payments/{{payment-id}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"{{project-key}}",
+										"payments",
+										"{{payment-id}}"
+									],
+									"query": [
+										{
+											"key": "expand",
+											"value": "",
+											"disabled": true
+										}
+									]
+								},
+								"description": "Creating a Payment produces the [PaymentCreated](ctp:api:type:PaymentCreatedMessage) Message.\n"
+							},
+							"response": []
+						},
+						{
+							"name": "Get Payment by id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"tests[\"Status code \" + responseCode.code] = responseCode.code === 200 || responseCode.code === 201;",
+											"var data = JSON.parse(responseBody);",
+											"if(data.results && data.results[0] && data.results[0].id && data.results[0].version){",
+											"    pm.environment.set(\"payment-id\", data.results[0].id); ",
+											"    pm.environment.set(\"payment-version\", data.results[0].version);",
+											"}",
+											"if(data.results && data.results[0] && data.results[0].key){",
+											"    pm.environment.set(\"payment-key\", data.results[0].key); ",
+											"}",
+											"if(data.version){",
+											"    pm.environment.set(\"payment-version\", data.version);",
+											"}",
+											"if(data.id){",
+											"    pm.environment.set(\"payment-id\", data.id); ",
+											"}",
+											"if(data.key){",
+											"    pm.environment.set(\"payment-key\", data.key);",
+											"}",
+											""
+										]
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessToken",
+											"value": "{{ctp_access_token}}",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "tokenType",
+											"value": "Bearer",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{host}}/{{project-key}}/payments/{{payment-id}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"{{project-key}}",
+										"payments",
+										"{{payment-id}}"
+									],
+									"query": [
+										{
+											"key": "expand",
+											"value": "",
+											"disabled": true
+										}
+									]
+								},
+								"description": "null"
+							},
+							"response": []
+						}
+					],
+					"description": "Play around with the Postman requests:\n\n- As usual, you need to create a payment object first, you will do that by sending a request via `Create Payment` in this folder.\n    \n- It will return the `checkoutUrl` and the `molliePaymentId` inside `interfaceInteractions`, please access the `checkoutUrl` via your browser and process checkout, select Paid as the status.\n    \n- After that, you can access our Mollie Dashboard, use the value from `molliePaymentId` to check the details of the payment. Its status here should be Paid.\n    \n- Next, make a new request with the `Create Refund` request in this folder. After the response returned successfully, please have a look at the Mollie Payment details page again, the History on the right side of the page should be updated, it should say about a Refund created.\n    \n- Next, make a new request with the `Cancel Refund` request in this folder. Similar with the above point, after the response returned successfully, the History in Mollie Payment details page should be updated, information about the Refund Cancellation should be added.\n    \n- Finally, you can have a look at the CommerceTools final state if you want to by making a request with `Get Payment by id` in this folder, it is expected to have 3 transactions: 1 Success Charge, 1 Failure Refund and 1 Success CancelAuthorization."
+				},
+				{
+					"name": "Health check",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{extension-public-url}}/processor/health-check",
+							"host": [
+								"{{extension-public-url}}"
+							],
+							"path": [
+								"processor",
+								"health-check"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtain CommerceTools access token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"var data = JSON.parse(responseBody);",
+									"if(data.access_token){",
+									"    pm.environment.set(\"ctp_access_token\", data.access_token);",
+									"}",
+									"if (data.scope) {",
+									"    parts = data.scope.split(\" \");",
+									"    parts = parts.filter(scope => scope.includes(\":\")).map(scope => scope.split(\":\"))",
+									"    if (parts.length > 0) {",
+									"        scopeParts = parts[0];",
+									"        pm.environment.set(\"project-key\", scopeParts[1]);",
+									"        parts = parts.filter(scope => scope.length >= 3)",
+									"        if (parts.length > 0) {",
+									"            scopeParts = parts[0];",
+									"            pm.environment.set(\"store-key\", scopeParts[2]);",
+									"        }",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{client_id}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{client_secret}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{auth_url}}/oauth/token?grant_type=client_credentials",
+							"host": [
+								"{{auth_url}}"
+							],
+							"path": [
+								"oauth",
+								"token"
+							],
+							"query": [
+								{
+									"key": "grant_type",
+									"value": "client_credentials"
+								}
+							]
+						},
+						"description": "Use this request to obtain an access token for your commercetools platform project via Client Credentials Flow. As a prerequisite you must have filled out environment variables in Postman for projectKey, client_id and client_secret to use this."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

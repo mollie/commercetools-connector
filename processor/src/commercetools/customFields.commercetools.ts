@@ -1,5 +1,6 @@
 import { CustomFields } from '../utils/constant.utils';
 import { createApiRoot } from '../client/create.client';
+import { FieldDefinition, TypeUpdateAction } from '@commercetools/platform-sdk';
 
 const PAYMENT_TYPE_KEY = 'sctm-payment-custom-type';
 
@@ -110,6 +111,68 @@ export async function createCustomPaymentType(): Promise<void> {
 
 export async function createCustomPaymentInterfaceInteractionType(): Promise<void> {
   const apiRoot = createApiRoot();
+  const interfaceInteractionFields: FieldDefinition[] = [
+    {
+      name: CustomFields.createPayment.interfaceInteraction.fields.id,
+      label: {
+        en: 'Interface Interaction ID',
+        de: 'Schnittstelleninteraktions-ID',
+      },
+      required: false,
+      type: {
+        name: 'String',
+      },
+      inputHint: 'MultiLine',
+    },
+    {
+      name: CustomFields.createPayment.interfaceInteraction.fields.actionType,
+      label: {
+        en: 'Action Type',
+        de: 'Aktionstyp',
+      },
+      required: false,
+      type: {
+        name: 'String',
+      },
+      inputHint: 'MultiLine',
+    },
+    {
+      name: CustomFields.createPayment.interfaceInteraction.fields.createdAt,
+      label: {
+        en: 'Created At',
+        de: 'Hergestellt in',
+      },
+      required: false,
+      type: {
+        name: 'String',
+      },
+      inputHint: 'MultiLine',
+    },
+    {
+      name: CustomFields.createPayment.interfaceInteraction.fields.request,
+      label: {
+        en: 'Interface Interaction Request',
+        de: 'Schnittstelleninteraktionsanforderung',
+      },
+      required: false,
+      type: {
+        name: 'String',
+      },
+      inputHint: 'MultiLine',
+    },
+    {
+      name: CustomFields.createPayment.interfaceInteraction.fields.response,
+      label: {
+        en: 'Interface Interaction Response',
+        de: 'Schnittstelleninteraktionsantwort',
+      },
+      required: false,
+      type: {
+        name: 'String',
+      },
+      inputHint: 'MultiLine',
+    },
+  ];
 
   const {
     body: { results: types },
@@ -117,7 +180,7 @@ export async function createCustomPaymentInterfaceInteractionType(): Promise<voi
     .types()
     .get({
       queryArgs: {
-        where: `key = "${CustomFields.createPayment.interfaceInteraction}"`,
+        where: `key = "${CustomFields.createPayment.interfaceInteraction.key}"`,
       },
     })
     .execute();
@@ -127,77 +190,50 @@ export async function createCustomPaymentInterfaceInteractionType(): Promise<voi
       .types()
       .post({
         body: {
-          key: CustomFields.createPayment.interfaceInteraction,
+          key: CustomFields.createPayment.interfaceInteraction.key,
           name: {
             en: 'SCTM - Mollie Payment Interface',
             de: 'SCTM - Benutzerdefinierte Felder im Warenkorb',
           },
           resourceTypeIds: ['payment-interface-interaction'],
-          fieldDefinitions: [
-            {
-              name: 'id',
-              label: {
-                en: 'Interface Interaction ID',
-                de: 'Schnittstelleninteraktions-ID',
-              },
-              required: false,
-              type: {
-                name: 'String',
-              },
-              inputHint: 'MultiLine',
-            },
-            {
-              name: 'actionType',
-              label: {
-                en: 'Action Type',
-                de: 'Aktionstyp',
-              },
-              required: false,
-              type: {
-                name: 'String',
-              },
-              inputHint: 'MultiLine',
-            },
-            {
-              name: 'createdAt',
-              label: {
-                en: 'Created At',
-                de: 'Hergestellt in',
-              },
-              required: false,
-              type: {
-                name: 'String',
-              },
-              inputHint: 'MultiLine',
-            },
-            {
-              name: 'request',
-              label: {
-                en: 'Interface Interaction Request',
-                de: 'Schnittstelleninteraktionsanforderung',
-              },
-              required: false,
-              type: {
-                name: 'String',
-              },
-              inputHint: 'MultiLine',
-            },
-            {
-              name: 'response',
-              label: {
-                en: 'Interface Interaction Response',
-                de: 'Schnittstelleninteraktionsantwort',
-              },
-              required: false,
-              type: {
-                name: 'String',
-              },
-              inputHint: 'MultiLine',
-            },
-          ],
+          fieldDefinitions: interfaceInteractionFields,
         },
       })
       .execute();
+
+    return;
+  }
+
+  const type = types[0];
+  const definitions = type.fieldDefinitions;
+
+  if (definitions.length > 0) {
+    const actions: TypeUpdateAction[] = [];
+    definitions.forEach((definition) => {
+      actions.push({
+        action: 'removeFieldDefinition',
+        fieldName: definition.name,
+      });
+    });
+    interfaceInteractionFields.forEach((field) => {
+      actions.push({
+        action: 'addFieldDefinition',
+        fieldDefinition: field,
+      });
+    });
+
+    await apiRoot
+      .types()
+      .withKey({ key: CustomFields.createPayment.interfaceInteraction.key })
+      .post({
+        body: {
+          version: type.version,
+          actions,
+        },
+      })
+      .execute();
+
+    return;
   }
 }
 
