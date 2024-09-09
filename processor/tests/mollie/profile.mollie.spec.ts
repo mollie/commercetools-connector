@@ -1,4 +1,4 @@
-import { describe } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import { getProfile } from '../../src/mollie/profile.mollie';
 import { MollieApiError, Profile } from '@mollie/api-client';
 import { initMollieClient } from '../../src/client/mollie.client';
@@ -20,7 +20,7 @@ describe('Test profile.mollie.ts', () => {
 
     (initMollieClient as jest.Mock).mockReturnValue({
       profiles: {
-        getCurrent: jest.fn().mockResolvedValue(mockProfile),
+        getCurrent: jest.fn().mockReturnValue(mockProfile),
       },
     });
   });
@@ -39,7 +39,7 @@ describe('Test profile.mollie.ts', () => {
     const errorMessage = `SCTM - getProfile - error: Missing authentication, or failed to authenticate, field: undefined"`;
     (initMollieClient as jest.Mock).mockReturnValue({
       profiles: {
-        getCurrent: jest.fn().mockRejectedValue(new MollieApiError(errorMessage)),
+        getCurrent: jest.fn().mockReturnValue(new MollieApiError(errorMessage)),
       },
     });
 
@@ -50,7 +50,7 @@ describe('Test profile.mollie.ts', () => {
     const errorMessage = 'SCTM - getProfile - Failed to get Mollie profile with unknown errors';
     (initMollieClient as jest.Mock).mockReturnValue({
       profiles: {
-        getCurrent: jest.fn().mockRejectedValue(new Error(errorMessage)),
+        getCurrent: jest.fn().mockReturnValue(new Error(errorMessage)),
       },
     });
 
