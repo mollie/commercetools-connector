@@ -37,7 +37,7 @@ export const install = async (request: Request, response: Response) => {
   const protocol = request.secure ? 'https' : 'http';
   const extensionUrl = `${protocol}://${request.hostname}/processor`;
 
-  if (!extensionUrl) {
+  if (!request.hostname) {
     logger.debug('SCTM - install - Missing body parameters {extensionUrl}.');
     return apiError(response, formatErrorResponse(new CustomError(400, 'Missing body parameters.')).errors);
   }

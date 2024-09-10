@@ -39,7 +39,9 @@ describe('Test connector.controller.ts', () => {
 
   it('should return status code 200 with a successful install response', async () => {
     req = {
-      body: { extensionUrl: 'https://example.com/extensionUrl' },
+      hostname: 'test.com',
+      secure: true,
+      protocol: 'https',
     };
     await install(req as Request, res as Response);
     expect(logger.debug).toBeCalledTimes(1);
