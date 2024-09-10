@@ -16,7 +16,8 @@ export const healthCheck = async (request: Request, response: Response) => {
 };
 
 export const install = async (request: Request, response: Response) => {
-  const extensionUrl = `${request.protocol}://${request.hostname}/processor`;
+  const protocol = request.secure ? 'https' : 'http';
+  const extensionUrl = `${protocol}://${request.hostname}/processor`;
 
   if (!extensionUrl) {
     logger.debug('SCTM - install - Missing body parameters {extensionUrl}.');
