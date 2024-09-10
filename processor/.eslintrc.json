@@ -33,5 +33,8 @@
     "import/no-duplicates": "error",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-var-requires": "off"
+  },
+  "settings": {
+    "tabWidth": 2
   }
 }
