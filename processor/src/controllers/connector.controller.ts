@@ -4,6 +4,7 @@ import CustomError from '../errors/custom.error';
 import { apiError } from '../api/error.api';
 import { formatErrorResponse } from '../errors/mollie.error';
 import { createExtensionAndCustomFields, removeExtension } from '../service/connector.service';
+import { getProfile } from '../mollie/profile.mollie';
 
 export const healthCheck = async (request: Request, response: Response) => {
   try {
@@ -12,6 +13,23 @@ export const healthCheck = async (request: Request, response: Response) => {
   } catch (error) {
     logger.error('SCTM - healthCheck - Unexpected error occurred when processing request', error);
     return apiError(response, formatErrorResponse(error).errors);
+  }
+};
+
+export const mollieStatus = async (request: Request, response: Response) => {
+  try {
+    logger.debug('SCTM - mollieStatus - Checking Mollie API status.');
+    const profile = await getProfile();
+    logger.debug('SCTM - mollieStatus - Mollie API status is functioning.');
+    return response.status(200).json({
+      mode: profile.mode,
+      name: profile.name,
+      website: profile.website,
+      status: profile.status,
+    });
+  } catch (error) {
+    logger.error('SCTM - healthCheck - Unexpected error occurred when processing request', error);
+    return response.status(400).json(error).send();
   }
 };
 
