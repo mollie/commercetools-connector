@@ -95,7 +95,7 @@ describe('Test src/route/processor.route.ts', () => {
   });
 
   describe('POST /install/', () => {
-    it('should return 200 if extensionUrl is provided', async () => {
+    it('should return 200 if hostname is provided', async () => {
       const layer = webhookRouter.stack.find(
         //@ts-expect-error route should be always available
         (layer) => layer.route.path === '/install' && layer.route.methods.post,
@@ -105,23 +105,23 @@ describe('Test src/route/processor.route.ts', () => {
       //@ts-expect-error handler should be always available
       const handler = layer.route.stack[0].handle;
 
-      req = {
-        body: {
-          extensionUrl: 'https://example.com',
-        },
-      };
-
       (createPaymentExtension as jest.Mock).mockReturnValueOnce(Promise.resolve());
       (createCustomPaymentType as jest.Mock).mockReturnValueOnce(Promise.resolve());
       (createCustomPaymentInterfaceInteractionType as jest.Mock).mockReturnValueOnce(Promise.resolve());
       (createCustomPaymentTransactionCancelReasonType as jest.Mock).mockReturnValueOnce(Promise.resolve());
+
+      req = {
+        hostname: 'test.com',
+        secure: true,
+        protocol: 'https',
+      };
 
       await handler(req as Request, res as Response, next);
 
       expect(res.status).toHaveBeenCalledWith(200);
     });
 
-    it('should return 400 if extensionUrl is not provided', async () => {
+    it('should return 400 if hostname is not provided', async () => {
       const layer = webhookRouter.stack.find(
         //@ts-expect-error route should be always available
         (layer) => layer.route.path === '/install' && layer.route.methods.post,
@@ -132,6 +132,12 @@ describe('Test src/route/processor.route.ts', () => {
       const handler = layer.route.stack[0].handle;
 
       expect(handler).toBeDefined();
+
+      req = {
+        hostname: '',
+        secure: true,
+        protocol: 'https',
+      };
 
       await handler(req as Request, res as Response, next);
 
