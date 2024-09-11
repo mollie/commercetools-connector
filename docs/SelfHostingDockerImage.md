@@ -17,7 +17,7 @@ This Dockerfile is designed to create a Docker image for a Node.js application u
 
 ### Building the Docker Image
 
-To build the Docker image, navigate to the directory containing the Dockerfile and run the following command:
+To build the Docker image, navigate to the [directory](https://github.com/mollie/commercetools-connector/tree/main/processor) containing the Dockerfile and run the following command:
 
 ```bash
 docker build -t your-image-name .
