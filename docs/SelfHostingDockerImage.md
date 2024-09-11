@@ -30,8 +30,10 @@ Replace `your-image-name` with a name of your choice for the Docker image.
 After building the image, you can run the container using the following command:
 
 ```bash
-docker run -p 8080:8080 your-image-name
+docker run -e CTP_CLIENT_ID="CTP_CLIENT_ID" -e CTP_CLIENT_SECRET="CTP_CLIENT_SECRET" -p 8080:8080 your-image-name
 ```
+
+Please refer to [.env.example](https://github.com/mollie/commercetools-connector/blob/main/processor/.env.example) for full list of required environment variables 
 
 This command maps port 8080 of the container to port 8080 on your host machine.
 
