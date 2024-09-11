@@ -1,6 +1,6 @@
-# Self-hosting with AWS
+# Self-hosting with Docker image
 
-This guide provides instructions for self-hosting the Mollie commercetools connector on AWS.
+This guide provides instructions for self-hosting the Mollie commercetools connector.
 
 To get started, you need to have a Docker image for the connector.
 
