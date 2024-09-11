@@ -1181,13 +1181,7 @@ describe('Test handlePaymentWebhook', () => {
     });
     const ctPayment = {
       id: 'payment-id',
-      transactions: [
-        {
-          id: '12345',
-          type: 'CancelAuthorization',
-          state: 'Initial',
-        },
-      ],
+      transactions: [],
     };
     (getPaymentByMolliePaymentId as jest.Mock).mockReturnValue(ctPayment);
 
@@ -1224,13 +1218,7 @@ describe('Test handlePaymentWebhook', () => {
     });
     const ctPayment = {
       id: 'payment-id',
-      transactions: [
-        {
-          id: '12345',
-          type: 'Charge',
-          state: 'Pending',
-        },
-      ],
+      transactions: [],
     };
     (getPaymentByMolliePaymentId as jest.Mock).mockReturnValue(ctPayment);
     const result = await handlePaymentWebhook(fakePaymentId);
