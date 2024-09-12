@@ -8,7 +8,9 @@ RUN npm install --frozen-lockfile
 
 COPY . .
 
-RUN npm run build && npm prune --production
+RUN npm run build 
+
+RUN npm prune --production
 
 FROM node:18-alpine AS runner
 
