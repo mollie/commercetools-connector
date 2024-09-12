@@ -4,11 +4,11 @@ WORKDIR /app
 
 COPY ./package*.json ./
 
-RUN npm install -g typescript && npm install --production --frozen-lockfile
+RUN npm install --frozen-lockfile
 
 COPY . .
 
-RUN npm run build
+RUN npm run build && npm prune --production
 
 FROM node:18-alpine AS runner
 
