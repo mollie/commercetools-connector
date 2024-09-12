@@ -8,7 +8,7 @@
     "start": "node dist/index.js",
     "gcp-build": "tsc",
     "start:dev": "concurrently -k \"tsc --watch\" \"nodemon -q dist/index.js\"",
-    "build": "rimraf ./dist && tsc",
+    "build": "rm -rf ./dist && tsc",
     "watch": "nodemon -q --ignore '**/*.spec.ts' src/index.ts",
     "lint": "eslint . --ext .ts",
     "prettier:check": "prettier --check '**/*.{js,ts}'",
@@ -34,11 +34,7 @@
   },
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.7",
-    "@types/express": "^4.17.21",
-    "@types/jest": "^29.5.12",
     "@types/node": "^18.19.39",
-    "@types/node-fetch": "^2.6.11",
-    "@types/validator": "^13.12.0",
     "@typescript-eslint/eslint-plugin": "7.13.1",
     "@typescript-eslint/parser": "7.13.1",
     "concurrently": "^8.2.2",
@@ -60,6 +56,10 @@
     "typescript": "^5.5.3"
   },
   "dependencies": {
+    "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.12",
+    "@types/node-fetch": "^2.6.11",
+    "@types/validator": "^13.12.0",
     "@commercetools-backend/loggers": "^21.25.2",
     "@commercetools/platform-sdk": "^4.11.0",
     "@commercetools/sdk-client-v2": "^2.5.0",

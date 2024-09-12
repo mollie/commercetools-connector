@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY ./package*.json ./
 
-RUN npm install --production --frozen-lockfile
+RUN npm install -g typescript && npm install --production --frozen-lockfile
 
 COPY . .
 
