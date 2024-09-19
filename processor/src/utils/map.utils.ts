@@ -9,7 +9,12 @@ import { parseStringToJsonObject, removeEmptyProperties } from './app.utils';
 import { readConfiguration } from './config.utils';
 
 const extractMethodsRequest = (ctPayment: Payment): ParsedMethodsRequestType | undefined => {
-  return ctPayment?.custom?.fields?.[CustomFields.payment.request];
+  return parseStringToJsonObject(
+    ctPayment?.custom?.fields?.[CustomFields.payment.request],
+    CustomFields.payment.request,
+    'SCTM - extractMethodsRequest',
+    ctPayment.id,
+  );
 };
 
 const buildMethodsListParams = (parsedMethodsRequest: ParsedMethodsRequestType): Partial<MethodsListParams> => {
