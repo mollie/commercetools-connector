@@ -4,20 +4,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## v1.0.2
+
+Fixes
+
+- Fix the issue that the payment method is not correctly set in some cases
+
 ## v1.0.1
 
-### Added
+Added
 
 - Changelog
 
-### Updated
+Updated
 
 - Postman collection
 - Interface interaction field naming to differentiate the connector itself to others
 
 ## v1.0.0
 
-### Added
+Added
 
 - General configurations for Commercetools, Mollie and connector related
 - Package version for requests
@@ -32,7 +38,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
     - [KBC/CBC](https://docs.mollie.com/docs/kbc)
     - [Paypal](https://docs.mollie.com/docs/paypal)
     - [Przelewy24](https://docs.mollie.com/docs/przelewy24)
-- Supporting for [Apply pay direct](https://docs.mollie.com/docs/direct-integration-of-apple-pay) & [Mollie card component](https://docs.mollie.com/docs/mollie-components) 
+- Supporting for [Apply pay direct](https://docs.mollie.com/docs/direct-integration-of-apple-pay) & [Mollie card component](https://docs.mollie.com/docs/mollie-components)
 - Filter options for listing payment methods
 - Create/cancel payment via Payment API
 - Refund/cancel refund payment via Refund API
