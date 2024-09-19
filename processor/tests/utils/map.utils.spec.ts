@@ -28,14 +28,14 @@ describe('Test map.utils.ts', () => {
       },
       custom: {
         fields: {
-          sctm_payment_methods_request: {
+          sctm_payment_methods_request: JSON.stringify({
             sequenceType: 'oneoff',
             locale: 'de_DE',
             billingCountry: 'DE',
             resouce: 'payments',
-            includeWallets: 'momo',
+            includeWallets: 'applepay',
             orderLineCategories: 'demo,test,sandbox',
-          },
+          }),
         },
       },
     } as unknown as Payment;
@@ -49,7 +49,7 @@ describe('Test map.utils.ts', () => {
       sequenceType: 'oneoff',
       locale: 'de_DE',
       billingCountry: 'DE',
-      includeWallets: 'momo',
+      includeWallets: 'applepay',
       orderLineCategories: 'demo,test,sandbox',
     } as unknown as MethodsListParams;
 

@@ -160,9 +160,9 @@ describe('Test listPaymentMethodsByPayment', () => {
       },
       custom: {
         fields: {
-          sctm_payment_methods_request: {
+          sctm_payment_methods_request: JSON.stringify({
             locale: 'de_DE',
-          },
+          }),
         },
       } as unknown as CustomFields,
     } as unknown as Payment;
@@ -214,9 +214,9 @@ describe('Test listPaymentMethodsByPayment', () => {
       },
       custom: {
         fields: {
-          sctm_payment_methods_request: {
+          sctm_payment_methods_request: JSON.stringify({
             locale: 'de_DE',
-          },
+          }),
         },
       } as unknown as CustomFields,
     } as unknown as Payment;
@@ -286,9 +286,9 @@ describe('Test listPaymentMethodsByPayment', () => {
       },
       custom: {
         fields: {
-          sctm_payment_methods_request: {
+          sctm_payment_methods_request: JSON.stringify({
             locale: 'de_DE',
-          },
+          }),
         },
       } as unknown as CustomFields,
     } as unknown as Payment;
@@ -362,9 +362,9 @@ describe('Test listPaymentMethodsByPayment', () => {
       },
       custom: {
         fields: {
-          sctm_payment_methods_request: {
+          sctm_payment_methods_request: JSON.stringify({
             locale: 'de_DE',
-          },
+          }),
         },
       } as unknown as CustomFields,
     } as unknown as Payment;
