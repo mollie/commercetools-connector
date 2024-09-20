@@ -1,12 +1,17 @@
 import { Router } from 'express';
 import { post } from '../controllers/processor.controller';
+import { install, healthCheck, uninstall, mollieStatus } from '../controllers/connector.controller';
 
 const serviceRouter = Router();
 
-serviceRouter.get('/health-check', async (req, res) => {
-  res.status(200).send('Mollie processor is successfully running');
-});
-
 serviceRouter.post('/', post);
+
+serviceRouter.get('/health-check', healthCheck);
+
+serviceRouter.get('/mollie/status', mollieStatus);
+
+serviceRouter.post('/install', install);
+
+serviceRouter.post('/uninstall', uninstall);
 
 export default serviceRouter;

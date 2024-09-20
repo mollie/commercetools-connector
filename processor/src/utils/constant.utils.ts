@@ -20,7 +20,16 @@ export const CustomFields = {
   },
   createPayment: {
     request: 'sctm_create_payment_request',
-    interfaceInteraction: 'sctm_interface_interaction_type',
+    interfaceInteraction: {
+      key: 'sctm_interface_interaction_type',
+      fields: {
+        id: 'sctm_id',
+        actionType: 'sctm_action_type',
+        createdAt: 'sctm_created_at',
+        request: 'sctm_request',
+        response: 'sctm_response',
+      },
+    },
   },
   paymentCancelReason: 'sctm_payment_cancel_reason',
   applePay: {

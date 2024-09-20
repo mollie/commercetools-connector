@@ -2,13 +2,15 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-COPY ./processor/package*.json ./
+COPY ./package*.json ./
 
-RUN npm install --production --frozen-lockfile
+RUN npm install --frozen-lockfile
 
-COPY ./processor .
+COPY . .
 
-RUN npm run build
+RUN npm run build 
+
+RUN npm prune --production
 
 FROM node:18-alpine AS runner
 

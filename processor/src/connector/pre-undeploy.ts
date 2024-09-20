@@ -1,11 +1,10 @@
+import { assertError } from '../utils/assert.utils';
+import { removeExtension } from './../service/connector.service';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { assertError } from '../utils/assert.utils';
-import { deletePaymentExtension } from '../commercetools/extensions.commercetools';
-
 async function preUndeploy(): Promise<void> {
-  await deletePaymentExtension();
+  await removeExtension();
 }
 
 async function run(): Promise<void> {

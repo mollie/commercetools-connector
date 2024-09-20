@@ -36,10 +36,7 @@ jobs:
           name: code-coverage-report
           github-token: ${{ github.token }}
           run-id: ${{ github.event.workflow_run.id }}
-          
-      - name: Test
-        run: ls -la 
-    
+
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
         env:

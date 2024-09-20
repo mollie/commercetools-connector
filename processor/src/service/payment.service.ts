@@ -138,7 +138,8 @@ export const handlePaymentWebhook = async (paymentId: string): Promise<boolean> 
 
   if (
     molliePayment.status === PaymentStatus.canceled &&
-    (!pendingChargeTransaction || !initialCancelAuthorizationTransaction)
+    !pendingChargeTransaction &&
+    !initialCancelAuthorizationTransaction
   ) {
     logger.warn(
       `SCTM - handlePaymentWebhook - Pending Charge transaction or Initial CancelAuthorization transaction is not found, CommerceTools Payment ID: ${ctPayment.id}`,
@@ -309,11 +310,11 @@ export const getCreatePaymentUpdateAction = async (molliePayment: MPayment | Cus
     };
 
     const interfaceInteractionParams = {
-      actionType: ConnectorActions.CreatePayment,
-      requestValue: JSON.stringify(interfaceInteractionRequest),
-      responseValue: JSON.stringify(interfaceInteractionResponse),
-      id: uuid(),
-      timestamp: molliePayment.createdAt,
+      sctm_action_type: ConnectorActions.CreatePayment,
+      sctm_request: JSON.stringify(interfaceInteractionRequest),
+      sctm_response: JSON.stringify(interfaceInteractionResponse),
+      sctm_id: uuid(),
+      sctm_created_at: molliePayment.createdAt,
     };
 
     return Promise.resolve([
@@ -424,24 +425,36 @@ export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<Con
  * @param triggerTransaction
  */
 export const getPaymentCancelActions = (targetTransaction: Transaction, triggerTransaction: Transaction) => {
-  const transactionCustomFieldName = CustomFields.paymentCancelReason;
+  const transactionCustomFieldName = CustomFields?.paymentCancelReason;
 
   const newTransactionCustomFieldValue = {
-    reasonText: triggerTransaction.custom?.fields?.reasonText,
+    reasonText: triggerTransaction?.custom?.fields?.reasonText,
     statusText: CancelStatusText,
   };
 
-  return [
-    // Update transaction state to failure
-    // For cancelling payment, it will be the pendingChargeTransaction
-    // For cancelling refund, it will be the pendingRefundTransaction
-    changeTransactionState(targetTransaction.id, CTTransactionState.Failure),
-    // Update transaction state to success
-    // For both cancelling payment and cancelling refund, it will be the InitialCancelAuthorization
-    changeTransactionState(triggerTransaction.id, CTTransactionState.Success),
-    // Set transaction custom field value
-    setTransactionCustomType(targetTransaction.id, transactionCustomFieldName, newTransactionCustomFieldValue),
-  ];
+  // Update transaction state to failure
+  // For cancelling payment, it will be the pendingChargeTransaction
+  // For cancelling refund, it will be the pendingRefundTransaction
+  const actions: UpdateAction[] = [];
+
+  if (targetTransaction?.id) {
+    actions.push(changeTransactionState(targetTransaction?.id, CTTransactionState.Failure));
+  }
+
+  // Update transaction state to success
+  // For both cancelling payment and cancelling refund, it will be the InitialCancelAuthorization
+  if (triggerTransaction?.id) {
+    actions.push(changeTransactionState(triggerTransaction?.id, CTTransactionState.Success));
+  }
+
+  // Set transaction custom field value
+  if (transactionCustomFieldName) {
+    actions.push(
+      setTransactionCustomType(targetTransaction?.id, transactionCustomFieldName, newTransactionCustomFieldValue),
+    );
+  }
+
+  return actions;
 };
 
 /**
