@@ -1,4 +1,10 @@
-import { PERMISSIONS, entryPointUriPath } from './src/constants';
+import {
+  PERMISSIONS,
+  entryPointUriPath,
+  cloudIdentifier,
+  applicationId,
+  applicationBaseUrl,
+} from './src/constants';
 
 /**
  * @type {import('@commercetools-frontend/application-config').ConfigOptionsForCustomApplication}
@@ -6,14 +12,14 @@ import { PERMISSIONS, entryPointUriPath } from './src/constants';
 const config = {
   name: 'Mollie',
   entryPointUriPath,
-  cloudIdentifier: '${env:CLOUD_IDENTIFIER}',
+  cloudIdentifier: cloudIdentifier,
   env: {
     development: {
-      initialProjectKey: '${env:PROJECT_KEY}',
+      initialProjectKey: 'shopm-adv-dev',
     },
     production: {
-      applicationId: '${env:CUSTOM_APPLICATION_ID}',
-      url: '${env:APPLICATION_URL}',
+      applicationId: applicationId,
+      url: applicationBaseUrl,
     },
   },
   oAuthScopes: {
