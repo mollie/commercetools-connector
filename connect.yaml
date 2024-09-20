@@ -51,6 +51,9 @@ deployAs:
 
   - name: application
     applicationType: merchant-center-custom-application
+    scripts:  
+      postDeploy: yarn install && yarn build
+      preUndeploy: yarn install && yarn build
     configuration:
       standardConfiguration:
       - key: CUSTOM_APPLICATION_ID
