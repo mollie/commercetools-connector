@@ -1,5 +1,7 @@
 // https://formatjs.io/docs/tooling/cli#extraction
-exports.format = function format(extractedMessages) {
+exports.format = function format(extractedMessages: {
+  [x: string]: { defaultMessage: unknown };
+}) {
   return (
     Object.keys(extractedMessages)
       // transform strings to lowercase to imitate phraseapp sorting
