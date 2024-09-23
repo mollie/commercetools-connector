@@ -6,5 +6,5 @@
     "preserveSymlinks": false,
     "strict": true,
   },
-  "include": ["src", "setup.js"]
+  "include": ["src", "setup.ts"]
 }
