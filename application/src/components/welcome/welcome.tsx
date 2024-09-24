@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useRouteMatch, Link as RouterLink } from 'react-router-dom';
 import { FormattedMessage, useIntl } from 'react-intl';
 import Constraints from '@commercetools-uikit/constraints';
@@ -35,6 +35,22 @@ type TInfoCardProps = {
 const Welcome = () => {
   const match = useRouteMatch();
   const intl = useIntl();
+  let methods;
+
+  useEffect(() => {
+    fetch('https://api.mollie.com/v2/methods/all', {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer test_TquMT7yDtvstNCk8xegEyE8z3A9Tuh`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log('response data', data);
+        methods = data;
+      })
+      .catch((err) => console.log(err));
+  }, []);
 
   return (
     <>

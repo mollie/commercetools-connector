@@ -32,6 +32,11 @@ const config = {
     labelAllLocales: [],
     permissions: [PERMISSIONS.View],
   },
+  headers: {
+    csp: {
+      'connect-src': ['api.mollie.com'],
+    },
+  },
 };
 
 export default config;
