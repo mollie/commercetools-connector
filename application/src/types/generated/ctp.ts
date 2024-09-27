@@ -12579,6 +12579,9 @@ export type TUpdateCustomObjectDetailsMutation = {
     container: string;
     key: string;
     value: string;
+    version: string;
+    createdAt: string;
+    lastModifiedAt: string;
   };
 };
 

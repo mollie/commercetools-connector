@@ -56,13 +56,8 @@ const convertMollieMethodToCustomObject = (
   return methods.map((method: MollieMethod) => ({
     id: method.id,
     description: method.description,
-    minimumAmount: method.minimumAmount,
-    maximumAmount: method.maximumAmount,
-    pricing: method.pricing,
-    image: {
-      url: method.image.svg,
-    },
-    status: method.status === 'activated' ? true : false,
-    displayOrder: undefined,
+    imageUrl: method.image.svg,
+    active: false,
+    displayOrder: 0,
   }));
 };

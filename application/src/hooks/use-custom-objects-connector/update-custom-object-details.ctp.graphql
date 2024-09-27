@@ -16,5 +16,8 @@ mutation UpdateCustomObjectDetails(
     container
     key
     value
+    version
+    createdAt
+    lastModifiedAt
   }
 }

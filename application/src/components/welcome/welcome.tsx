@@ -14,7 +14,6 @@ import {
   useCustomObjectDetailsUpdater,
 } from '../../hooks/use-custom-objects-connector';
 import { EXTENSION_KEY, OBJECT_CONTAINER_NAME } from '../../constants';
-import { TFetchCustomObjectsQuery } from '../../types/generated/ctp';
 import DataTable from '@commercetools-uikit/data-table';
 import IconButton from '@commercetools-uikit/icon-button';
 import { usePaymentMethodsFetcher } from '../../hooks/use-mollie-connector';
@@ -27,14 +26,13 @@ import {
   CheckActiveIcon,
   CheckInactiveIcon,
 } from '@commercetools-uikit/icons';
-import { useCustomObjectDetailsRemover } from '../../hooks/use-custom-objects-connector/use-custom-objects-connector';
 import { useExtensionDestinationFetcher } from '../../hooks/use-extensions-connector';
 import { getErrorMessage } from '../../helpers';
 
 const columns = [
   { key: 'description', label: 'Payment method' },
   {
-    key: 'status',
+    key: 'active',
     label: 'Active',
     headerIcon: (
       <Tootltip
@@ -59,7 +57,6 @@ const Welcome = () => {
     projectLanguages: context.project?.languages,
   }));
   const customObjectUpdater = useCustomObjectDetailsUpdater();
-  const customObjectRemover = useCustomObjectDetailsRemover();
 
   const { page, perPage } = usePaginationState();
   const tableSorting = useDataTableSortingState({
@@ -75,113 +72,66 @@ const Welcome = () => {
     });
   const { extension } = useExtensionDestinationFetcher(EXTENSION_KEY);
   const [viewLoading, setViewLoading] = useState<boolean>(true);
+  const [methods, setMethods] = useState<CustomMethodObject[]>([]);
 
   useEffect(() => {
     if (
-      customObjectsPaginatedResult &&
-      customObjectsPaginatedResult?.total === 0 &&
-      extension?.destination?.url
+      extension?.destination?.url &&
+      methods.length === 0 &&
+      customObjectsPaginatedResult
     ) {
       usePaymentMethodsFetcher(extension.destination.url)
         .then((data) => {
           if (data && data.length > 0) {
             data.forEach(async (method) => {
-              await customObjectUpdater.execute({
-                container: OBJECT_CONTAINER_NAME,
-                key: method.id,
-                value: JSON.stringify(method),
-              });
+              const shouldCreate = customObjectsPaginatedResult.results.every(
+                (object) => {
+                  return object.key !== method.id ? true : false;
+                }
+              );
+
+              if (shouldCreate) {
+                await customObjectUpdater.execute({
+                  container: OBJECT_CONTAINER_NAME,
+                  key: method.id,
+                  value: JSON.stringify(method),
+                });
+                client.reFetchObservableQueries();
+              }
             });
+            setMethods(data);
           }
         })
         .catch((error) => console.error(error))
-        .finally(() => {
-          client.reFetchObservableQueries();
-          setViewLoading(false);
-        });
-    }
-    if (
-      customObjectsPaginatedResult &&
-      customObjectsPaginatedResult?.total > 0 &&
-      extension?.destination?.url
-    ) {
-      usePaymentMethodsFetcher(extension?.destination?.url)
-        .then((data) => {
-          if (data && data?.length !== customObjectsPaginatedResult?.total) {
-            const dontHaveCustomObject = data.filter(
-              (datum: CustomMethodObject) =>
-                !customObjectsPaginatedResult.results.some(
-                  (customObject) => customObject.key === datum.id
-                )
-            );
-
-            const hasDisabledCustomObject =
-              customObjectsPaginatedResult.results.filter(
-                (obj) => !data.some((datum) => obj.key === datum.id)
-              );
-
-            if (dontHaveCustomObject && dontHaveCustomObject.length > 0) {
-              dontHaveCustomObject.forEach(async (method) => {
-                await customObjectUpdater
-                  .execute({
-                    container: OBJECT_CONTAINER_NAME,
-                    key: method.id,
-                    value: JSON.stringify(method),
-                  })
-                  .then(() => {
-                    client.reFetchObservableQueries();
-                    setViewLoading(false);
-                  });
-              });
-            }
-
-            if (hasDisabledCustomObject && hasDisabledCustomObject.length > 0) {
-              hasDisabledCustomObject.forEach(async (method) => {
-                await customObjectRemover
-                  .execute({
-                    id: method.id,
-                  })
-                  .then(() => {
-                    client.reFetchObservableQueries();
-                    setViewLoading(false);
-                  });
-              });
-            }
-          } else {
-            setViewLoading(false);
-          }
-        })
-        .catch((error) => console.error(error));
+        .finally(() => setViewLoading(false));
     }
   }, [
     usePaymentMethodsFetcher,
     customObjectsPaginatedResult,
     customObjectsPaginatedResult?.total,
     extension?.destination?.url,
+    setMethods,
+    methods,
   ]);
 
   const MollieDataTable =
-    !loading &&
-    customObjectsPaginatedResult &&
-    customObjectsPaginatedResult?.total > 0 ? (
+    !loading && methods && methods.length > 0 ? (
       <Spacings.Stack scale="l">
-        <DataTable<
-          NonNullable<TFetchCustomObjectsQuery['customObjects']['results']>[0]
-        >
+        <DataTable<NonNullable<CustomMethodObject>>
           isCondensed
           verticalCellAlignment="center"
           columns={columns}
-          rows={customObjectsPaginatedResult.results}
+          rows={methods}
           itemRenderer={(item, column) => {
             switch (column.key) {
-              case 'status':
-                return (item.value as CustomMethodObject).status ? (
+              case 'active':
+                return item.active ? (
                   <CheckActiveIcon color="success"></CheckActiveIcon>
                 ) : (
-                  <CheckInactiveIcon color="surface"></CheckInactiveIcon>
+                  <CheckInactiveIcon color="neutral60"></CheckInactiveIcon>
                 );
               case 'description':
-                return item.value.description;
+                return item.description;
               case 'image':
                 return (
                   <IconButton
@@ -189,7 +139,7 @@ const Welcome = () => {
                     isDisabled={true}
                     icon={
                       <img
-                        src={(item.value as CustomMethodObject).image.url}
+                        src={item.imageUrl}
                         width="40"
                         height="40"
                         alt={item.id}
@@ -199,7 +149,7 @@ const Welcome = () => {
                   ></IconButton>
                 );
               case 'order':
-                return item.value.displayOrder ?? 0;
+                return item.displayOrder;
               default:
                 return null;
             }
@@ -208,11 +158,7 @@ const Welcome = () => {
           sortDirection={tableSorting.value.order}
           onSortChange={tableSorting.onChange}
           onRowClick={(row) => {
-            alert(
-              `Detail view for ${
-                (row.value as CustomMethodObject).description
-              } is not implemented yet!`
-            );
+            alert(`Detail view for ${row.description} is not implemented yet!`);
           }}
         />
       </Spacings.Stack>
