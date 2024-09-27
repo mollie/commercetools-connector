@@ -11,10 +11,15 @@ import {
 } from '../../constants';
 import { MollieMethod, CustomMethodObject } from '../../types/app';
 
-// TODO should check these harcode value
+/**
+ * For local development using ngrok forwards the requests to the connector
+ * please consider to add 'ngrok-skip-browser-warning': 'true' in your header config below
+ * to bypass ERR_NGROK_6024
+ */
 const config = {
   headers: {
     'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true',
   },
 };
 
@@ -24,7 +29,6 @@ export const usePaymentMethodsFetcher = async (targetUrl: string) => {
   return await executeHttpClientRequest(
     async (options) => {
       const res = await fetch(buildApiUrl('/proxy/forward-to'), {
-        method: 'POST',
         ...options,
       });
       const data = res.json();

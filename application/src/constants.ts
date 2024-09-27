@@ -10,7 +10,7 @@ export const APPLICATION_URL =
 export const OBJECT_CONTAINER_NAME = 'sctm-app-methods';
 export const EXTENSION_KEY = 'sctm-payment-create-update-extension';
 export const EXTENSION_URL_PATH = '/processor';
-export const APPLICATION_URL_PATH = '/application/getMethods';
+export const APPLICATION_URL_PATH = '/application/methods';
 export const USER_AGENT = {
   name: 'ShopmacherMollieCommercetoolsConnector/2.0.0-alpha',
   version: '1.0.0',

@@ -11,10 +11,15 @@ export const getMethods = async (request: Request, response: Response) => {
     const methods = await listPaymentMethods({
       locale: Locale.en_US,
       include: [MethodInclude.pricing, MethodInclude.issuers],
+      includeWallets: 'applepay',
     });
 
     return response.status(200).json(methods);
   } catch (error) {
+    logger.error(
+      `getMethods - Unexpected error occurred when preparing payment methods for the custom application`,
+      error,
+    );
     return apiError(response, formatErrorResponse(error).errors);
   }
 };

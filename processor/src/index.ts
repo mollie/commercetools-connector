@@ -14,7 +14,7 @@ import { logger } from './utils/logger.utils';
 
 import { readConfiguration } from './utils/config.utils';
 import { errorMiddleware } from './middleware/error.middleware';
-import { createSessionMiddleware, CLOUD_IDENTIFIERS } from '@commercetools-backend/express';
+import { createSessionMiddleware } from '@commercetools-backend/express';
 
 // Read env variables
 readConfiguration();
@@ -39,8 +39,8 @@ app.use(errorMiddleware);
 app.use(
   ['/application/*'],
   createSessionMiddleware({
-    audience: `https://mc.${readConfiguration().commerceTools.region}.commercetools.com`,
-    issuer: CLOUD_IDENTIFIERS.GCP_EU,
+    audience: readConfiguration().commerceTools.sessionAudience,
+    issuer: readConfiguration().commerceTools.sessionIssuer,
   }),
 );
 

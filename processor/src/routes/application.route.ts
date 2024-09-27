@@ -3,6 +3,6 @@ import { getMethods } from '../controllers/application.controller';
 
 const serviceRouter = Router();
 
-serviceRouter.post('/getMethods', getMethods);
+serviceRouter.get('/methods', getMethods);
 
 export default serviceRouter;
