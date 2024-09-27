@@ -1,0 +1,8 @@
+query FetchCustomObjectDetails($id: String) {
+  customObject(id: $id) {
+    id
+    container
+    key
+    value
+  }
+}

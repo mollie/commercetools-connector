@@ -4,8 +4,16 @@ import {
   type TRenderAppWithReduxOptions,
 } from '@commercetools-frontend/application-shell/test-utils';
 import { renderApplicationWithRedux } from '../../test-utils';
-import { entryPointUriPath, PERMISSIONS, projectKey } from '../../constants';
+import { entryPointUriPath, PERMISSIONS } from '../../constants';
 import ApplicationRoutes from '../../routes';
+import messages from './messages';
+import { setupServer } from 'msw/node';
+
+const mockServer = setupServer();
+afterEach(() => mockServer.resetHandlers());
+afterAll(() => {
+  mockServer.close();
+});
 
 const renderApp = (options: Partial<TRenderAppWithReduxOptions> = {}) => {
   const route = options.route || `/shopm-adv-dev/${entryPointUriPath}`;
@@ -22,11 +30,9 @@ const renderApp = (options: Partial<TRenderAppWithReduxOptions> = {}) => {
   return { history };
 };
 
-it('should render welcome page', async () => {
-  const logSpy = jest.spyOn(console, 'log').mockImplementation();
-
-  renderApp();
-  await screen.findByText('Mollie');
-
-  logSpy.mockRestore();
+describe('Test welcome.tsx', () => {
+  it('should render welcome page', async () => {
+    renderApp();
+    await screen.findByText(messages.title.defaultMessage);
+  });
 });

@@ -1755,6 +1755,20 @@
     "@commercetools/platform-sdk" "^7.0.0"
     "@faker-js/faker" "^8.0.0"
 
+"@commercetools-test-data/commons@10.7.1":
+  version "10.7.1"
+  resolved "https://registry.yarnpkg.com/@commercetools-test-data/commons/-/commons-10.7.1.tgz#72aa644337c7d5f5b898eede19510a2b11b7f902"
+  integrity sha512-qm8eHXcCle+v+6ljDQF+oTq9RWI/9SqYdTgxYdPoQnCMr1Q1VBkA6EFxgNeMYlRgskbuTVhmu8LHL+irGPmXLQ==
+  dependencies:
+    "@babel/runtime" "^7.17.9"
+    "@babel/runtime-corejs3" "^7.17.9"
+    "@commercetools-test-data/core" "10.7.1"
+    "@commercetools-test-data/utils" "10.7.1"
+    "@commercetools/platform-sdk" "7.12.0"
+    "@faker-js/faker" "^8.0.0"
+    "@types/lodash" "^4.17.0"
+    lodash "^4.17.21"
+
 "@commercetools-test-data/commons@8.5.0":
   version "8.5.0"
   resolved "https://registry.yarnpkg.com/@commercetools-test-data/commons/-/commons-8.5.0.tgz#f4ecca0279d106525458350dc22da601364c6a7a"
@@ -1769,6 +1783,17 @@
     "@types/lodash" "^4.17.0"
     lodash "^4.17.21"
 
+"@commercetools-test-data/core@10.7.1":
+  version "10.7.1"
+  resolved "https://registry.yarnpkg.com/@commercetools-test-data/core/-/core-10.7.1.tgz#c1515bfc0545276138501d802b4ced9bb43151fe"
+  integrity sha512-BqbEJnEkH+czPpLEo+SHyixpG0Ftn3R9zdckSweTT4iCcdgIOk65voS/x7yoctLNjwEFjrQEH+YMmpzkemT5Pw==
+  dependencies:
+    "@babel/runtime" "^7.17.9"
+    "@babel/runtime-corejs3" "^7.17.9"
+    "@faker-js/faker" "^8.0.0"
+    "@types/lodash" "^4.17.0"
+    lodash "^4.17.21"
+
 "@commercetools-test-data/core@8.5.0":
   version "8.5.0"
   resolved "https://registry.yarnpkg.com/@commercetools-test-data/core/-/core-8.5.0.tgz#fa023f7cf84aebff927a80ab76d8a2f406fdbb8e"
@@ -1779,6 +1804,28 @@
     "@faker-js/faker" "^8.0.0"
     "@types/lodash" "^4.17.0"
     lodash "^4.17.21"
+
+"@commercetools-test-data/custom-object@^10.7.1":
+  version "10.7.1"
+  resolved "https://registry.yarnpkg.com/@commercetools-test-data/custom-object/-/custom-object-10.7.1.tgz#0f0e86800135dc17c54f2beb1ab7244c4f5c3328"
+  integrity sha512-1Eo8/k3BAP4tsPqI3tlxwjrY2oke4GI0CyHUbG8ZySdvJga5ouSkeGKVDJGI0CRz1Qyfzmj9mVddCpaEWbBIqA==
+  dependencies:
+    "@babel/runtime" "^7.17.9"
+    "@babel/runtime-corejs3" "^7.17.9"
+    "@commercetools-test-data/commons" "10.7.1"
+    "@commercetools-test-data/core" "10.7.1"
+    "@commercetools-test-data/utils" "10.7.1"
+    "@commercetools/platform-sdk" "7.12.0"
+    "@faker-js/faker" "^8.0.0"
+
+"@commercetools-test-data/utils@10.7.1":
+  version "10.7.1"
+  resolved "https://registry.yarnpkg.com/@commercetools-test-data/utils/-/utils-10.7.1.tgz#c9828b29a40fb43b62fcddad4c972a962e5ed3e3"
+  integrity sha512-gmT237iaEf8A2wGHI+BNL2x0jUeegoqvVOaGU+H1DZDbRX05ldNVUi3QH5767zUCaI1EdldCosWD6DQd9qecMw==
+  dependencies:
+    "@babel/runtime" "^7.17.9"
+    "@babel/runtime-corejs3" "^7.17.9"
+    "@faker-js/faker" "^8.0.0"
 
 "@commercetools-test-data/utils@8.5.0":
   version "8.5.0"
@@ -1864,6 +1911,23 @@
     "@emotion/styled" "^11.10.5"
     "@types/react-router-dom" "^5.3.3"
     prop-types "15.8.1"
+
+"@commercetools-uikit/checkbox-input@^19.11.0":
+  version "19.11.0"
+  resolved "https://registry.yarnpkg.com/@commercetools-uikit/checkbox-input/-/checkbox-input-19.11.0.tgz#0e7a84e19ea1b81a53d068b9a2621200066a9e1f"
+  integrity sha512-Gruk2pDTQLB1YLplO8tt1a0rkSN+vMLRRrILSmdZ2xuMNE2zhC0nhPKEi+j6lR8mHezOKYrzgBP+OtOlSIJu1g==
+  dependencies:
+    "@babel/runtime" "^7.20.13"
+    "@babel/runtime-corejs3" "^7.20.13"
+    "@commercetools-uikit/design-system" "19.11.0"
+    "@commercetools-uikit/icons" "19.11.0"
+    "@commercetools-uikit/input-utils" "19.11.0"
+    "@commercetools-uikit/select-utils" "19.11.0"
+    "@commercetools-uikit/utils" "19.11.0"
+    "@emotion/react" "^11.10.5"
+    "@emotion/styled" "^11.10.5"
+    prop-types "15.8.1"
+    react-intl "^6.3.2"
 
 "@commercetools-uikit/collapsible-motion@19.11.0":
   version "19.11.0"
@@ -2564,6 +2628,21 @@
     prop-types "15.8.1"
     warning "4.0.3"
 
+"@commercetools-uikit/toggle-input@^19.11.0":
+  version "19.11.0"
+  resolved "https://registry.yarnpkg.com/@commercetools-uikit/toggle-input/-/toggle-input-19.11.0.tgz#34275c5a31f4035d631e15f05e42f7e04f66614d"
+  integrity sha512-nJbvKkj424i01xI0sWeAyASfaWKmyLKSBTL5BX0WYMY5A+JLrFdvWeJoZlxVDeWYl/AsFMnEgMOU772XWrpaaQ==
+  dependencies:
+    "@babel/runtime" "^7.20.13"
+    "@babel/runtime-corejs3" "^7.20.13"
+    "@commercetools-uikit/constraints" "19.11.0"
+    "@commercetools-uikit/design-system" "19.11.0"
+    "@commercetools-uikit/input-utils" "19.11.0"
+    "@commercetools-uikit/utils" "19.11.0"
+    "@emotion/react" "^11.10.5"
+    "@emotion/styled" "^11.10.5"
+    prop-types "15.8.1"
+
 "@commercetools-uikit/tooltip@19.11.0", "@commercetools-uikit/tooltip@^19.9.0":
   version "19.11.0"
   resolved "https://registry.yarnpkg.com/@commercetools-uikit/tooltip/-/tooltip-19.11.0.tgz#473519ac87ab793b4aca649dee6136f432b45e4a"
@@ -2600,6 +2679,17 @@
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@commercetools/http-user-agent/-/http-user-agent-3.0.0.tgz#1bf8573f11f7a9e9688e3460425d9371c4b23c24"
   integrity sha512-kHlVST/Ax8GFpG9vpcUR5wKBGBoY2tZDA87kSC3nxhgk2+szZfv7MMMaAt0EIz2thpyO7oJv9NyPY/3XrrNIXQ==
+
+"@commercetools/platform-sdk@7.12.0":
+  version "7.12.0"
+  resolved "https://registry.yarnpkg.com/@commercetools/platform-sdk/-/platform-sdk-7.12.0.tgz#c22ee5984aec890db12c49edde62aa3888ce4446"
+  integrity sha512-fhO8kZgV1c1VuWe6pQ423dxat5E4y7uSyTjm5pO+yCO7EXdWT7IYkoP0xmnLay5kUuXxuD9GcTXobGxqkupESw==
+  dependencies:
+    "@commercetools/sdk-client-v2" "^2.5.0"
+    "@commercetools/sdk-middleware-auth" "^7.0.0"
+    "@commercetools/sdk-middleware-http" "^7.0.0"
+    "@commercetools/sdk-middleware-logger" "^3.0.0"
+    "@commercetools/ts-client" "^2.0.2"
 
 "@commercetools/platform-sdk@^7.0.0":
   version "7.13.0"
@@ -2663,6 +2753,17 @@
     lodash.sortby "^4.7.0"
     lodash.uniqwith "^4.5.0"
     lodash.without "^4.4.0"
+
+"@commercetools/ts-client@^2.0.2":
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/@commercetools/ts-client/-/ts-client-2.0.5.tgz#2f4c3316c7d3c6e1ffa01f39979ab64806141608"
+  integrity sha512-v1hdwMdyGV/ja+pdgTvnA/qLiZ67Zepbaj1WzucHa/ub9V78ZuezZTExTFKhSMFm5c+mMzLwq0UpacAYlu4nmA==
+  dependencies:
+    abort-controller "3.0.0"
+    async-mutex "^0.5.0"
+    buffer "^6.0.3"
+    node-fetch "^2.6.1"
+    uuid "10.0.0"
 
 "@commercetools/ts-client@^2.0.4":
   version "2.0.4"

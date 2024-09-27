@@ -2,12 +2,18 @@
 import { entryPointUriPathToPermissionKeys } from '@commercetools-frontend/application-shell/ssr';
 
 export const entryPointUriPath = process.env.ENTRY_POINT_URI_PATH ?? 'mollie';
-
 export const PERMISSIONS = entryPointUriPathToPermissionKeys(entryPointUriPath);
-
-export const cloudIdentifier = process.env.CLOUD_IDENTIFIER ?? 'gcp-eu';
-
-export const applicationId = process.env.CUSTOM_APPLICATION_ID ?? '';
-
-export const applicationBaseUrl =
+export const CLOUD_IDENTIFIER = process.env.CLOUD_IDENTIFIER ?? 'gcp-eu';
+export const CUSTOM_APPLICATION_ID = process.env.CUSTOM_APPLICATION_ID ?? '';
+export const APPLICATION_URL =
   process.env.APPLICATION_URL ?? 'https://mollie.app';
+export const OBJECT_CONTAINER_NAME = 'sctm-app-methods';
+export const EXTENSION_KEY = 'sctm-payment-create-update-extension';
+export const EXTENSION_URL_PATH = '/processor';
+export const APPLICATION_URL_PATH = '/application/getMethods';
+export const USER_AGENT = {
+  name: 'ShopmacherMollieCommercetoolsConnector/2.0.0-alpha',
+  version: '1.0.0',
+  libraryName: 'ShopmacherMollieCommercetoolsConnector/2.0.0-alpha',
+  contactEmail: 'info@mollie.com',
+};

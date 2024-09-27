@@ -32,3 +32,31 @@ declare module '*/fetch-custom-objects.ctp.graphql' {
 
   export default defaultDocument;
 }
+
+declare module '*/fetch-custom-object-details.ctp.graphql' {
+  import { DocumentNode } from 'graphql';
+  const defaultDocument: DocumentNode;
+  export const UpdateCustomObjects: DocumentNode;
+  export default defaultDocument;
+}
+
+declare module '*/update-custom-object-details.ctp.graphql' {
+  import { DocumentNode } from 'graphql';
+  const defaultDocument: DocumentNode;
+  export const UpdateCustomObjectDetails: DocumentNode;
+  export default defaultDocument;
+}
+
+declare module '*/remove-custom-object-details.ctp.graphql' {
+  import { DocumentNode } from 'graphql';
+  const defaultDocument: DocumentNode;
+  export const RemoveCustomObjectDetails: DocumentNode;
+  export default defaultDocument;
+}
+
+declare module '*/fetch-extension-destination.ctp.graphql' {
+  import { DocumentNode } from 'graphql';
+  const defaultDocument: DocumentNode;
+  export const FetchExtensionDestination: DocumentNode;
+  export default defaultDocument;
+}

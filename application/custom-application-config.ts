@@ -1,9 +1,9 @@
 import {
   PERMISSIONS,
   entryPointUriPath,
-  cloudIdentifier,
-  applicationId,
-  applicationBaseUrl,
+  CLOUD_IDENTIFIER,
+  CUSTOM_APPLICATION_ID,
+  APPLICATION_URL,
 } from './src/constants';
 
 /**
@@ -12,19 +12,19 @@ import {
 const config = {
   name: 'Mollie',
   entryPointUriPath,
-  cloudIdentifier: cloudIdentifier,
+  cloudIdentifier: CLOUD_IDENTIFIER,
   env: {
     development: {
       initialProjectKey: 'shopm-adv-dev',
     },
     production: {
-      applicationId: applicationId,
-      url: applicationBaseUrl,
+      applicationId: CUSTOM_APPLICATION_ID,
+      url: APPLICATION_URL,
     },
   },
   oAuthScopes: {
     view: ['view_key_value_documents'],
-    manage: ['manage_key_value_documents'],
+    manage: ['manage_key_value_documents', 'manage_extensions'],
   },
   icon: '${path:./assets/mollie.svg}',
   mainMenuLink: {
@@ -34,7 +34,10 @@ const config = {
   },
   headers: {
     csp: {
-      'connect-src': ['api.mollie.com'],
+      'connect-src': [
+        '*.europe-west1.gcp.commercetools.app',
+        '*.ngrok-free.app',
+      ],
     },
   },
 };
