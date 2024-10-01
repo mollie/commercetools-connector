@@ -12548,3 +12548,66 @@ export type TFetchCustomObjectsQuery = {
     results: [TCustomObject];
   };
 };
+
+export type TFetchCustomObjectDetailsQueryVariables = Exact<{
+  id: Scalars['String'];
+}>;
+
+export type TFetchCustomObjectDetailsQuery = {
+  __typename?: 'Query';
+  customObject?: {
+    __typename?: 'CustomObject';
+    id: string;
+    container: string;
+    key: string;
+    value: string;
+  } | null;
+};
+
+export type TUpdateCustomObjectDetailsMutationVariables = Exact<{
+  container: Scalars['String'];
+  key: Scalars['String'];
+  value: Scalars['String'];
+  version?: Scalars['Long'];
+}>;
+
+export type TUpdateCustomObjectDetailsMutation = {
+  __typename?: 'Mutation';
+  updateCustomObject?: {
+    __typename?: 'CustomObject';
+    id: string;
+    container: string;
+    key: string;
+    value: string;
+    version: string;
+    createdAt: string;
+    lastModifiedAt: string;
+  };
+};
+
+export type TRemoveCustomObjectDetailsMutationVariables = Exact<{
+  id: Scalars['String'];
+}>;
+
+export type TRemoveCustomObjectDetailsMutation = {
+  __typename?: 'Mutation';
+  updateCustomObject?: {
+    __typename?: 'CustomObject';
+    id: string;
+  };
+};
+
+export type TFetchExtensionDestinationQueryVariables = Exact<{
+  key: Scalars['String'];
+}>;
+
+export type TFetchExtensionDestinationQuery = {
+  __typename?: 'Query';
+  extension?: {
+    __typename?: 'Extension';
+    destination?: {
+      type: string;
+      url: string;
+    };
+  } | null;
+};

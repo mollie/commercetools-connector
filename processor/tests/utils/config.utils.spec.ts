@@ -12,6 +12,8 @@ describe('Test src/utils/config.utils.ts', () => {
         projectKey: process.env.CTP_PROJECT_KEY,
         scope: process.env.CTP_SCOPE,
         region: process.env.CTP_REGION,
+        sessionAudience: process.env.CTP_SESSION_AUDIENCE,
+        sessionIssuer: process.env.CTP_SESSION_ISSUER,
       },
       mollie: {
         liveApiKey: process.env.MOLLIE_API_LIVE_KEY,

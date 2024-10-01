@@ -1,1 +1,6 @@
-export { useCustomObjectsFetcher } from './use-custom-objects-connector';
+export {
+  useCustomObjectsFetcher,
+  useCustomObjectDetailsFetcher,
+  useCustomObjectDetailsUpdater,
+  useCustomObjectDetailsRemover,
+} from './use-custom-objects-connector';

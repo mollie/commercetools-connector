@@ -21,6 +21,8 @@ export type ConnectorEnvVars = {
     projectKey: string;
     scope: string;
     region: string;
+    sessionAudience: string;
+    sessionIssuer: string;
   };
   mollie: {
     testApiKey: string;

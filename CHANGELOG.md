@@ -4,11 +4,30 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## v2.0.0-alpha
+## v1.2.0-alpha
 
 Added
 
 - Mollie custom application initialization
+
+## v1.1.1
+
+Fixes
+
+- Type converting issue in payment method listing endpoint
+
+## v1.1.0
+
+Added
+
+- DockerImage for self hosting on AWS
+- Installation endpoint for required configurations
+
+## v1.0.3
+
+Added
+
+- Endpoints for checking connector statuses
 
 ## v1.0.2
 

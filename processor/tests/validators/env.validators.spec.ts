@@ -66,6 +66,30 @@ describe('Test env.validators.ts', () => {
     {
       index1: 5,
       index2: 0,
+      field1: 'commerceTools',
+      field2: 'sessionAudience',
+      error: {
+        code: 'InvalidSessionAudience',
+        message: 'Not a valid sessionAudience.',
+        referencedBy: 'environmentVariables',
+      },
+      condition: { min: 1, max: undefined },
+    },
+    {
+      index1: 6,
+      index2: 0,
+      field1: 'commerceTools',
+      field2: 'sessionIssuer',
+      error: {
+        code: 'InvalidSessionIssuer',
+        message: 'Not a valid sessionIssuer.',
+        referencedBy: 'environmentVariables',
+      },
+      condition: { min: 1, max: undefined },
+    },
+    {
+      index1: 7,
+      index2: 0,
       field1: 'mollie',
       field2: 'testApiKey',
       error: {
@@ -76,7 +100,7 @@ describe('Test env.validators.ts', () => {
       condition: undefined,
     },
     {
-      index1: 6,
+      index1: 8,
       index2: 0,
       field1: 'mollie',
       field2: 'liveApiKey',
@@ -88,7 +112,7 @@ describe('Test env.validators.ts', () => {
       condition: undefined,
     },
     {
-      index1: 7,
+      index1: 9,
       index2: 0,
       field1: 'mollie',
       field2: 'profileId',
@@ -100,7 +124,7 @@ describe('Test env.validators.ts', () => {
       condition: undefined,
     },
     {
-      index1: 8,
+      index1: 10,
       index2: 0,
       field1: 'mollie',
       field2: 'debug',
@@ -112,7 +136,7 @@ describe('Test env.validators.ts', () => {
       condition: { min: 1, max: 1 },
     },
     {
-      index1: 9,
+      index1: 11,
       index2: 0,
       field1: 'mollie',
       field2: 'cardComponent',
@@ -124,7 +148,7 @@ describe('Test env.validators.ts', () => {
       condition: { min: 1, max: 1 },
     },
     {
-      index1: 10,
+      index1: 12,
       index2: 0,
       field1: 'mollie',
       field2: 'mode',

@@ -5,5 +5,7 @@
   "Welcome.aboutTitle": "About the starter template",
   "Welcome.gettingStartedContent": "If this is the first time building a Custom Application, we recommend to <linkdocs>read the documentation</linkdocs> and get familiar with the tools and concepts behind it.",
   "Welcome.gettingStartedTitle": "Read the documentation",
-  "Welcome.title": "Develop applications for the Merchant Center"
+  "Welcome.title": "Mollie payment methods",
+  "Welcome.noData": "There are no active payment methods available. Please activate them in your mollie dashboard first.",
+  "Welcome.activeHeader": "Payment method is only available for checkout if the status is set to “Active”. Please make sure that the payment method is also enabled in the Mollie Dashboard."
 }
