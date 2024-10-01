@@ -36,7 +36,6 @@ const config = {
     csp: {
       'connect-src': [
         '*.europe-west1.gcp.commercetools.app',
-        '*.ngrok-free.app',
       ],
     },
   },
