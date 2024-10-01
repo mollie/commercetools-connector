@@ -10,6 +10,25 @@ Added
 
 - Mollie custom application initialization
 
+## v1.1.1
+
+Fixes
+
+- Type converting issue in payment method listing endpoint
+
+## v1.1.0
+
+Added
+
+- DockerImage for self hosting on AWS
+- Installation endpoint for required configurations
+
+## v1.0.3
+
+Added
+
+- Endpoints for checking connector statuses
+
 ## v1.0.2
 
 Fixes
