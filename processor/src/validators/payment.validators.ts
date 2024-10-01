@@ -38,7 +38,7 @@ const validateCardToken = (cardToken: string | undefined, ctPayment: CTPayment):
   }
 };
 
-const validateBanktransfer = (paymentCustomFields: any, ctPayment: CTPayment): void => {
+export const validateBanktransfer = (paymentCustomFields: any, ctPayment: CTPayment): void => {
   if (!paymentCustomFields?.billingAddress || !paymentCustomFields?.billingAddress?.email) {
     throwError(
       'validateBanktransfer',
@@ -66,8 +66,10 @@ const validateBlik = (paymentCustomFields: any, ctPayment: CTPayment): void => {
   }
 };
 
-const paymentMethodRequiredExtraParameters = (method: string): method is MolliePaymentMethods | CustomPaymentMethod => {
-  return [MolliePaymentMethods.creditcard, CustomPaymentMethod.blik].includes(
+export const paymentMethodRequiredExtraParameters = (
+  method: string,
+): method is MolliePaymentMethods | CustomPaymentMethod => {
+  return [MolliePaymentMethods.creditcard, CustomPaymentMethod.blik, MolliePaymentMethods.banktransfer].includes(
     method as MolliePaymentMethods | CustomPaymentMethod,
   );
 };
