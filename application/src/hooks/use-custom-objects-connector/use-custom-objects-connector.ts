@@ -69,7 +69,7 @@ export const useCustomObjectsFetcher: TUseCustomObjectsFetcher = ({
   };
 };
 type TUseCustomObjectDetailsFetcher = (id: string) => {
-  customObject?: TFetchCustomObjectDetailsQuery['customObject'];
+  method?: TFetchCustomObjectDetailsQuery['customObject'];
   error?: ApolloError;
   loading: boolean;
 };
@@ -90,7 +90,7 @@ export const useCustomObjectDetailsFetcher: TUseCustomObjectDetailsFetcher = (
   });
 
   return {
-    customObject: data?.customObject,
+    method: data?.customObject,
     error,
     loading,
   };

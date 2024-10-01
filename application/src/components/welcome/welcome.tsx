@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { useRouteMatch } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
+import { Switch, useHistory, useRouteMatch } from 'react-router-dom';
 import Spacings from '@commercetools-uikit/spacings';
 import Text from '@commercetools-uikit/text';
 import messages from './messages';
@@ -12,13 +12,14 @@ import { useApplicationContext } from '@commercetools-frontend/application-shell
 import {
   useCustomObjectsFetcher,
   useCustomObjectDetailsUpdater,
+  useCustomObjectDetailsRemover,
 } from '../../hooks/use-custom-objects-connector';
 import { EXTENSION_KEY, OBJECT_CONTAINER_NAME } from '../../constants';
 import DataTable from '@commercetools-uikit/data-table';
 import IconButton from '@commercetools-uikit/icon-button';
 import { usePaymentMethodsFetcher } from '../../hooks/use-mollie-connector';
 import { ContentNotification } from '@commercetools-uikit/notifications';
-import { CustomMethodObject } from '../../types/app';
+import { CustomMethodObject, MollieMethod } from '../../types/app';
 import LoadingSpinner from '@commercetools-uikit/loading-spinner';
 import Tootltip from '@commercetools-uikit/tooltip';
 import {
@@ -28,22 +29,23 @@ import {
 } from '@commercetools-uikit/icons';
 import { useExtensionDestinationFetcher } from '../../hooks/use-extensions-connector';
 import { getErrorMessage } from '../../helpers';
+import { SuspendedRoute } from '@commercetools-frontend/application-shell';
+import MethodDetails from '../method-details';
 
 const columns = [
   { key: 'description', label: 'Payment method' },
   {
-    key: 'active',
+    key: 'status',
     label: 'Active',
     headerIcon: (
       <Tootltip
         placement="right-start"
         title={messages.activeHeader.defaultMessage}
-        children={
-          <span style={{ display: 'flex', alignItems: 'center' }}>
-            <InfoIcon color="primary40" size="20"></InfoIcon>
-          </span>
-        }
-      ></Tootltip>
+      >
+        <span style={{ display: 'flex', alignItems: 'center' }}>
+          <InfoIcon color="primary40" size="20"></InfoIcon>
+        </span>
+      </Tootltip>
     ),
   },
   { key: 'image', label: 'Icon' },
@@ -52,12 +54,8 @@ const columns = [
 
 const Welcome = () => {
   const match = useRouteMatch();
-  const context = useApplicationContext((context) => ({
-    dataLocale: context.dataLocale,
-    projectLanguages: context.project?.languages,
-  }));
+  const { push } = useHistory();
   const customObjectUpdater = useCustomObjectDetailsUpdater();
-
   const { page, perPage } = usePaginationState();
   const tableSorting = useDataTableSortingState({
     key: 'key',
@@ -73,46 +71,61 @@ const Welcome = () => {
   const { extension } = useExtensionDestinationFetcher(EXTENSION_KEY);
   const [viewLoading, setViewLoading] = useState<boolean>(true);
   const [methods, setMethods] = useState<CustomMethodObject[]>([]);
+  const [refresh, setRefresh] = useState<number>(0);
+
+  if (error) {
+    return (
+      <ContentNotification type="error">
+        <Text.Body>{getErrorMessage(error)}</Text.Body>
+      </ContentNotification>
+    );
+  }
+
+  const handleRefresh = useCallback(() => {
+    setRefresh((prev) => prev + 1);
+  }, []);
+
+  const fetchAndUpdateMethods = async (url: string) => {
+    const data = await usePaymentMethodsFetcher(url);
+    if (data && data.length > 0) {
+      const updatedMethods = await Promise.all(
+        data.map(async (method) => {
+          const shouldCreate = customObjectsPaginatedResult?.results.every(
+            (object) => object.key !== method.id
+          );
+
+          if (shouldCreate) {
+            await customObjectUpdater.execute({
+              container: OBJECT_CONTAINER_NAME,
+              key: method.id,
+              value: JSON.stringify(method),
+            });
+            client.reFetchObservableQueries();
+            return method;
+          } else {
+            return customObjectsPaginatedResult?.results.find(
+              (obj) => obj.key === method.id
+            )?.value as CustomMethodObject;
+          }
+        })
+      );
+      setMethods(updatedMethods);
+      setViewLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (
-      extension?.destination?.url &&
-      methods.length === 0 &&
-      customObjectsPaginatedResult
+      (extension?.destination?.url &&
+        methods.length === 0 &&
+        customObjectsPaginatedResult) ||
+      (refresh > 0 && extension?.destination?.url)
     ) {
-      usePaymentMethodsFetcher(extension.destination.url)
-        .then((data) => {
-          if (data && data.length > 0) {
-            data.forEach(async (method) => {
-              const shouldCreate = customObjectsPaginatedResult.results.every(
-                (object) => {
-                  return object.key !== method.id ? true : false;
-                }
-              );
-
-              if (shouldCreate) {
-                await customObjectUpdater.execute({
-                  container: OBJECT_CONTAINER_NAME,
-                  key: method.id,
-                  value: JSON.stringify(method),
-                });
-                client.reFetchObservableQueries();
-              }
-            });
-            setMethods(data);
-          }
-        })
-        .catch((error) => console.error(error))
-        .finally(() => setViewLoading(false));
+      setViewLoading(true);
+      fetchAndUpdateMethods(extension.destination.url);
+      setRefresh(0);
     }
-  }, [
-    usePaymentMethodsFetcher,
-    customObjectsPaginatedResult,
-    customObjectsPaginatedResult?.total,
-    extension?.destination?.url,
-    setMethods,
-    methods,
-  ]);
+  }, [extension, methods.length, customObjectsPaginatedResult, refresh]);
 
   const MollieDataTable =
     !loading && methods && methods.length > 0 ? (
@@ -124,8 +137,8 @@ const Welcome = () => {
           rows={methods}
           itemRenderer={(item, column) => {
             switch (column.key) {
-              case 'active':
-                return item.active ? (
+              case 'status':
+                return item.status === 'Active' ? (
                   <CheckActiveIcon color="success"></CheckActiveIcon>
                 ) : (
                   <CheckInactiveIcon color="neutral60"></CheckInactiveIcon>
@@ -158,9 +171,25 @@ const Welcome = () => {
           sortDirection={tableSorting.value.order}
           onSortChange={tableSorting.onChange}
           onRowClick={(row) => {
-            alert(`Detail view for ${row.description} is not implemented yet!`);
+            push(
+              `${match.url}/${
+                customObjectsPaginatedResult?.results.filter(
+                  (obj) => obj.key === row.id
+                )?.[0]?.id
+              }`
+            );
           }}
         />
+        <Switch>
+          <SuspendedRoute path={`${match.url}/:id`}>
+            <MethodDetails
+              onClose={() => {
+                push(`${match.url}`);
+                handleRefresh();
+              }}
+            />
+          </SuspendedRoute>
+        </Switch>
       </Spacings.Stack>
     ) : (
       <ContentNotification
@@ -168,14 +197,6 @@ const Welcome = () => {
         intlMessage={messages.noData}
       ></ContentNotification>
     );
-
-  if (error) {
-    return (
-      <ContentNotification type="error">
-        <Text.Body>{getErrorMessage(error)}</Text.Body>
-      </ContentNotification>
-    );
-  }
 
   return (
     <Spacings.Stack scale="xl">

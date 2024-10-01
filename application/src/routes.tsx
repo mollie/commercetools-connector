@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Switch, Route, useRouteMatch } from 'react-router-dom';
 import Spacings from '@commercetools-uikit/spacings';
 import Welcome from './components/welcome';
+import MethodDetails from './components/method-details';
 import { useIsAuthorized } from '@commercetools-frontend/permissions';
 import { PERMISSIONS } from './constants';
 
@@ -29,9 +30,7 @@ const ApplicationRoutes = (_props: ApplicationRoutesProps) => {
   return (
     <Spacings.Inset scale="l">
       <Switch>
-        <Route exact path={`${match.path}`}>
-          {canView ? <Welcome /> : null}
-        </Route>
+        <Route path={`${match.path}`}>{canView ? <Welcome /> : null}</Route>
       </Switch>
     </Spacings.Inset>
   );

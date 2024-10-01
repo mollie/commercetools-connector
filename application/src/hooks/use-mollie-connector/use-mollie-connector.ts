@@ -19,7 +19,6 @@ import { MollieMethod, CustomMethodObject } from '../../types/app';
 const config = {
   headers: {
     'Content-Type': 'application/json',
-    'ngrok-skip-browser-warning': 'true',
   },
 };
 
@@ -46,18 +45,18 @@ export const usePaymentMethodsFetcher = async (targetUrl: string) => {
       },
     }
   )
-    .then((res) => convertMollieMethodToCustomObject(res))
+    .then((res) => convertMollieMethodToCustomMethod(res))
     .catch((error) => logger.error(error));
 };
 
-const convertMollieMethodToCustomObject = (
+const convertMollieMethodToCustomMethod = (
   methods: any
 ): CustomMethodObject[] => {
   return methods.map((method: MollieMethod) => ({
     id: method.id,
     description: method.description,
     imageUrl: method.image.svg,
-    active: false,
+    status: 'Inactive',
     displayOrder: 0,
   }));
 };
