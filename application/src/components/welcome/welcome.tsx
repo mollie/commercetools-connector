@@ -8,18 +8,16 @@ import {
   useDataTableSortingState,
   usePaginationState,
 } from '@commercetools-uikit/hooks';
-import { useApplicationContext } from '@commercetools-frontend/application-shell-connectors';
 import {
   useCustomObjectsFetcher,
   useCustomObjectDetailsUpdater,
-  useCustomObjectDetailsRemover,
 } from '../../hooks/use-custom-objects-connector';
 import { EXTENSION_KEY, OBJECT_CONTAINER_NAME } from '../../constants';
 import DataTable from '@commercetools-uikit/data-table';
 import IconButton from '@commercetools-uikit/icon-button';
 import { usePaymentMethodsFetcher } from '../../hooks/use-mollie-connector';
 import { ContentNotification } from '@commercetools-uikit/notifications';
-import { CustomMethodObject, MollieMethod } from '../../types/app';
+import { CustomMethodObject } from '../../types/app';
 import LoadingSpinner from '@commercetools-uikit/loading-spinner';
 import Tootltip from '@commercetools-uikit/tooltip';
 import {
