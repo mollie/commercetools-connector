@@ -30,12 +30,13 @@ const config = {
   mainMenuLink: {
     defaultLabel: 'Mollie',
     labelAllLocales: [],
-    permissions: [PERMISSIONS.View],
+    permissions: [PERMISSIONS.Manage],
   },
   headers: {
     csp: {
       'connect-src': [
         '*.europe-west1.gcp.commercetools.app',
+        '*.europe-west1.gcp.commercetools.com',
       ],
     },
   },

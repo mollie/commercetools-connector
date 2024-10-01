@@ -19,11 +19,15 @@ import { MollieMethod, CustomMethodObject } from '../../types/app';
 const config = {
   headers: {
     'Content-Type': 'application/json',
-    'ngrok-skip-browser-warning': 'true',
   },
 };
 
-export const usePaymentMethodsFetcher = async (targetUrl: string) => {
+export const usePaymentMethodsFetcher = async (targetUrl?: string) => {
+  if (!targetUrl) {
+    logger.error('usePaymentMethodsFetcher - No target URL provided');
+    return [];
+  }
+
   const userAgent = createHttpUserAgent(USER_AGENT);
 
   return await executeHttpClientRequest(
