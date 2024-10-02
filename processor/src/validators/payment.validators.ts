@@ -39,7 +39,7 @@ const validateCardToken = (cardToken: string | undefined, ctPayment: CTPayment):
 };
 
 export const validateBanktransfer = (paymentCustomFields: any, ctPayment: CTPayment): void => {
-  if (!paymentCustomFields?.billingAddress || !paymentCustomFields?.billingAddress?.email) {
+  if (!paymentCustomFields?.billingAddress?.email) {
     throwError(
       'validateBanktransfer',
       'email is required for payment method banktransfer. Please make sure you have sent it in billingAddress.email of the custom field.',
@@ -192,7 +192,7 @@ export const checkValidRefundTransactionForCreate = (ctPayment: CTPayment): bool
     throwError('checkValidRefundTransactionForCreate', 'No initial refund transaction found.');
   }
 
-  if (!initialRefundTransaction?.amount || !initialRefundTransaction?.amount.centAmount) {
+  if (!initialRefundTransaction?.amount?.centAmount) {
     throwError(
       'checkValidRefundTransactionForCreate',
       `No amount found in initial refund transaction, CommerceTools Transaction ID: ${initialRefundTransaction?.id}.`,
