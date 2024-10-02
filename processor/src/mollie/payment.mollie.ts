@@ -16,6 +16,12 @@ import { getApiKey } from '../utils/config.utils';
 import { MOLLIE_VERSION_STRINGS } from '../utils/constant.utils';
 import fetch from 'node-fetch';
 
+const HEADER = {
+  'Content-Type': 'application/json',
+  Authorization: `Bearer ${getApiKey()}`,
+  versionStrings: MOLLIE_VERSION_STRINGS,
+};
+
 /**
  * Creates a Mollie payment using the provided payment parameters.
  *
@@ -108,15 +114,9 @@ export const createPaymentWithCustomMethod = async (paymentParams: PaymentCreate
   let errorMessage;
 
   try {
-    const headers = {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${getApiKey()}`,
-      versionStrings: MOLLIE_VERSION_STRINGS,
-    };
-
     const response = await fetch('https://api.mollie.com/v2/payments', {
       method: 'POST',
-      headers,
+      headers: HEADER,
       body: JSON.stringify(paymentParams),
     });
 
@@ -140,6 +140,32 @@ export const createPaymentWithCustomMethod = async (paymentParams: PaymentCreate
   } catch (error: unknown) {
     if (!errorMessage) {
       errorMessage = 'SCTM - createPaymentWithCustomMethod - Failed to create a payment with unknown errors';
+      logger.error(errorMessage, {
+        error,
+      });
+    }
+
+    throw new CustomError(400, errorMessage);
+  }
+};
+
+export const getAllPaymentMethods = async (options: MethodsListParams): Promise<List<Method>> => {
+  let errorMessage;
+
+  try {
+    const queryParams = new URLSearchParams(options as any).toString();
+    const url = `https://api.mollie.com/v2/methods/all?${queryParams}`;
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: HEADER,
+    });
+
+    const data = await response.json();
+    return data;
+  } catch (error: unknown) {
+    if (!errorMessage) {
+      errorMessage = 'SCTM - getAllPaymentMethods - Failed to get all payment methods with unknown errors';
       logger.error(errorMessage, {
         error,
       });
