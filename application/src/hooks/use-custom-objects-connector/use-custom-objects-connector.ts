@@ -51,7 +51,7 @@ export const useCustomObjectsFetcher: TUseCustomObjectsFetcher = ({
     TFetchCustomObjectsQueryVariables
   >(FetchCustomObjectsQuery, {
     variables: {
-      limit: perPage.value,
+      limit: 100,
       offset: (page.value - 1) * perPage.value,
       sort: [`${tableSorting.value.key} ${tableSorting.value.order}`],
       container: container,

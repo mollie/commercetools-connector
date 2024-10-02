@@ -22,7 +22,12 @@ const config = {
   },
 };
 
-export const usePaymentMethodsFetcher = async (targetUrl: string) => {
+export const usePaymentMethodsFetcher = async (targetUrl?: string) => {
+  if (!targetUrl) {
+    logger.error('usePaymentMethodsFetcher - No target URL provided');
+    return [];
+  }
+
   const userAgent = createHttpUserAgent(USER_AGENT);
 
   return await executeHttpClientRequest(
@@ -50,9 +55,13 @@ export const usePaymentMethodsFetcher = async (targetUrl: string) => {
 };
 
 const convertMollieMethodToCustomMethod = (
-  methods: any
+  results: any
 ): CustomMethodObject[] => {
-  return methods.map((method: MollieMethod) => ({
+  const methods = results['_embedded']['methods'];
+  const availableMethods = methods.filter(
+    (method: MollieMethod) => method.status === 'activated'
+  );
+  return availableMethods.map((method: MollieMethod) => ({
     id: method.id,
     description: method.description,
     imageUrl: method.image.svg,

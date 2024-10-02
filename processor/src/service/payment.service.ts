@@ -6,7 +6,7 @@ import {
   createMollieCreatePaymentParams,
   mapCommercetoolsPaymentCustomFieldsToMollieListParams,
 } from '../utils/map.utils';
-import { CentPrecisionMoney, Extension, Payment, UpdateAction } from '@commercetools/platform-sdk';
+import { CentPrecisionMoney, CustomObject, Extension, Payment, UpdateAction } from '@commercetools/platform-sdk';
 import CustomError from '../errors/custom.error';
 import {
   cancelPayment,
@@ -58,6 +58,7 @@ import { cancelPaymentRefund, createPaymentRefund, getPaymentRefund } from '../m
 import { ApplePaySessionRequest, CustomPayment, SupportedPaymentMethods } from '../types/mollie.types';
 import { parseStringToJsonObject } from '../utils/app.utils';
 import ApplePaySession from '@mollie/api-client/dist/types/src/data/applePaySession/ApplePaySession';
+import { getMethodConfigObjects } from '../commercetools/customObjects.commercetools';
 
 /**
  * Handles listing payment methods by payment.
@@ -70,23 +71,35 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
   try {
     const mollieOptions = await mapCommercetoolsPaymentCustomFieldsToMollieListParams(ctPayment);
     const methods: List<Method> = await listPaymentMethods(mollieOptions);
+    const configObjects: CustomObject[] = await getMethodConfigObjects();
+    let validatedMethods: Method[] = [];
+    if (configObjects.length) {
+      validatedMethods = methods.filter(
+        (method) =>
+          !!configObjects.find((config) => config.key === method.id && config.value.status === 'Active') &&
+          SupportedPaymentMethods[method.id.toString() as SupportedPaymentMethods],
+      );
+    } else {
+      validatedMethods = methods.filter(
+        (method: Method) => SupportedPaymentMethods[method.id.toString() as SupportedPaymentMethods],
+      );
+    }
+
     const enableCardComponent =
       toBoolean(readConfiguration().mollie.cardComponent, true) &&
-      methods.filter((method: Method) => method.id === PaymentMethod.creditcard).length > 0;
+      validatedMethods.filter((method: Method) => method.id === PaymentMethod.creditcard).length > 0;
     const ctUpdateActions: UpdateAction[] = [];
 
     if (enableCardComponent) {
-      methods.splice(
-        methods.findIndex((method: Method) => method.id === PaymentMethod.creditcard),
+      validatedMethods.splice(
+        validatedMethods.findIndex((method: Method) => method.id === PaymentMethod.creditcard),
         1,
       );
     }
 
     const availableMethods = JSON.stringify({
-      count: methods.length,
-      methods: methods.length
-        ? methods.filter((method: Method) => SupportedPaymentMethods[method.id.toString() as SupportedPaymentMethods])
-        : [],
+      count: validatedMethods.length,
+      methods: validatedMethods.length ? validatedMethods : [],
     });
 
     ctUpdateActions.push(
