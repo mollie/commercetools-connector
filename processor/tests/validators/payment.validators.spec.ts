@@ -12,8 +12,10 @@ import {
   checkValidRefundTransactionForCreate,
   checkValidRefundTransactionForCancel,
   checkValidSuccessAuthorizationTransaction,
+  validateBanktransfer,
+  paymentMethodRequiredExtraParameters,
 } from './../../src/validators/payment.validators';
-import { describe, it, expect, jest, afterEach } from '@jest/globals';
+import { describe, it, expect, jest, afterEach, test } from '@jest/globals';
 import CustomError from '../../src/errors/custom.error';
 import SkipError from '../../src/errors/skip.error';
 import { logger } from '../../src/utils/logger.utils';
@@ -280,6 +282,62 @@ describe('checkPaymentMethodInput', () => {
     checkPaymentMethodInput(ConnectorActions.CreatePayment, CTPayment);
 
     expect(checkPaymentMethodSpecificParameters).toBeCalledTimes(1);
+  });
+
+  it('should validate the billing email for banktransfer method', () => {
+    const paymentValidators = require('../../src/validators/payment.validators');
+
+    jest.spyOn(paymentValidators, 'checkPaymentMethodSpecificParameters');
+    jest.spyOn(paymentValidators, 'validateBanktransfer');
+
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'banktransfer',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm-payment-custom-fields',
+        },
+        fields: {
+          sctm_create_payment_request:
+            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/","cardToken":"token_12345"}',
+        },
+      },
+    };
+
+    try {
+      checkPaymentMethodInput(ConnectorActions.CreatePayment, CTPayment);
+    } catch (error) {
+      expect(checkPaymentMethodSpecificParameters).toBeCalledTimes(1);
+      expect(checkPaymentMethodSpecificParameters).toBeCalledWith(
+        CTPayment,
+        CTPayment.paymentMethodInfo.method as string,
+      );
+
+      expect(validateBanktransfer).toBeCalledTimes(1);
+
+      expect(logger.error).toBeCalledTimes(1);
+      expect(logger.error).toBeCalledWith(
+        'SCTM - validateBanktransfer - email is required for payment method banktransfer. Please make sure you have sent it in billingAddress.email of the custom field.',
+        {
+          commerceToolsPayment: CTPayment,
+        },
+      );
+    }
   });
 });
 
@@ -1352,5 +1410,32 @@ describe('validateCommerceToolsPaymentPayload', () => {
     expect(checkValidSuccessAuthorizationTransaction).toBeCalledTimes(1);
     expect(checkValidSuccessAuthorizationTransaction).toBeCalledWith(CTPayment);
     expect(checkValidSuccessAuthorizationTransaction).toReturnWith(true);
+  });
+});
+
+describe('paymentMethodRequiredExtraParameters', () => {
+  test.each([
+    {
+      method: 'creditcard',
+      result: true,
+    },
+    {
+      method: 'banktransfer',
+      result: true,
+    },
+    {
+      method: 'blik',
+      result: true,
+    },
+    {
+      method: 'applepay',
+      result: false,
+    },
+    {
+      method: 'ideal',
+      result: false,
+    },
+  ])('should return $result for method $method', ({ method, result }) => {
+    expect(paymentMethodRequiredExtraParameters(method)).toBe(result);
   });
 });
