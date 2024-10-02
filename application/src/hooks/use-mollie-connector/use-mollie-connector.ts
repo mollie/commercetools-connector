@@ -50,14 +50,16 @@ export const usePaymentMethodsFetcher = async (targetUrl?: string) => {
       },
     }
   )
-    .then((res) => convertMollieMethodToCustomObject(res))
+    .then((res) => convertMollieMethodToCustomMethod(res))
     .catch((error) => logger.error(error));
 };
 
-const convertMollieMethodToCustomObject = (
-  methods: any
+const convertMollieMethodToCustomMethod = (
+  results: any
 ): CustomMethodObject[] => {
-  return methods.map((method: MollieMethod) => ({
+  const methods = results['_embedded']['methods'];
+  const availableMethods = methods.filter((method: MollieMethod) => method.status === 'activated');
+  return availableMethods.map((method: MollieMethod) => ({
     id: method.id,
     description: method.description,
     imageUrl: method.image.svg,
