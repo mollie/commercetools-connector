@@ -32,7 +32,7 @@ export function parseStringToJsonObject(
   try {
     return JSON.parse(targetedString);
   } catch {
-    const errorMessage = `${errorPrefix ? errorPrefix : 'SCTM - PAYMENT PROCESSING'} - Failed to parse the JSON string from the custom field ${fieldName}.`;
+    const errorMessage = `${errorPrefix || 'SCTM - PAYMENT PROCESSING'} - Failed to parse the JSON string from the custom field ${fieldName}.`;
     logger.error(errorMessage, {
       commerceToolsId: commerceToolsId,
     });
@@ -48,10 +48,10 @@ export function parseStringToJsonObject(
  * @return {object} - The object with empty properties removed.
  */
 export function removeEmptyProperties(obj: object) {
-  const clonedObject: { [key: string]: any } = Object.assign({}, obj);
+  const clonedObject: { [key: string]: any } = { ...obj };
 
   for (const key in clonedObject) {
-    if (Object.prototype.hasOwnProperty.call(clonedObject, key)) {
+    if (Object.hasOwn(clonedObject, key)) {
       const value = clonedObject[key];
 
       if (
