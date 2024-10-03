@@ -117,7 +117,7 @@ const MethodDetails = (props: TMethodDetailsProps) => {
       {(formProps) => {
         return (
           <CustomFormModalPage
-            title={formProps.values?.description}
+            title={formProps.values?.description ?? ''}
             isOpen
             onClose={() => props.onClose()}
             formControls={

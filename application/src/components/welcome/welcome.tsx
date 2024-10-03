@@ -67,12 +67,12 @@ const Welcome = () => {
       container: OBJECT_CONTAINER_NAME,
     });
   const { extension } = useExtensionDestinationFetcher(EXTENSION_KEY);
-  const [viewLoading, setViewLoading] = useState<boolean>(true);
   const [methods, setMethods] = useState<CustomMethodObject[]>([]);
   const [refresh, setRefresh] = useState<number>(0);
-  const [noData, setNoData] = useState<boolean>(false);
 
-  const fetchedData = usePaymentMethodsFetcher(extension?.destination?.url);
+  const { fetchedData, fetchedDataLoading } = usePaymentMethodsFetcher(
+    extension?.destination?.url
+  );
 
   const handleRefresh = useCallback(() => {
     setRefresh((prev) => prev + 1);
@@ -101,9 +101,6 @@ const Welcome = () => {
         })
       );
       setMethods(updatedMethods);
-      setViewLoading(false);
-    } else {
-      setNoData(true);
     }
   }, [customObjectUpdater, customObjectsPaginatedResult?.results, fetchedData]);
 
@@ -114,7 +111,6 @@ const Welcome = () => {
         customObjectsPaginatedResult) ||
       (refresh > 0 && extension?.destination?.url)
     ) {
-      setViewLoading(true);
       FetchAndUpdateMethods();
       setRefresh(0);
     }
@@ -134,8 +130,18 @@ const Welcome = () => {
     );
   }
 
+  const NoDataFallback = !fetchedDataLoading ? (
+    <ContentNotification
+      data-testid="no-data-notification"
+      type="info"
+      intlMessage={messages.noData}
+    ></ContentNotification>
+  ) : (
+    <LoadingSpinner data-testid="loading-spinner" scale="l"></LoadingSpinner>
+  );
+
   const MollieDataTable =
-    !loading && methods && methods.length > 0 ? (
+    !loading && methods && methods.length > 0 && fetchedData ? (
       <Spacings.Stack scale="l">
         <DataTable<NonNullable<CustomMethodObject>>
           isCondensed
@@ -199,11 +205,7 @@ const Welcome = () => {
         </Switch>
       </Spacings.Stack>
     ) : (
-      <ContentNotification
-        data-testid="no-data-notification"
-        type="info"
-        intlMessage={messages.noData}
-      ></ContentNotification>
+      NoDataFallback
     );
 
   return (
@@ -218,14 +220,7 @@ const Welcome = () => {
           />
         </Spacings.Stack>
       </PageContentFull>
-      {viewLoading && !noData ? (
-        <LoadingSpinner
-          data-testid="loading-spinner"
-          scale="l"
-        ></LoadingSpinner>
-      ) : (
-        MollieDataTable
-      )}
+      {MollieDataTable}
     </Spacings.Stack>
   );
 };
