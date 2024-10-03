@@ -32,7 +32,7 @@ export function parseStringToJsonObject(
   try {
     return JSON.parse(targetedString);
   } catch {
-    const errorMessage = `${errorPrefix || 'SCTM - PAYMENT PROCESSING'} - Failed to parse the JSON string from the custom field ${fieldName}.`;
+    const errorMessage = `${errorPrefix ?? 'SCTM - PAYMENT PROCESSING'} - Failed to parse the JSON string from the custom field ${fieldName}.`;
     logger.error(errorMessage, {
       commerceToolsId: commerceToolsId,
     });
