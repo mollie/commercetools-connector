@@ -1,11 +1,12 @@
 {
   "Channels.noResults": "There are no channels available in this project.",
   "Channels.title": "Channels list",
-  "Welcome.aboutContent": "This Custom Application has some built-in functionalities for demo purposes to help you getting started. For example, the <linkchannels>Channels page</linkchannels> fetches channels from the commercetools platform and renders them in a table.",
-  "Welcome.aboutTitle": "About the starter template",
-  "Welcome.gettingStartedContent": "If this is the first time building a Custom Application, we recommend to <linkdocs>read the documentation</linkdocs> and get familiar with the tools and concepts behind it.",
-  "Welcome.gettingStartedTitle": "Read the documentation",
-  "Welcome.title": "Mollie payment methods",
+  "MethodDetails.methodDetailsErrorMessage": "We were unable to fetch the custom object details. Please check your connection, the provided custom object ID and try again.",
+  "MethodDetails.methodDetailsStatusUpdated": "{methodName} {status}",
+  "MethodDetails.methodDetailsUpdated": "{methodName} updated",
+  "Welcome.activeHeader": "Payment method is only available for checkout if the status is set to “Active”. Please make sure that the payment method is also enabled in the Mollie Dashboard.",
   "Welcome.noData": "There are no active payment methods available. Please activate them in your mollie dashboard first.",
-  "Welcome.activeHeader": "Payment method is only available for checkout if the status is set to “Active”. Please make sure that the payment method is also enabled in the Mollie Dashboard."
+  "Welcome.notice": "Content will follow...",
+  "Welcome.subtitle": "Welcome to the Mollie Custom Application. This application allows you to manage your Mollie payments in the Commercetools Merchant Center.",
+  "Welcome.title": "Mollie payment methods"
 }

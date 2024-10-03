@@ -1,3 +1,7 @@
+/// <reference types="cypress" />
+/// <reference types="@testing-library/cypress" />
+/// <reference types="@commercetools-frontend/cypress" />
+
 import {
   entryPointUriPath,
   APPLICATION_BASE_ROUTE,
@@ -11,7 +15,7 @@ describe('Test welcome.cy.', () => {
     });
   });
   it('should render page', () => {
-    cy.findByText('Mollie').should('exist');
-    cy.findByText('Content will follow...').should('exist');
+    cy.findByText('Mollie payment methods').should('exist');
+    cy.findByText('Content will follow...').should('not.exist');
   });
 });

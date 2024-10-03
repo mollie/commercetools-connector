@@ -33,7 +33,7 @@ const MethodDetails = (props: TMethodDetailsProps) => {
   const intl = useIntl();
   const params = useParams<{ id: string }>();
   const { loading, error, method } = useCustomObjectDetailsFetcher(params.id);
-  const { dataLocale, projectLanguages } = useApplicationContext((context) => ({
+  const { dataLocale } = useApplicationContext((context) => ({
     dataLocale: context.dataLocale ?? '',
     projectLanguages: context.project?.languages ?? [],
   }));
@@ -41,7 +41,7 @@ const MethodDetails = (props: TMethodDetailsProps) => {
   const showNotification = useShowNotification();
   const canManage = true;
 
-  const handleSubmit = async (formikValues: any) => {
+  const handleSubmit = async (formikValues: TMethodObjectValueFormValues) => {
     try {
       if (method?.container && method?.key && formikValues) {
         await customObjectUpdater.execute({
@@ -62,30 +62,31 @@ const MethodDetails = (props: TMethodDetailsProps) => {
     }
   };
 
-  const handleChange = async (status: string, formikValues: any) => {
+  const handleChange = async (
+    status: string,
+    formikValues: TMethodObjectValueFormValues
+  ) => {
     try {
       if (method?.container && method?.key && formikValues) {
-        if (method?.container && method?.key && formikValues) {
-          await customObjectUpdater.execute({
-            container: method?.container,
-            key: method?.key,
-            value: JSON.stringify({
-              id: formikValues.id,
-              description: formikValues.description,
-              status: status,
-              imageUrl: formikValues.imageUrl,
-              displayOrder: formikValues.displayOrder,
-            }),
-          });
-          showNotification({
-            kind: NOTIFICATION_KINDS_SIDE.success,
-            domain: DOMAINS.SIDE,
-            text: intl.formatMessage(messages.methodDetailsStatusUpdated, {
-              methodName: formikValues.description,
-              status: status === 'Active' ? 'activated' : 'deactivated',
-            }),
-          });
-        }
+        await customObjectUpdater.execute({
+          container: method?.container,
+          key: method?.key,
+          value: JSON.stringify({
+            id: formikValues.id,
+            description: formikValues.description,
+            status: status,
+            imageUrl: formikValues.imageUrl,
+            displayOrder: formikValues.displayOrder,
+          }),
+        });
+        showNotification({
+          kind: NOTIFICATION_KINDS_SIDE.success,
+          domain: DOMAINS.SIDE,
+          text: intl.formatMessage(messages.methodDetailsStatusUpdated, {
+            methodName: formikValues.description,
+            status: status === 'Active' ? 'activated' : 'deactivated',
+          }),
+        });
       }
     } catch (error) {
       console.error(error);
@@ -98,7 +99,13 @@ const MethodDetails = (props: TMethodDetailsProps) => {
     showNotification,
     intl,
   ]);
-  const handleChangeCallback = useCallback(handleChange, [method]);
+  const handleChangeCallback = useCallback(handleChange, [
+    customObjectUpdater,
+    intl,
+    method?.container,
+    method?.key,
+    showNotification,
+  ]);
 
   return (
     <MethodDetailsForm
@@ -122,7 +129,7 @@ const MethodDetails = (props: TMethodDetailsProps) => {
                   onChange={(event) => {
                     handleChangeCallback(
                       event.target.value as string,
-                      formProps.values
+                      formProps.values as TMethodObjectValueFormValues
                     );
                   }}
                   options={[

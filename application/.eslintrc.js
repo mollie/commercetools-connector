@@ -5,7 +5,7 @@ process.env.ENABLE_NEW_JSX_TRANSFORM = 'true';
  */
 module.exports = {
   extends: ['@commercetools-frontend/eslint-config-mc-app'],
-  plugins: ['graphql'],
+  plugins: ['graphql', 'cypress'],
   overrides: [
     {
       files: ['**/*.ctp.graphql'],

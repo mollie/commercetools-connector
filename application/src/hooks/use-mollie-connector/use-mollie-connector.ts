@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import {
   buildApiUrl,
   executeHttpClientRequest,
@@ -9,7 +10,11 @@ import {
   EXTENSION_URL_PATH,
   APPLICATION_URL_PATH,
 } from '../../constants';
-import { MollieMethod, CustomMethodObject } from '../../types/app';
+import {
+  MollieMethod,
+  CustomMethodObject,
+  MollieResult,
+} from '../../types/app';
 
 /**
  * For local development using ngrok forwards the requests to the connector
@@ -19,10 +24,27 @@ import { MollieMethod, CustomMethodObject } from '../../types/app';
 const config = {
   headers: {
     'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true',
   },
 };
 
-export const usePaymentMethodsFetcher = async (targetUrl?: string) => {
+const convertMollieMethodToCustomMethod = (
+  results: MollieResult
+): CustomMethodObject[] => {
+  const methods = results['_embedded']['methods'];
+  const availableMethods = methods.filter(
+    (method: MollieMethod) => method.status === 'activated'
+  );
+  return availableMethods.map((method: MollieMethod) => ({
+    id: method.id,
+    description: method.description,
+    imageUrl: method.image.svg,
+    status: 'Inactive',
+    displayOrder: 0,
+  }));
+};
+
+const getMethods = async (targetUrl?: string) => {
   if (!targetUrl) {
     logger.error('usePaymentMethodsFetcher - No target URL provided');
     return [];
@@ -50,22 +72,25 @@ export const usePaymentMethodsFetcher = async (targetUrl?: string) => {
       },
     }
   )
-    .then((res) => convertMollieMethodToCustomMethod(res))
+    .then((res) =>
+      convertMollieMethodToCustomMethod(res as unknown as MollieResult)
+    )
     .catch((error) => logger.error(error));
 };
 
-const convertMollieMethodToCustomMethod = (
-  results: any
-): CustomMethodObject[] => {
-  const methods = results['_embedded']['methods'];
-  const availableMethods = methods.filter(
-    (method: MollieMethod) => method.status === 'activated'
-  );
-  return availableMethods.map((method: MollieMethod) => ({
-    id: method.id,
-    description: method.description,
-    imageUrl: method.image.svg,
-    status: 'Inactive',
-    displayOrder: 0,
-  }));
+export const usePaymentMethodsFetcher = (url: string | undefined) => {
+  const [fetchedData, setFetchedData] = useState<CustomMethodObject[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = (await getMethods(url)) ?? [];
+      setFetchedData(data);
+    };
+
+    if (url) {
+      fetchData();
+    }
+  }, [url]);
+
+  return fetchedData;
 };

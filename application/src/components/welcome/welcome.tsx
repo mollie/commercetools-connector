@@ -59,7 +59,7 @@ const Welcome = () => {
     key: 'key',
     order: 'asc',
   });
-  const { customObjectsPaginatedResult, error, loading, client } =
+  const { customObjectsPaginatedResult, error, loading } =
     useCustomObjectsFetcher({
       page,
       perPage,
@@ -71,23 +71,16 @@ const Welcome = () => {
   const [methods, setMethods] = useState<CustomMethodObject[]>([]);
   const [refresh, setRefresh] = useState<number>(0);
 
-  if (error) {
-    return (
-      <ContentNotification type="error">
-        <Text.Body>{getErrorMessage(error)}</Text.Body>
-      </ContentNotification>
-    );
-  }
+  const fetchedData = usePaymentMethodsFetcher(extension?.destination?.url);
 
   const handleRefresh = useCallback(() => {
     setRefresh((prev) => prev + 1);
   }, []);
 
-  const fetchAndUpdateMethods = async (url: string) => {
-    const data = await usePaymentMethodsFetcher(url);
-    if (data && data.length > 0) {
+  const FetchAndUpdateMethods = useCallback(async () => {
+    if (fetchedData && fetchedData.length > 0) {
       const updatedMethods = await Promise.all(
-        data.map(async (method) => {
+        fetchedData.map(async (method) => {
           const shouldCreate = customObjectsPaginatedResult?.results.every(
             (object) => object.key !== method.id
           );
@@ -98,7 +91,6 @@ const Welcome = () => {
               key: method.id,
               value: JSON.stringify(method),
             });
-            client.reFetchObservableQueries();
             return method;
           } else {
             return customObjectsPaginatedResult?.results.find(
@@ -110,7 +102,7 @@ const Welcome = () => {
       setMethods(updatedMethods);
       setViewLoading(false);
     }
-  };
+  }, [customObjectUpdater, customObjectsPaginatedResult?.results, fetchedData]);
 
   useEffect(() => {
     if (
@@ -120,10 +112,24 @@ const Welcome = () => {
       (refresh > 0 && extension?.destination?.url)
     ) {
       setViewLoading(true);
-      fetchAndUpdateMethods(extension.destination.url);
+      FetchAndUpdateMethods();
       setRefresh(0);
     }
-  }, [extension, methods.length, customObjectsPaginatedResult, refresh]);
+  }, [
+    extension,
+    methods.length,
+    customObjectsPaginatedResult,
+    refresh,
+    FetchAndUpdateMethods,
+  ]);
+
+  if (error) {
+    return (
+      <ContentNotification type="error">
+        <Text.Body>{getErrorMessage(error)}</Text.Body>
+      </ContentNotification>
+    );
+  }
 
   const MollieDataTable =
     !loading && methods && methods.length > 0 ? (
@@ -200,11 +206,11 @@ const Welcome = () => {
     <Spacings.Stack scale="xl">
       <PageContentFull>
         <Spacings.Stack scale="xl">
-          <Text.Headline as="h1" intlMessage={messages.title} />
+          <Text.Headline data-cy="title" as="h1" intlMessage={messages.title} />
         </Spacings.Stack>
       </PageContentFull>
       {viewLoading ? (
-        <LoadingSpinner scale="l"></LoadingSpinner>
+        <LoadingSpinner data-cy="loading-spinner" scale="l"></LoadingSpinner>
       ) : (
         MollieDataTable
       )}

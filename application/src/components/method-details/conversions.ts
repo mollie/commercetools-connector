@@ -1,7 +1,14 @@
 import LocalizedTextInput from '@commercetools-uikit/localized-text-input';
 import { transformLocalizedFieldToLocalizedString } from '@commercetools-frontend/l10n';
-import type { TFetchChannelDetailsQuery, TFetchCustomObjectDetailsQuery } from '../../types/generated/ctp';
-import type { TMethodObjectFormValues, TFormValues, TMethodObjectValueFormValues } from '../../types';
+import type {
+  TFetchChannelDetailsQuery,
+  TFetchCustomObjectDetailsQuery,
+} from '../../types/generated/ctp';
+import type {
+  TMethodObjectFormValues,
+  TFormValues,
+  TMethodObjectValueFormValues,
+} from '../../types';
 
 export const docToFormValues = (
   channel: TFetchChannelDetailsQuery['channel'],
@@ -12,7 +19,7 @@ export const docToFormValues = (
   name: LocalizedTextInput.createLocalizedString(
     languages,
     transformLocalizedFieldToLocalizedString(channel?.nameAllLocales ?? []) ??
-    {}
+      {}
   ),
 });
 
@@ -22,7 +29,9 @@ export const formValuesToDoc = (formValues: TFormValues) => ({
   roles: formValues.roles,
 });
 
-export const formValuesToMethodDoc = (formValues: TMethodObjectValueFormValues) => ({
+export const formValuesToMethodDoc = (
+  formValues: TMethodObjectValueFormValues
+) => ({
   value: formValues,
 });
 
@@ -34,5 +43,5 @@ export const methodDocToFormValues = (
     container: methodDoc?.container ?? '',
     key: methodDoc?.key ?? '',
     value: methodDoc?.value ?? '',
-  }
-}
+  };
+};

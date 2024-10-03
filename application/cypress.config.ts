@@ -20,7 +20,6 @@ export default defineConfig({
       }
 
       on('task', { customApplicationConfig });
-      // on('task', { customViewConfig });
       return {
         ...cypressConfig,
         env: {

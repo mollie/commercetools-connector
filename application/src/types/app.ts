@@ -35,3 +35,9 @@ export type CustomMethodObject = {
   status: string;
   displayOrder?: number;
 };
+
+export type MollieResult = {
+  _embedded: {
+    methods: MollieMethod[];
+  };
+};

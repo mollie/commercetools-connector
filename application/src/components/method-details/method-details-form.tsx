@@ -1,7 +1,6 @@
 import { useFormik, type FormikHelpers } from 'formik';
 import { ReactElement } from 'react';
 import { TMethodObjectValueFormValues } from '../../types';
-import { useIntl } from 'react-intl';
 import Spacings from '@commercetools-uikit/spacings';
 
 type Formik = ReturnType<typeof useFormik>;
@@ -25,17 +24,16 @@ type TCustomObjectDetailsFormProps = {
 };
 
 const MethodDetailsForm = (props: TCustomObjectDetailsFormProps) => {
-  if (!props.initialValues) {
-    return null;
-  }
-
-  const intl = useIntl();
   const formik = useFormik<TMethodObjectValueFormValues>({
-    initialValues: props.initialValues,
+    initialValues: props.initialValues || ({} as TMethodObjectValueFormValues),
     onSubmit: props.onSubmit,
     validate: () => {},
     enableReinitialize: true,
   });
+
+  if (!props.initialValues) {
+    return null;
+  }
 
   const formElements = (
     <Spacings.Inline scale="l" alignItems="flex-start">
