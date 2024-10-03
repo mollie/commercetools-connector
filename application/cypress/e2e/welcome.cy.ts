@@ -7,14 +7,14 @@ import {
   APPLICATION_BASE_ROUTE,
 } from '../support/constants';
 
-describe('Test welcome.cy.', () => {
+describe('Test welcome.cy.ts', () => {
   beforeEach(() => {
     cy.loginToMerchantCenter({
       entryPointUriPath,
       initialRoute: APPLICATION_BASE_ROUTE,
     });
   });
-  it('should render page', () => {
+  it('should render payment methods list', () => {
     cy.fixture('forward-to').then((response) => {
       cy.intercept('GET', '/proxy/forward-to', {
         statusCode: 200,
@@ -44,7 +44,7 @@ describe('Test welcome.cy.', () => {
     });
   });
 
-  it('should not render page', () => {
+  it('should render no data notification', () => {
     cy.fixture('forward-to').then((response) => {
       cy.intercept('GET', '/proxy/forward-to', {
         statusCode: 200,

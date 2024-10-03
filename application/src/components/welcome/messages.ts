@@ -19,9 +19,29 @@ export default defineMessages({
     defaultMessage:
       'There are no active payment methods available. Please activate them in your mollie dashboard first.',
   },
-  activeHeader: {
-    id: 'Welcome.activeHeader',
+  statusHeader: {
+    id: 'Welcome.statusHeader',
+    defaultMessage: 'Active',
+  },
+  statusHeaderHint: {
+    id: 'Welcome.statusHeaderHint',
     defaultMessage:
       'Payment method is only available for checkout if the status is set to “Active”. Please make sure that the payment method is also enabled in the Mollie Dashboard.',
+  },
+  iconHeader: {
+    id: 'Welcome.iconHeader',
+    defaultMessage: 'Icon',
+  },
+  displayOrderHeader: {
+    id: 'Welcome.displayOrderHeader',
+    defaultMessage: 'Display order',
+  },
+  paymentMethodHeader: {
+    id: 'Welcome.paymentMethodHeader',
+    defaultMessage: 'Payment method',
+  },
+  descriptionHeader: {
+    id: 'Welcome.descriptionHeader',
+    defaultMessage: 'Payment method',
   },
 });

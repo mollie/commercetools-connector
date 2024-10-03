@@ -29,30 +29,37 @@ import { useExtensionDestinationFetcher } from '../../hooks/use-extensions-conne
 import { getErrorMessage } from '../../helpers';
 import { SuspendedRoute } from '@commercetools-frontend/application-shell';
 import MethodDetails from '../method-details';
-
-const columns = [
-  { key: 'description', label: 'Payment method' },
-  {
-    key: 'status',
-    label: 'Active',
-    headerIcon: (
-      <Tootltip
-        placement="right-start"
-        title={messages.activeHeader.defaultMessage}
-      >
-        <span style={{ display: 'flex', alignItems: 'center' }}>
-          <InfoIcon color="primary40" size="20"></InfoIcon>
-        </span>
-      </Tootltip>
-    ),
-  },
-  { key: 'image', label: 'Icon' },
-  { key: 'order', label: 'Display order' },
-];
+import { useIntl } from 'react-intl';
 
 const Welcome = () => {
+  const intl = useIntl();
   const match = useRouteMatch();
   const { push } = useHistory();
+  const columns = [
+    {
+      key: 'description',
+      label: intl.formatMessage(messages.descriptionHeader),
+    },
+    {
+      key: 'status',
+      label: intl.formatMessage(messages.statusHeader),
+      headerIcon: (
+        <Tootltip
+          placement="right-start"
+          title={messages.statusHeaderHint.defaultMessage}
+        >
+          <span
+            data-testid="status-tooltip"
+            style={{ display: 'flex', alignItems: 'center' }}
+          >
+            <InfoIcon color="primary40" size="20"></InfoIcon>
+          </span>
+        </Tootltip>
+      ),
+    },
+    { key: 'image', label: intl.formatMessage(messages.iconHeader) },
+    { key: 'order', label: intl.formatMessage(messages.displayOrderHeader) },
+  ];
   const customObjectUpdater = useCustomObjectDetailsUpdater();
   const { page, perPage } = usePaginationState();
   const tableSorting = useDataTableSortingState({
