@@ -70,6 +70,7 @@ const Welcome = () => {
   const [viewLoading, setViewLoading] = useState<boolean>(true);
   const [methods, setMethods] = useState<CustomMethodObject[]>([]);
   const [refresh, setRefresh] = useState<number>(0);
+  const [noData, setNoData] = useState<boolean>(false);
 
   const fetchedData = usePaymentMethodsFetcher(extension?.destination?.url);
 
@@ -101,6 +102,8 @@ const Welcome = () => {
       );
       setMethods(updatedMethods);
       setViewLoading(false);
+    } else {
+      setNoData(true);
     }
   }, [customObjectUpdater, customObjectsPaginatedResult?.results, fetchedData]);
 
@@ -197,6 +200,7 @@ const Welcome = () => {
       </Spacings.Stack>
     ) : (
       <ContentNotification
+        data-testid="no-data-notification"
         type="info"
         intlMessage={messages.noData}
       ></ContentNotification>
@@ -206,11 +210,19 @@ const Welcome = () => {
     <Spacings.Stack scale="xl">
       <PageContentFull>
         <Spacings.Stack scale="xl">
-          <Text.Headline data-cy="title" as="h1" intlMessage={messages.title} />
+          <Text.Headline
+            id="title"
+            data-testid="title"
+            as="h1"
+            intlMessage={messages.title}
+          />
         </Spacings.Stack>
       </PageContentFull>
-      {viewLoading ? (
-        <LoadingSpinner data-cy="loading-spinner" scale="l"></LoadingSpinner>
+      {viewLoading && !noData ? (
+        <LoadingSpinner
+          data-testid="loading-spinner"
+          scale="l"
+        ></LoadingSpinner>
       ) : (
         MollieDataTable
       )}
