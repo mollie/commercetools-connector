@@ -135,6 +135,30 @@ describe('Test env.validators.ts', () => {
       },
       condition: { min: 1, max: 4 },
     },
+    {
+      index1: 11,
+      index2: 0,
+      field1: 'mollie',
+      field2: 'bankTransferDueDate',
+      error: {
+        code: 'InvalidBankTransferDueDate',
+        message:
+          'Bank transfer due date must be from 1d to 100d, the number must be an integer. If it was not set, the default will be 14d',
+        referencedBy: 'environmentVariables',
+      },
+    },
+    {
+      index1: 12,
+      index2: 0,
+      field1: 'commerceTools',
+      field2: 'authMode',
+      error: {
+        code: 'InvalidAuthMode',
+        message: 'AuthMode should be a valid string of either "0" or "1".',
+        referencedBy: 'environmentVariables',
+      },
+      condition: { min: 1, max: 1 },
+    },
   ])(
     'should return the correct validation array contains [%s, %s]',
     async ({ index1, index2, field1, field2, error, condition }) => {

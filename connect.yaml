@@ -26,6 +26,10 @@ deployAs:
         - key: MOLLIE_BANK_TRANSFER_DUE_DATE
           description: Payment method Bank Transfer due date (1d -> 100d)
           default: "14d"
+        - key: CTP_AUTHENTICATION_MODE
+          description: To enable secure mode for connector requests using JWT authentication (0 or 1)
+          required: true
+          default: "0"
       securedConfiguration:
         - key: MOLLIE_API_TEST_KEY
           description: Mollie PSP test API key
