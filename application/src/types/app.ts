@@ -32,6 +32,12 @@ export type CustomMethodObject = {
   id: string;
   description: string;
   imageUrl: string;
-  active: boolean;
+  status: string;
   displayOrder?: number;
+};
+
+export type MollieResult = {
+  _embedded: {
+    methods: MollieMethod[];
+  };
 };

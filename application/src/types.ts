@@ -13,3 +13,18 @@ export type TGraphqlUpdateAction = Record<string, Record<string, unknown>>;
 export type TChangeNameActionPayload = {
   name: Record<string, string>;
 };
+
+export type TMethodObjectFormValues = {
+  id: string;
+  container: string;
+  key: string;
+  value: string;
+};
+
+export type TMethodObjectValueFormValues = {
+  id: string;
+  description: string;
+  imageUrl: string;
+  status: string;
+  displayOrder?: number;
+};

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { useRouteMatch } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
+import { Switch, useHistory, useRouteMatch } from 'react-router-dom';
 import Spacings from '@commercetools-uikit/spacings';
 import Text from '@commercetools-uikit/text';
 import messages from './messages';
@@ -8,7 +8,6 @@ import {
   useDataTableSortingState,
   usePaginationState,
 } from '@commercetools-uikit/hooks';
-import { useApplicationContext } from '@commercetools-frontend/application-shell-connectors';
 import {
   useCustomObjectsFetcher,
   useCustomObjectDetailsUpdater,
@@ -28,42 +27,46 @@ import {
 } from '@commercetools-uikit/icons';
 import { useExtensionDestinationFetcher } from '../../hooks/use-extensions-connector';
 import { getErrorMessage } from '../../helpers';
-
-const columns = [
-  { key: 'description', label: 'Payment method' },
-  {
-    key: 'active',
-    label: 'Active',
-    headerIcon: (
-      <Tootltip
-        placement="right-start"
-        title={messages.activeHeader.defaultMessage}
-        children={
-          <span style={{ display: 'flex', alignItems: 'center' }}>
-            <InfoIcon color="primary40" size="20"></InfoIcon>
-          </span>
-        }
-      ></Tootltip>
-    ),
-  },
-  { key: 'image', label: 'Icon' },
-  { key: 'order', label: 'Display order' },
-];
+import { SuspendedRoute } from '@commercetools-frontend/application-shell';
+import MethodDetails from '../method-details';
+import { useIntl } from 'react-intl';
 
 const Welcome = () => {
+  const intl = useIntl();
   const match = useRouteMatch();
-  const context = useApplicationContext((context) => ({
-    dataLocale: context.dataLocale,
-    projectLanguages: context.project?.languages,
-  }));
+  const { push } = useHistory();
+  const columns = [
+    {
+      key: 'description',
+      label: intl.formatMessage(messages.descriptionHeader),
+    },
+    {
+      key: 'status',
+      label: intl.formatMessage(messages.statusHeader),
+      headerIcon: (
+        <Tootltip
+          placement="right-start"
+          title={messages.statusHeaderHint.defaultMessage}
+        >
+          <span
+            data-testid="status-tooltip"
+            style={{ display: 'flex', alignItems: 'center' }}
+          >
+            <InfoIcon color="primary40" size="20"></InfoIcon>
+          </span>
+        </Tootltip>
+      ),
+    },
+    { key: 'image', label: intl.formatMessage(messages.iconHeader) },
+    { key: 'order', label: intl.formatMessage(messages.displayOrderHeader) },
+  ];
   const customObjectUpdater = useCustomObjectDetailsUpdater();
-
   const { page, perPage } = usePaginationState();
   const tableSorting = useDataTableSortingState({
     key: 'key',
     order: 'asc',
   });
-  const { customObjectsPaginatedResult, error, loading, client } =
+  const { customObjectsPaginatedResult, error, loading } =
     useCustomObjectsFetcher({
       page,
       perPage,
@@ -71,51 +74,81 @@ const Welcome = () => {
       container: OBJECT_CONTAINER_NAME,
     });
   const { extension } = useExtensionDestinationFetcher(EXTENSION_KEY);
-  const [viewLoading, setViewLoading] = useState<boolean>(true);
   const [methods, setMethods] = useState<CustomMethodObject[]>([]);
+  const [refresh, setRefresh] = useState<number>(0);
+
+  const { fetchedData, fetchedDataLoading } = usePaymentMethodsFetcher(
+    extension?.destination?.url
+  );
+
+  const handleRefresh = useCallback(() => {
+    setRefresh((prev) => prev + 1);
+  }, []);
+
+  const FetchAndUpdateMethods = useCallback(async () => {
+    if (fetchedData && fetchedData.length > 0) {
+      const updatedMethods = await Promise.all(
+        fetchedData.map(async (method) => {
+          const shouldCreate = customObjectsPaginatedResult?.results.every(
+            (object) => object.key !== method.id
+          );
+
+          if (shouldCreate) {
+            await customObjectUpdater.execute({
+              container: OBJECT_CONTAINER_NAME,
+              key: method.id,
+              value: JSON.stringify(method),
+            });
+            return method;
+          } else {
+            return customObjectsPaginatedResult?.results.find(
+              (obj) => obj.key === method.id
+            )?.value as CustomMethodObject;
+          }
+        })
+      );
+      setMethods(updatedMethods);
+    }
+  }, [customObjectUpdater, customObjectsPaginatedResult?.results, fetchedData]);
 
   useEffect(() => {
     if (
-      extension?.destination?.url &&
-      methods.length === 0 &&
-      customObjectsPaginatedResult
+      (extension?.destination?.url &&
+        methods.length === 0 &&
+        customObjectsPaginatedResult) ||
+      (refresh > 0 && extension?.destination?.url)
     ) {
-      usePaymentMethodsFetcher(extension.destination.url)
-        .then((data) => {
-          if (data && data.length > 0) {
-            data.forEach(async (method) => {
-              const shouldCreate = customObjectsPaginatedResult.results.every(
-                (object) => {
-                  return object.key !== method.id ? true : false;
-                }
-              );
-
-              if (shouldCreate) {
-                await customObjectUpdater.execute({
-                  container: OBJECT_CONTAINER_NAME,
-                  key: method.id,
-                  value: JSON.stringify(method),
-                });
-                client.reFetchObservableQueries();
-              }
-            });
-            setMethods(data);
-          }
-        })
-        .catch((error) => console.error(error))
-        .finally(() => setViewLoading(false));
+      FetchAndUpdateMethods();
+      setRefresh(0);
     }
   }, [
-    usePaymentMethodsFetcher,
+    extension,
+    methods.length,
     customObjectsPaginatedResult,
-    customObjectsPaginatedResult?.total,
-    extension?.destination?.url,
-    setMethods,
-    methods,
+    refresh,
+    FetchAndUpdateMethods,
   ]);
 
+  if (error) {
+    return (
+      <ContentNotification type="error">
+        <Text.Body>{getErrorMessage(error)}</Text.Body>
+      </ContentNotification>
+    );
+  }
+
+  const NoDataFallback = !fetchedDataLoading ? (
+    <ContentNotification
+      data-testid="no-data-notification"
+      type="info"
+      intlMessage={messages.noData}
+    ></ContentNotification>
+  ) : (
+    <LoadingSpinner data-testid="loading-spinner" scale="l"></LoadingSpinner>
+  );
+
   const MollieDataTable =
-    !loading && methods && methods.length > 0 ? (
+    !loading && methods && methods.length > 0 && fetchedData ? (
       <Spacings.Stack scale="l">
         <DataTable<NonNullable<CustomMethodObject>>
           isCondensed
@@ -124,8 +157,8 @@ const Welcome = () => {
           rows={methods}
           itemRenderer={(item, column) => {
             switch (column.key) {
-              case 'active':
-                return item.active ? (
+              case 'status':
+                return item.status === 'Active' ? (
                   <CheckActiveIcon color="success"></CheckActiveIcon>
                 ) : (
                   <CheckInactiveIcon color="neutral60"></CheckInactiveIcon>
@@ -158,37 +191,43 @@ const Welcome = () => {
           sortDirection={tableSorting.value.order}
           onSortChange={tableSorting.onChange}
           onRowClick={(row) => {
-            alert(`Detail view for ${row.description} is not implemented yet!`);
+            push(
+              `${match.url}/${
+                customObjectsPaginatedResult?.results.filter(
+                  (obj) => obj.key === row.id
+                )?.[0]?.id
+              }`
+            );
           }}
         />
+        <Switch>
+          <SuspendedRoute path={`${match.url}/:id`}>
+            <MethodDetails
+              onClose={() => {
+                push(`${match.url}`);
+                handleRefresh();
+              }}
+            />
+          </SuspendedRoute>
+        </Switch>
       </Spacings.Stack>
     ) : (
-      <ContentNotification
-        type="info"
-        intlMessage={messages.noData}
-      ></ContentNotification>
+      NoDataFallback
     );
-
-  if (error) {
-    return (
-      <ContentNotification type="error">
-        <Text.Body>{getErrorMessage(error)}</Text.Body>
-      </ContentNotification>
-    );
-  }
 
   return (
     <Spacings.Stack scale="xl">
       <PageContentFull>
         <Spacings.Stack scale="xl">
-          <Text.Headline as="h1" intlMessage={messages.title} />
+          <Text.Headline
+            id="title"
+            data-testid="title"
+            as="h1"
+            intlMessage={messages.title}
+          />
         </Spacings.Stack>
       </PageContentFull>
-      {viewLoading ? (
-        <LoadingSpinner scale="l"></LoadingSpinner>
-      ) : (
-        MollieDataTable
-      )}
+      {MollieDataTable}
     </Spacings.Stack>
   );
 };

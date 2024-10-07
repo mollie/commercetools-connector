@@ -29,9 +29,7 @@ const ApplicationRoutes = (_props: ApplicationRoutesProps) => {
   return (
     <Spacings.Inset scale="l">
       <Switch>
-        <Route exact path={`${match.path}`}>
-          {canView ? <Welcome /> : null}
-        </Route>
+        <Route path={`${match.path}`}>{canView ? <Welcome /> : null}</Route>
       </Switch>
     </Spacings.Inset>
   );

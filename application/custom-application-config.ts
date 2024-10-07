@@ -34,10 +34,7 @@ const config = {
   },
   headers: {
     csp: {
-      'connect-src': [
-        '*.europe-west1.gcp.commercetools.app',
-        '*.europe-west1.gcp.commercetools.com',
-      ],
+      'connect-src': ['*.euope-west1.gcp.commercetoolsr.app'],
     },
   },
 };
