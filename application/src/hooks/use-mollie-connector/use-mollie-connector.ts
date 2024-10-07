@@ -79,11 +79,13 @@ const getMethods = async (targetUrl?: string) => {
 
 export const usePaymentMethodsFetcher = (url: string | undefined) => {
   const [fetchedData, setFetchedData] = useState<CustomMethodObject[]>([]);
+  const [fetchedDataLoading, setFetchedDataLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchData = async () => {
       const data = (await getMethods(url)) ?? [];
       setFetchedData(data);
+      setFetchedDataLoading(false);
     };
 
     if (url) {
@@ -91,5 +93,5 @@ export const usePaymentMethodsFetcher = (url: string | undefined) => {
     }
   }, [url]);
 
-  return fetchedData;
+  return { fetchedData, fetchedDataLoading };
 };
