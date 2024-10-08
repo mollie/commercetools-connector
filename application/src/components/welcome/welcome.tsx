@@ -11,6 +11,7 @@ import {
 import {
   useCustomObjectsFetcher,
   useCustomObjectDetailsUpdater,
+  useCustomObjectDetailsRemover,
 } from '../../hooks/use-custom-objects-connector';
 import { EXTENSION_KEY, OBJECT_CONTAINER_NAME } from '../../constants';
 import DataTable from '@commercetools-uikit/data-table';
@@ -30,15 +31,22 @@ import { getErrorMessage } from '../../helpers';
 import { SuspendedRoute } from '@commercetools-frontend/application-shell';
 import MethodDetails from '../method-details';
 import { useIntl } from 'react-intl';
+import { formatLocalizedString } from '@commercetools-frontend/l10n';
+import { useApplicationContext } from '@commercetools-frontend/application-shell-connectors';
+import { NO_VALUE_FALLBACK } from '@commercetools-frontend/constants';
 
 const Welcome = () => {
   const intl = useIntl();
   const match = useRouteMatch();
   const { push } = useHistory();
+  const { dataLocale, projectLanguages } = useApplicationContext((context) => ({
+    dataLocale: context.dataLocale ?? '',
+    projectLanguages: context.project?.languages ?? [],
+  }));
   const columns = [
     {
-      key: 'description',
-      label: intl.formatMessage(messages.descriptionHeader),
+      key: 'name',
+      label: intl.formatMessage(messages.nameHeader),
     },
     {
       key: 'status',
@@ -61,6 +69,7 @@ const Welcome = () => {
     { key: 'order', label: intl.formatMessage(messages.displayOrderHeader) },
   ];
   const customObjectUpdater = useCustomObjectDetailsUpdater();
+  const customObjectRemover = useCustomObjectDetailsRemover();
   const { page, perPage } = usePaginationState();
   const tableSorting = useDataTableSortingState({
     key: 'key',
@@ -94,11 +103,15 @@ const Welcome = () => {
           );
 
           if (shouldCreate) {
-            await customObjectUpdater.execute({
-              container: OBJECT_CONTAINER_NAME,
-              key: method.id,
-              value: JSON.stringify(method),
-            });
+            await customObjectUpdater
+              .execute({
+                container: OBJECT_CONTAINER_NAME,
+                key: method.id,
+                value: JSON.stringify(method),
+              })
+              .catch((error) => {
+                console.error(`Error creating custom object: ${error}`);
+              });
             return method;
           } else {
             return customObjectsPaginatedResult?.results.find(
@@ -163,8 +176,20 @@ const Welcome = () => {
                 ) : (
                   <CheckInactiveIcon color="neutral60"></CheckInactiveIcon>
                 );
-              case 'description':
-                return item.description;
+              case 'name':
+                return item.name
+                  ? formatLocalizedString(
+                      {
+                        name: item.name,
+                      },
+                      {
+                        key: 'name',
+                        locale: dataLocale,
+                        fallbackOrder: projectLanguages,
+                        fallback: NO_VALUE_FALLBACK,
+                      }
+                    )
+                  : item.description;
               case 'image':
                 return (
                   <IconButton

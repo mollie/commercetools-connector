@@ -30,7 +30,8 @@ export type MollieMethod = {
 
 export type CustomMethodObject = {
   id: string;
-  description: string;
+  name?: Record<string, string>;
+  description: Record<string, string>;
   imageUrl: string;
   status: string;
   displayOrder?: number;

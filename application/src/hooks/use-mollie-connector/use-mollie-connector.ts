@@ -24,6 +24,7 @@ import {
 const config = {
   headers: {
     'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true',
   },
 };
 
@@ -36,7 +37,16 @@ const convertMollieMethodToCustomMethod = (
   );
   return availableMethods.map((method: MollieMethod) => ({
     id: method.id,
-    description: method.description,
+    name: {
+      'en-US': method.description,
+      'en-GB': method.description,
+      'de-DE': method.description,
+    },
+    description: {
+      'en-US': '',
+      'en-GB': '',
+      'de-DE': '',
+    },
     imageUrl: method.image.svg,
     status: 'Inactive',
     displayOrder: 0,

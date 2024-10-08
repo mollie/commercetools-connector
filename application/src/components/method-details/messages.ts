@@ -14,4 +14,28 @@ export default defineMessages({
     id: 'MethodDetails.methodDetailsStatusUpdated',
     defaultMessage: '{methodName} {status}',
   },
+  fieldMethodName: {
+    id: 'MethodDetails.fieldMethodName',
+    defaultMessage: 'Payment name',
+  },
+  fieldMethodNameDescription: {
+    id: 'MethodDetails.fieldMethodNameDescription',
+    defaultMessage: 'Enter payment name in their corresponding locals.',
+  },
+  fieldMethodDescription: {
+    id: 'MethodDetails.fieldMethodDescription',
+    defaultMessage: 'Payment description',
+  },
+  fieldMethodDescriptionDescription: {
+    id: 'MethodDetails.fieldMethodDescriptionDescription',
+    defaultMessage: 'Describe payment method in their corresponding locals.',
+  },
+  fieldMethodDisplayOrder: {
+    id: 'MethodDetails.fieldMethodDisplayOrder',
+    defaultMessage: 'Display order in checkout',
+  },
+  fieldMethodDisplayOrderInfoTitle: {
+    id: 'MethodDetails.fieldMethodDisplayOrderInfoTitle',
+    defaultMessage: 'Display order in checkout',
+  },
 });
