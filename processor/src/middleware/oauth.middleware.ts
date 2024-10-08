@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 import { paymentSdk } from '../sdk/payment.sdk';
 
-export const jwtMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-  await paymentSdk.jwtAuthHookFn
+export const oauthMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+  await paymentSdk.oauth2AuthHookFn
     .authenticate()(req)
     .then(() => next())
     .catch(() => {

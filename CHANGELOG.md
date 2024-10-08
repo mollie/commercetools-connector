@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## v1.0.4
+
+Added
+
+- Add configuration to enable authorization mode
+- OAuth middleware for securing connector endpoint
+
+## v1.0.3
+
+Added
+
+- Add docs for status checking endpoint
+
 ## v1.0.2
 
 Fixes
@@ -29,15 +42,15 @@ Added
 - Package version for requests
 - Log mechanism
 - Supporting payment methods namely:
-    - [Apple pay](https://docs.mollie.com/docs/apple-pay)
-    - [Bancontact](https://docs.mollie.com/docs/bancontact)
-    - [BLIK](https://docs.mollie.com/docs/blik)
-    - [Credit/debit card](https://docs.mollie.com/docs/cards)
-    - [Gift cards](https://docs.mollie.com/docs/giftcards)
-    - [iDEAL](https://docs.mollie.com/docs/ideal)
-    - [KBC/CBC](https://docs.mollie.com/docs/kbc)
-    - [Paypal](https://docs.mollie.com/docs/paypal)
-    - [Przelewy24](https://docs.mollie.com/docs/przelewy24)
+  - [Apple pay](https://docs.mollie.com/docs/apple-pay)
+  - [Bancontact](https://docs.mollie.com/docs/bancontact)
+  - [BLIK](https://docs.mollie.com/docs/blik)
+  - [Credit/debit card](https://docs.mollie.com/docs/cards)
+  - [Gift cards](https://docs.mollie.com/docs/giftcards)
+  - [iDEAL](https://docs.mollie.com/docs/ideal)
+  - [KBC/CBC](https://docs.mollie.com/docs/kbc)
+  - [Paypal](https://docs.mollie.com/docs/paypal)
+  - [Przelewy24](https://docs.mollie.com/docs/przelewy24)
 - Supporting for [Apply pay direct](https://docs.mollie.com/docs/direct-integration-of-apple-pay) & [Mollie card component](https://docs.mollie.com/docs/mollie-components)
 - Filter options for listing payment methods
 - Create/cancel payment via Payment API
