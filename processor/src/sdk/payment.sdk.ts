@@ -6,7 +6,7 @@ const config = readConfiguration().commerceTools;
 export const paymentSdk = setupPaymentSDK({
   projectKey: config.projectKey,
   clientId: config.clientId,
-  clientSecret: config.clientId,
+  clientSecret: config.clientSecret,
   authUrl: `https://auth.${config.region}.commercetools.com`,
   apiUrl: `https://api.${config.region}.commercetools.com`,
   sessionUrl: `https://session.${config.region}.commercetools.com`,

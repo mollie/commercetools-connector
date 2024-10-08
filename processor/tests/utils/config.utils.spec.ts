@@ -12,7 +12,7 @@ describe('Test src/utils/config.utils.ts', () => {
         projectKey: process.env.CTP_PROJECT_KEY,
         scope: process.env.CTP_SCOPE,
         region: process.env.CTP_REGION,
-        authMode: process.env.CTP_AUTHENTICATION_MODE,
+        authMode: process.env.AUTHENTICATION_MODE,
       },
       mollie: {
         liveApiKey: process.env.MOLLIE_API_LIVE_KEY,
@@ -81,8 +81,8 @@ describe('Test src/utils/config.utils.ts', () => {
     expect(() => readConfiguration()).toThrow(CustomError);
   });
 
-  test('should throw an error when CTP_AUTHENTICATION_MODE is invalid', () => {
-    process.env.CTP_AUTHENTICATION_MODE = 'dummy';
+  test('should throw an error when AUTHENTICATION_MODE is invalid', () => {
+    process.env.AUTHENTICATION_MODE = 'dummy';
     expect(() => readConfiguration()).toThrow(CustomError);
   });
 });

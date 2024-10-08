@@ -16,7 +16,7 @@ export const readConfiguration = () => {
       projectKey: process.env.CTP_PROJECT_KEY as string,
       scope: process.env.CTP_SCOPE as string,
       region: process.env.CTP_REGION as string,
-      authMode: process.env.CTP_AUTHENTICATION_MODE as string,
+      authMode: process.env.AUTHENTICATION_MODE as string,
     },
     mollie: {
       testApiKey: process.env.MOLLIE_API_TEST_KEY as string,
