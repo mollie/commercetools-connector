@@ -46,6 +46,26 @@ const envValidators = [
     referencedBy: 'environmentVariables',
   }),
 
+  standardString(
+    ['commerceTools', 'sessionAudience'],
+    {
+      code: 'InvalidSessionAudience',
+      message: 'Not a valid sessionAudience.',
+      referencedBy: 'environmentVariables',
+    },
+    { min: 1, max: undefined },
+  ),
+
+  standardString(
+    ['commerceTools', 'sessionIssuer'],
+    {
+      code: 'InvalidSessionIssuer',
+      message: 'Not a valid sessionIssuer.',
+      referencedBy: 'environmentVariables',
+    },
+    { min: 1, max: undefined },
+  ),
+
   standardKey(['mollie', 'testApiKey'], {
     code: 'InvalidMollieTestApiKey',
     message: 'Mollie test API key should be a valid string.',

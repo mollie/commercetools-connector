@@ -1,0 +1,5 @@
+mutation RemoveCustomObjectDetails($id: String) {
+  deleteCustomObject(id: $id) {
+    id
+  }
+}

@@ -17,6 +17,8 @@ export const readConfiguration = () => {
       scope: process.env.CTP_SCOPE as string,
       region: process.env.CTP_REGION as string,
       authMode: process.env.AUTHENTICATION_MODE as string,
+      sessionAudience: (process.env.CTP_SESSION_AUDIENCE as string) || 'https://mc.europe-west1.gcp.commercetools.com',
+      sessionIssuer: (process.env.CTP_SESSION_ISSUER as string) || 'gcp-eu',
     },
     mollie: {
       testApiKey: process.env.MOLLIE_API_TEST_KEY as string,

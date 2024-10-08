@@ -1,0 +1,23 @@
+mutation UpdateCustomObjectDetails(
+  $container: String!
+  $key: String!
+  $value: String!
+  $version: Long
+) {
+  createOrUpdateCustomObject(
+    draft: {
+      container: $container
+      key: $key
+      value: $value
+      version: $version
+    }
+  ) {
+    id
+    container
+    key
+    value
+    version
+    createdAt
+    lastModifiedAt
+  }
+}
