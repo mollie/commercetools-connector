@@ -160,7 +160,7 @@ describe('Test env.validators.ts', () => {
       condition: { min: 1, max: 4 },
     },
     {
-      index1: 11,
+      index1: 13,
       index2: 0,
       field1: 'mollie',
       field2: 'bankTransferDueDate',
@@ -172,7 +172,7 @@ describe('Test env.validators.ts', () => {
       },
     },
     {
-      index1: 12,
+      index1: 14,
       index2: 0,
       field1: 'commerceTools',
       field2: 'authMode',
