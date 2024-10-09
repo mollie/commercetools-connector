@@ -169,7 +169,7 @@ const MethodDetails = (props: TMethodDetailsProps) => {
             tabControls={
               <>
                 <TabHeader
-                  to={`${match.url}`}
+                  to={`${match.url}/general`}
                   label="General setting"
                   exactPathMatch={true}
                 />
@@ -243,7 +243,7 @@ const MethodDetails = (props: TMethodDetailsProps) => {
             {method && <ApplicationPageTitle additionalParts={[methodName]} />}
             {method === null && <PageNotFound />}
             <Switch>
-              <Route path={`${match.path}`}>
+              <Route path={`${match.path}/general`}>
                 {method && formProps.formElements}
               </Route>
               <Route path={`${match.path}/icon`}>

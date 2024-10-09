@@ -221,7 +221,7 @@ const Welcome = () => {
                 customObjectsPaginatedResult?.results.filter(
                   (obj) => obj.key === row.id
                 )?.[0]?.id
-              }`
+              }/general`
             );
           }}
         />
