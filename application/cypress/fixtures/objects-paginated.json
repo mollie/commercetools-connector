@@ -1,0 +1,345 @@
+{
+  "results": [
+    {
+      "id": "e768b373-f0c5-4122-a689-105e5382f6ee",
+      "container": "sctm-app-methods",
+      "key": "applepay",
+      "value": {
+        "id": "applepay",
+        "name": {
+          "en-GB": "Apple Pay"
+        },
+        "description": {
+          "en-GB": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/applepay.svg",
+        "status": "Inactive"
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "d8776b79-b5bf-4451-a14e-4852ecc8c0f7",
+      "container": "sctm-app-methods",
+      "key": "bancomatpay",
+      "value": {
+        "id": "bancomatpay",
+        "name": {
+          "en-GB": "Bancomat Pay"
+        },
+        "description": {
+          "en-GB": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/bancomatpay.svg",
+        "status": "Inactive"
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "1756102e-9656-4fec-a18c-2e5144ddd2ae",
+      "container": "sctm-app-methods",
+      "key": "bancontact",
+      "value": {
+        "id": "bancontact",
+        "name": {
+          "en-GB": "Bancontact"
+        },
+        "description": {
+          "en-GB": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/bancontact.svg",
+        "status": "Inactive"
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "ad7608bf-6cb7-4f2c-894e-a90cb4517bd3",
+      "container": "sctm-app-methods",
+      "key": "banktransfer",
+      "value": {
+        "id": "banktransfer",
+        "name": {
+          "en-GB": "Bank transfer"
+        },
+        "description": {
+          "en-GB": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/banktransfer.svg",
+        "status": "Inactive"
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "c2b0ed91-330f-48e2-8e7a-3b90d15b2340",
+      "container": "sctm-app-methods",
+      "key": "belfius",
+      "value": {
+        "id": "belfius",
+        "name": {
+          "en-GB": "Belfius Pay Button"
+        },
+        "description": {
+          "en-GB": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/belfius.svg",
+        "status": "Inactive"
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "adcc987d-c981-4906-a3ad-f5800d645775",
+      "container": "sctm-app-methods",
+      "key": "billie",
+      "value": {
+        "id": "billie",
+        "name": {
+          "en-GB": "Pay by Invoice for Businesses - Billie"
+        },
+        "description": {
+          "en-GB": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/billie.svg",
+        "status": "Inactive"
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "127d4d21-2b95-46f9-9a68-2490e5182ae5",
+      "container": "sctm-app-methods",
+      "key": "blik",
+      "value": {
+        "id": "blik",
+        "name": {
+          "en-GB": "Blik"
+        },
+        "description": {
+          "en-GB": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/blik.svg",
+        "status": "Inactive"
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "5fc3b28c-9282-4cb3-ba8a-3329c076509c",
+      "container": "sctm-app-methods",
+      "key": "creditcard",
+      "value": {
+        "id": "creditcard",
+        "name": {
+          "en-GB": "Card"
+        },
+        "description": {
+          "en-GB": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/creditcard.svg",
+        "status": "Inactive",
+        "displayOrder": 1
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "9882ab6d-c534-4a42-83f1-efc13d37e703",
+      "container": "sctm-app-methods",
+      "key": "directdebit",
+      "value": {
+        "id": "directdebit",
+        "name": {
+          "en-GB": "SEPA Direct Debit"
+        },
+        "description": {
+          "en-GB": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/directdebit.svg",
+        "status": "Inactive"
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "d414c2b2-6a88-4712-b143-ef463605c967",
+      "container": "sctm-app-methods",
+      "key": "eps",
+      "value": {
+        "id": "eps",
+        "name": {
+          "en-GB": "eps"
+        },
+        "description": {
+          "en-GB": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/eps.svg",
+        "status": "Inactive"
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "0b58a6db-affe-4cb1-97cf-e2e22de87f32",
+      "container": "sctm-app-methods",
+      "key": "giftcard",
+      "value": {
+        "id": "giftcard",
+        "name": {
+          "en-GB": "Gift cards"
+        },
+        "description": {
+          "en-GB": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/giftcard.svg",
+        "status": "Inactive"
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "1126f6b9-5e7b-4b74-9fad-9b47ed1f43bd",
+      "container": "sctm-app-methods",
+      "key": "ideal",
+      "value": {
+        "id": "ideal",
+        "name": {
+          "en-GB": "iDEAL"
+        },
+        "description": {
+          "en-GB": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/ideal.svg",
+        "status": "Inactive"
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "0fd7e27b-b6c4-4766-bf23-51deb2762155",
+      "container": "sctm-app-methods",
+      "key": "in3",
+      "value": {
+        "id": "in3",
+        "name": {
+          "en-GB": "iDEAL Pay in 3 instalments, 0% interest"
+        },
+        "description": {
+          "en-GB": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/in3.svg",
+        "status": "Inactive"
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "b26b5a51-4653-4dfd-aa61-3613605b1f2d",
+      "container": "sctm-app-methods",
+      "key": "kbc",
+      "value": {
+        "id": "kbc",
+        "name": {
+          "en-GB": "KBC/CBC Payment Button"
+        },
+        "description": {
+          "en-GB": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/kbc.svg",
+        "status": "Inactive"
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "37feebf9-be78-46d8-9f4e-eace2928f1cd",
+      "container": "sctm-app-methods",
+      "key": "klarna",
+      "value": {
+        "id": "klarna",
+        "name": {
+          "en-GB": "Pay with Klarna"
+        },
+        "description": {
+          "en-GB": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/klarna.svg",
+        "status": "Inactive"
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "1a2e480c-1a83-4d0d-ab4a-3859cf6a18e6",
+      "container": "sctm-app-methods",
+      "key": "paypal",
+      "value": {
+        "id": "paypal",
+        "name": {
+          "en-GB": "PayPal"
+        },
+        "description": {
+          "en-GB": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/paypal.svg",
+        "status": "Inactive"
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "eb982dd3-1b4f-4571-8ee1-ac1568cf5ec2",
+      "container": "sctm-app-methods",
+      "key": "przelewy24",
+      "value": {
+        "id": "przelewy24",
+        "name": {
+          "en-GB": "Przelewy24"
+        },
+        "description": {
+          "en-GB": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/przelewy24.svg",
+        "status": "Inactive"
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "cffb9dc2-7fe7-4577-80fa-c855bdde1a22",
+      "container": "sctm-app-methods",
+      "key": "trustly",
+      "value": {
+        "id": "trustly",
+        "name": {
+          "en-GB": "Trustly"
+        },
+        "description": {
+          "en-GB": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/trustly.svg",
+        "status": "Inactive"
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "09aa39b3-6c65-47d4-a3e9-32d7d1c86172",
+      "container": "sctm-app-methods",
+      "key": "twint",
+      "value": {
+        "id": "twint",
+        "name": {
+          "en-GB": "TWINT"
+        },
+        "description": {
+          "en-GB": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/twint.svg",
+        "status": "Inactive"
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "4d9bbe29-0c27-4bde-bf03-3d73489ec9f0",
+      "container": "sctm-app-methods",
+      "key": "voucher",
+      "value": {
+        "id": "voucher",
+        "name": {
+          "en-GB": "Vouchers"
+        },
+        "description": {
+          "en-GB": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/voucher.svg",
+        "status": "Inactive"
+      },
+      "__typename": "CustomObject"
+    }
+  ]
+}

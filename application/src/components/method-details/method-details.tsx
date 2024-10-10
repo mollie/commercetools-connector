@@ -208,14 +208,14 @@ const MethodDetails = (props: TMethodDetailsProps) => {
                   ]}
                   horizontalConstraint={4}
                   controlShouldRenderValue={true}
-                  data-cy={'active-select'}
+                  data-testid={'status-select'}
                   isSearchable={false}
                 ></SelectField>
                 <CustomFormModalPage.FormSecondaryButton
                   label={CustomFormModalPage.Intl.revert}
                   onClick={formProps.handleReset}
                   isDisabled={!formProps.isDirty}
-                  dataAttributes={{ 'data-cy': 'revert-button' }}
+                  dataAttributes={{ 'data-testid': 'revert-button' }}
                 />
                 <CustomFormModalPage.FormPrimaryButton
                   label={CustomFormModalPage.Intl.save}
@@ -223,7 +223,7 @@ const MethodDetails = (props: TMethodDetailsProps) => {
                   isDisabled={
                     formProps.isSubmitting || !formProps.isDirty || !canManage
                   }
-                  dataAttributes={{ 'data-cy': 'save-button' }}
+                  dataAttributes={{ 'data-testid': 'save-button' }}
                 />
               </>
             }

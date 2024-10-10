@@ -175,19 +175,23 @@ const Welcome = () => {
                   <CheckInactiveIcon color="neutral60"></CheckInactiveIcon>
                 );
               case 'name':
-                return item.name
-                  ? formatLocalizedString(
-                      {
-                        name: item.name,
-                      },
-                      {
-                        key: 'name',
-                        locale: dataLocale,
-                        fallbackOrder: projectLanguages,
-                        fallback: NO_VALUE_FALLBACK,
-                      }
-                    )
-                  : item.description;
+                return (
+                  <Text.Wrap data-testid={`name-column-${item.id}`}>
+                    {item.name
+                      ? formatLocalizedString(
+                          {
+                            name: item.name,
+                          },
+                          {
+                            key: 'name',
+                            locale: dataLocale,
+                            fallbackOrder: projectLanguages,
+                            fallback: NO_VALUE_FALLBACK,
+                          }
+                        )
+                      : item.description}
+                  </Text.Wrap>
+                );
               case 'image':
                 return (
                   <IconButton
@@ -205,7 +209,11 @@ const Welcome = () => {
                   ></IconButton>
                 );
               case 'order':
-                return item.displayOrder ?? '-';
+                return (
+                  <Text.Wrap data-testid={`display-order-column-${item.id}`}>
+                    {item.displayOrder ?? '-'}
+                  </Text.Wrap>
+                );
               default:
                 return null;
             }

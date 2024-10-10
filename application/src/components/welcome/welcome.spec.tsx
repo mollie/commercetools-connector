@@ -4,6 +4,7 @@ import {
 } from '@commercetools-frontend/application-shell/test-utils';
 import { setupServer } from 'msw/node';
 import ForwardToFixture from '../../../cypress/fixtures/forward-to.json';
+import ObjectsPaginated from '../../../cypress/fixtures/objects-paginated.json';
 import messages from './messages';
 import {
   useCustomObjectsFetcher,
@@ -30,22 +31,23 @@ jest.mock('../../hooks/use-mollie-connector', () => ({
 const mockMethods = ForwardToFixture._embedded.methods.map((method) => {
   return {
     id: method.id,
-    description: method.description,
+    description: {
+      'en-GB': '',
+    },
+    name: {
+      'en-GB': method.description,
+    },
     status: method.status === 'active' ? 'Active' : 'Inactive',
     imageUrl: method.image.svg,
     displayOrder: 0,
   };
 });
 
-const mockMethodNames = ForwardToFixture._embedded.methods.map((method) => {
-  return method.description;
-});
-
 const mockColumns = Object.values(messages)
   .filter((message) =>
     [
-      'Welcome.descriptionHeader',
       'Welcome.statusHeader',
+      'Welcome.nameHeader',
       'Welcome.iconHeader',
       'Welcome.displayOrderHeader',
     ].includes(message.id)
@@ -56,7 +58,7 @@ const mockServer = setupServer();
 afterEach(() => mockServer.resetHandlers());
 beforeEach(() => {
   (useCustomObjectsFetcher as jest.Mock).mockReturnValue({
-    customObjectsPaginatedResult: { results: [] },
+    customObjectsPaginatedResult: ObjectsPaginated,
     error: null,
     loading: false,
   });
@@ -71,7 +73,7 @@ beforeEach(() => {
   });
 
   (useCustomObjectDetailsUpdater as jest.Mock).mockReturnValue({
-    execute: jest.fn(),
+    execute: jest.fn().mockResolvedValue({}),
   });
 });
 beforeAll(() =>
@@ -108,8 +110,10 @@ describe('Test welcome.tsx', () => {
 
     expect(screen.getByTestId('status-tooltip')).toBeInTheDocument();
 
-    mockMethodNames.forEach((name) => {
-      expect(screen.getByText(name)).toBeInTheDocument();
+    mockMethods.forEach((method) => {
+      expect(
+        screen.getByTestId(`name-column-${method.id}`)
+      ).toBeInTheDocument();
     });
   });
 

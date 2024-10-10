@@ -72,6 +72,7 @@ const MethodDetailsForm = (props: TCustomObjectDetailsFormProps) => {
           }
           return null;
         }}
+        data-testid="name-input"
       />
       <LocalizedTextField
         name="description"
@@ -98,6 +99,7 @@ const MethodDetailsForm = (props: TCustomObjectDetailsFormProps) => {
           }
           return null;
         }}
+        data-testid="description-input"
       />
       <NumberField
         name="displayOrder"
@@ -125,6 +127,7 @@ const MethodDetailsForm = (props: TCustomObjectDetailsFormProps) => {
           }
           return null;
         }}
+        data-testid="display-order-input"
       ></NumberField>
       <InfoDialog
         title={intl.formatMessage(messages.fieldMethodDisplayOrderInfoTitle)}
