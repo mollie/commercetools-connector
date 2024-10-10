@@ -27,6 +27,10 @@ describe('Test extension.commercetools', () => {
     destination: {
       type: 'HTTP',
       url: mockUrl,
+      authentication: {
+        type: 'AuthorizationHeader',
+        headerValue: 'Bearer _token_',
+      },
     },
     triggers: [
       {
@@ -184,6 +188,10 @@ describe('Test extension.commercetools', () => {
         destination: {
           type: 'HTTP',
           url: mockUrl,
+          authentication: {
+            type: 'AuthorizationHeader',
+            headerValue: 'Bearer _token_',
+          },
         },
         triggers: [
           {
@@ -215,6 +223,10 @@ describe('Test extension.commercetools', () => {
         destination: {
           type: 'HTTP',
           url: mockUrl,
+          authentication: {
+            type: 'AuthorizationHeader',
+            headerValue: 'Bearer _token_',
+          },
         },
         triggers: [
           {
