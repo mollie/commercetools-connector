@@ -38,18 +38,14 @@ const convertMollieMethodToCustomMethod = (
   return availableMethods.map((method: MollieMethod) => ({
     id: method.id,
     name: {
-      'en-US': method.description,
       'en-GB': method.description,
-      'de-DE': method.description,
     },
     description: {
-      'en-US': '',
       'en-GB': '',
-      'de-DE': '',
     },
     imageUrl: method.image.svg,
     status: 'Inactive',
-    displayOrder: 0,
+    displayOrder: undefined,
   }));
 };
 

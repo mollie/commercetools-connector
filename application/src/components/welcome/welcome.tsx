@@ -11,7 +11,6 @@ import {
 import {
   useCustomObjectsFetcher,
   useCustomObjectDetailsUpdater,
-  useCustomObjectDetailsRemover,
 } from '../../hooks/use-custom-objects-connector';
 import { EXTENSION_KEY, OBJECT_CONTAINER_NAME } from '../../constants';
 import DataTable from '@commercetools-uikit/data-table';
@@ -69,7 +68,6 @@ const Welcome = () => {
     { key: 'order', label: intl.formatMessage(messages.displayOrderHeader) },
   ];
   const customObjectUpdater = useCustomObjectDetailsUpdater();
-  const customObjectRemover = useCustomObjectDetailsRemover();
   const { page, perPage } = usePaginationState();
   const tableSorting = useDataTableSortingState({
     key: 'key',
@@ -207,7 +205,7 @@ const Welcome = () => {
                   ></IconButton>
                 );
               case 'order':
-                return item.displayOrder;
+                return item.displayOrder ?? '-';
               default:
                 return null;
             }

@@ -12,6 +12,7 @@ import {
   useModalState,
 } from '@commercetools-frontend/application-components';
 import Text from '@commercetools-uikit/text';
+import validate from './validate';
 
 type Formik = ReturnType<typeof useFormik>;
 type FormProps = {
@@ -38,7 +39,7 @@ const MethodDetailsForm = (props: TCustomObjectDetailsFormProps) => {
   const formik = useFormik<TMethodObjectValueFormValues>({
     initialValues: props.initialValues || ({} as TMethodObjectValueFormValues),
     onSubmit: props.onSubmit,
-    validate: () => {},
+    validate,
     enableReinitialize: true,
   });
   const infoModalState = useModalState();
@@ -54,7 +55,7 @@ const MethodDetailsForm = (props: TCustomObjectDetailsFormProps) => {
         title={intl.formatMessage(messages.fieldMethodName)}
         description={intl.formatMessage(messages.fieldMethodNameDescription)}
         selectedLanguage={props.dataLocale}
-        value={formik.values.name ?? {}}
+        value={formik.values.name || {}}
         errors={
           TextField.toFieldErrors<TMethodObjectValueFormValues>(formik.errors)
             .name
@@ -65,6 +66,12 @@ const MethodDetailsForm = (props: TCustomObjectDetailsFormProps) => {
         isReadOnly={props.isReadOnly}
         horizontalConstraint={13}
         isRequired={false}
+        renderError={(errorKey) => {
+          if (errorKey === 'invalidLength') {
+            return intl.formatMessage(messages.fieldMethodNameInvalidLength);
+          }
+          return null;
+        }}
       />
       <LocalizedTextField
         name="description"
@@ -73,7 +80,7 @@ const MethodDetailsForm = (props: TCustomObjectDetailsFormProps) => {
           messages.fieldMethodDescriptionDescription
         )}
         selectedLanguage={props.dataLocale}
-        value={formik.values.description ?? {}}
+        value={formik.values.description || {}}
         errors={
           TextField.toFieldErrors<TMethodObjectValueFormValues>(formik.errors)
             .description
@@ -83,7 +90,14 @@ const MethodDetailsForm = (props: TCustomObjectDetailsFormProps) => {
         onBlur={formik.handleBlur}
         isReadOnly={props.isReadOnly}
         horizontalConstraint={13}
-        isRequired={false}
+        renderError={(errorKey) => {
+          if (errorKey === 'invalidLength') {
+            return intl.formatMessage(
+              messages.fieldMethodDescriptionInvalidLength
+            );
+          }
+          return null;
+        }}
       />
       <NumberField
         name="displayOrder"
@@ -99,9 +113,17 @@ const MethodDetailsForm = (props: TCustomObjectDetailsFormProps) => {
         isReadOnly={props.isReadOnly}
         horizontalConstraint={13}
         step={1}
-        isRequired={false}
+        isRequired={true}
         onInfoButtonClick={() => {
           infoModalState.openModal();
+        }}
+        renderError={(errorKey) => {
+          if (errorKey === 'isNotInteger') {
+            return intl.formatMessage(
+              messages.fieldMethodDisplayOrderIsNotInteger
+            );
+          }
+          return null;
         }}
       ></NumberField>
       <InfoDialog

@@ -18,6 +18,10 @@ export default defineMessages({
     id: 'MethodDetails.fieldMethodName',
     defaultMessage: 'Payment name',
   },
+  fieldMethodNameInvalidLength: {
+    id: 'MethodDetails.fieldMethodNameInvalidLength',
+    defaultMessage: 'Maximum 50 characters allowed.',
+  },
   fieldMethodNameDescription: {
     id: 'MethodDetails.fieldMethodNameDescription',
     defaultMessage: 'Enter payment name in their corresponding locals.',
@@ -26,6 +30,10 @@ export default defineMessages({
     id: 'MethodDetails.fieldMethodDescription',
     defaultMessage: 'Payment description',
   },
+  fieldMethodDescriptionInvalidLength: {
+    id: 'MethodDetails.fieldMethodDescriptionInvalidLength',
+    defaultMessage: 'Maximum 100 characters allowed.',
+  },
   fieldMethodDescriptionDescription: {
     id: 'MethodDetails.fieldMethodDescriptionDescription',
     defaultMessage: 'Describe payment method in their corresponding locals.',
@@ -33,6 +41,10 @@ export default defineMessages({
   fieldMethodDisplayOrder: {
     id: 'MethodDetails.fieldMethodDisplayOrder',
     defaultMessage: 'Display order in checkout',
+  },
+  fieldMethodDisplayOrderIsNotInteger: {
+    id: 'MethodDetails.fieldMethodDisplayOrderIsNotInteger',
+    defaultMessage: 'Choose natural integer between 0 and 100.',
   },
   fieldMethodDisplayOrderInfoTitle: {
     id: 'MethodDetails.fieldMethodDisplayOrderInfoTitle',
