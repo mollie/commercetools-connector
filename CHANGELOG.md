@@ -10,6 +10,35 @@ Added
 
 - Mollie custom application initialization
 
+Updated
+
+- [getPaymentMethods](/docs/GetPaymentMethods.md) response has new returned format as follow
+
+  ```Typescript
+  {
+      id: string,
+      name: Record<string, string>
+      description: Record<string, string>
+      image: string;
+      order: number;
+  }
+
+  // e.g.
+  {
+    id: 'paypal',
+    name: {
+        'en-GB': 'PayPal',
+        'de-DE': 'PayPal',
+    },
+    description: {
+        'en-GB': '',
+        'de-DE': '',
+    },
+    image: 'https://example.img/paypal.svg',
+    order: 1
+  }
+  ```
+
 ## v1.1.1
 
 Fixes
@@ -54,15 +83,15 @@ Added
 - Package version for requests
 - Log mechanism
 - Supporting payment methods namely:
-    - [Apple pay](https://docs.mollie.com/docs/apple-pay)
-    - [Bancontact](https://docs.mollie.com/docs/bancontact)
-    - [BLIK](https://docs.mollie.com/docs/blik)
-    - [Credit/debit card](https://docs.mollie.com/docs/cards)
-    - [Gift cards](https://docs.mollie.com/docs/giftcards)
-    - [iDEAL](https://docs.mollie.com/docs/ideal)
-    - [KBC/CBC](https://docs.mollie.com/docs/kbc)
-    - [Paypal](https://docs.mollie.com/docs/paypal)
-    - [Przelewy24](https://docs.mollie.com/docs/przelewy24)
+  - [Apple pay](https://docs.mollie.com/docs/apple-pay)
+  - [Bancontact](https://docs.mollie.com/docs/bancontact)
+  - [BLIK](https://docs.mollie.com/docs/blik)
+  - [Credit/debit card](https://docs.mollie.com/docs/cards)
+  - [Gift cards](https://docs.mollie.com/docs/giftcards)
+  - [iDEAL](https://docs.mollie.com/docs/ideal)
+  - [KBC/CBC](https://docs.mollie.com/docs/kbc)
+  - [Paypal](https://docs.mollie.com/docs/paypal)
+  - [Przelewy24](https://docs.mollie.com/docs/przelewy24)
 - Supporting for [Apply pay direct](https://docs.mollie.com/docs/direct-integration-of-apple-pay) & [Mollie card component](https://docs.mollie.com/docs/mollie-components)
 - Filter options for listing payment methods
 - Create/cancel payment via Payment API

@@ -14,6 +14,7 @@ import {
   MollieMethod,
   CustomMethodObject,
   MollieResult,
+  SupportedPaymentMethods,
 } from '../../types/app';
 
 /**
@@ -24,32 +25,36 @@ import {
 const config = {
   headers: {
     'Content-Type': 'application/json',
-    'ngrok-skip-browser-warning': 'true',
   },
 };
 
 const convertMollieMethodToCustomMethod = (
-  results: MollieResult
+  results: MollieResult,
+  projectLanguages: string[]
 ): CustomMethodObject[] => {
   const methods = results['_embedded']['methods'];
   const availableMethods = methods.filter(
-    (method: MollieMethod) => method.status === 'activated'
+    (method: MollieMethod) =>
+      method.status === 'activated' &&
+      SupportedPaymentMethods[method.id as SupportedPaymentMethods]
   );
   return availableMethods.map((method: MollieMethod) => ({
     id: method.id,
-    name: {
-      'en-GB': method.description,
-    },
-    description: {
-      'en-GB': '',
-    },
+    name: projectLanguages.reduce((acc, lang) => {
+      acc[lang] = method.description;
+      return acc;
+    }, {} as Record<string, string>),
+    description: projectLanguages.reduce((acc, lang) => {
+      acc[lang] = '';
+      return acc;
+    }, {} as Record<string, string>),
     imageUrl: method.image.svg,
     status: 'Inactive',
     displayOrder: undefined,
   }));
 };
 
-const getMethods = async (targetUrl?: string) => {
+const getMethods = async (projectLanguages: string[], targetUrl?: string) => {
   if (!targetUrl) {
     logger.error('usePaymentMethodsFetcher - No target URL provided');
     return [];
@@ -78,18 +83,24 @@ const getMethods = async (targetUrl?: string) => {
     }
   )
     .then((res) =>
-      convertMollieMethodToCustomMethod(res as unknown as MollieResult)
+      convertMollieMethodToCustomMethod(
+        res as unknown as MollieResult,
+        projectLanguages
+      )
     )
     .catch((error) => logger.error(error));
 };
 
-export const usePaymentMethodsFetcher = (url: string | undefined) => {
+export const usePaymentMethodsFetcher = (
+  url: string | undefined,
+  projectLanguages: string[]
+) => {
   const [fetchedData, setFetchedData] = useState<CustomMethodObject[]>([]);
   const [fetchedDataLoading, setFetchedDataLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = (await getMethods(url)) ?? [];
+      const data = (await getMethods(projectLanguages, url)) ?? [];
       setFetchedData(data);
       setFetchedDataLoading(false);
     };
@@ -97,7 +108,7 @@ export const usePaymentMethodsFetcher = (url: string | undefined) => {
     if (url) {
       fetchData();
     }
-  }, [url]);
+  }, [url, projectLanguages]);
 
   return { fetchedData, fetchedDataLoading };
 };

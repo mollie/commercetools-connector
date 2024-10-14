@@ -60,6 +60,80 @@ import { parseStringToJsonObject } from '../utils/app.utils';
 import ApplePaySession from '@mollie/api-client/dist/types/src/data/applePaySession/ApplePaySession';
 import { getMethodConfigObjects } from '../commercetools/customObjects.commercetools';
 
+type CustomMethod = {
+  id: string;
+  name: Record<string, string>;
+  description: Record<string, string>;
+  image: string;
+  order: number;
+};
+
+/**
+ * Validates and sorts the payment methods.
+ *
+ * @param {CustomMethod[]} methods - The list of payment methods.
+ * @param {CustomObject[]} configObjects - The configuration objects.
+ * @return {CustomMethod[]} - The validated and sorted payment methods.
+ */
+const validateAndSortMethods = (methods: CustomMethod[], configObjects: CustomObject[]): CustomMethod[] => {
+  if (!configObjects.length) {
+    return methods.filter(
+      (method: CustomMethod) => SupportedPaymentMethods[method.id.toString() as SupportedPaymentMethods],
+    );
+  }
+
+  return methods
+    .filter((method) => isValidMethod(method, configObjects))
+    .map((method) => mapMethodToCustomMethod(method, configObjects))
+    .sort((a, b) => b.order - a.order); // Descending order sort
+};
+
+/**
+ * Checks if a method is valid based on the configuration objects.
+ *
+ * @param {CustomMethod} method - The payment method.
+ * @param {CustomObject[]} configObjects - The configuration objects.
+ * @return {boolean} - True if the method is valid, false otherwise.
+ */
+const isValidMethod = (method: CustomMethod, configObjects: CustomObject[]): boolean => {
+  return (
+    !!configObjects.find((config) => config.key === method.id && config.value.status === 'Active') &&
+    !!SupportedPaymentMethods[method.id.toString() as SupportedPaymentMethods]
+  );
+};
+
+/**
+ * Maps a payment method to a custom method.
+ *
+ * @param {CustomMethod} method - The payment method.
+ * @param {CustomObject[]} configObjects - The configuration objects.
+ * @return {CustomMethod} - The custom method.
+ */
+const mapMethodToCustomMethod = (method: CustomMethod, configObjects: CustomObject[]): CustomMethod => {
+  const config = configObjects.find((config) => config.key === method.id);
+
+  return {
+    id: method.id,
+    name: config?.value?.name,
+    description: config?.value?.description,
+    image: config?.value?.imageUrl,
+    order: config?.value?.displayOrder || 0,
+  };
+};
+
+/**
+ * Determines if the card component should be enabled.
+ *
+ * @param {CustomMethod[]} validatedMethods - The validated payment methods.
+ * @return {boolean} - True if the card component should be enabled, false otherwise.
+ */
+const shouldEnableCardComponent = (validatedMethods: CustomMethod[]): boolean => {
+  return (
+    toBoolean(readConfiguration().mollie.cardComponent, true) &&
+    validatedMethods.some((method) => method.id === PaymentMethod.creditcard)
+  );
+};
+
 /**
  * Handles listing payment methods by payment.
  *
@@ -72,27 +146,21 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
     const mollieOptions = await mapCommercetoolsPaymentCustomFieldsToMollieListParams(ctPayment);
     const methods: List<Method> = await listPaymentMethods(mollieOptions);
     const configObjects: CustomObject[] = await getMethodConfigObjects();
-    let validatedMethods: Method[] = [];
-    if (configObjects.length) {
-      validatedMethods = methods.filter(
-        (method) =>
-          !!configObjects.find((config) => config.key === method.id && config.value.status === 'Active') &&
-          SupportedPaymentMethods[method.id.toString() as SupportedPaymentMethods],
-      );
-    } else {
-      validatedMethods = methods.filter(
-        (method: Method) => SupportedPaymentMethods[method.id.toString() as SupportedPaymentMethods],
-      );
-    }
+    const customMethods = methods.map((method) => ({
+      id: method.id,
+      name: { 'en-GB': method.description },
+      description: { 'en-GB': '' },
+      image: method.image.svg,
+      order: 0,
+    }));
+    const validatedMethods = validateAndSortMethods(customMethods, configObjects);
 
-    const enableCardComponent =
-      toBoolean(readConfiguration().mollie.cardComponent, true) &&
-      validatedMethods.filter((method: Method) => method.id === PaymentMethod.creditcard).length > 0;
+    const enableCardComponent = shouldEnableCardComponent(validatedMethods);
     const ctUpdateActions: UpdateAction[] = [];
 
     if (enableCardComponent) {
       validatedMethods.splice(
-        validatedMethods.findIndex((method: Method) => method.id === PaymentMethod.creditcard),
+        validatedMethods.findIndex((method) => method.id === PaymentMethod.creditcard),
         1,
       );
     }
