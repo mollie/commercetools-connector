@@ -5,7 +5,7 @@ jest.mock('./src/constants', () => {
       View: 'ViewMollie',
       Manage: 'TestMollie',
     },
-    PROJECT_KEY: 'shopm-adv-dev',
+    PROJECT_KEY: 'shopm-adv-windev',
     CLOUD_IDENTIFIER: 'gcp-eu',
     CUSTOM_APPLICATION_ID: '',
     APPLICATION_URL: 'http://localhost:3001',

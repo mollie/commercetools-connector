@@ -51,7 +51,6 @@ const MethodDetails = (props: TMethodDetailsProps) => {
   });
 
   const handleSubmit = async (formikValues: TMethodObjectValueFormValues) => {
-    console.log('formikValues', formikValues);
     try {
       if (method?.container && method?.key && formikValues) {
         await customObjectUpdater.execute({
@@ -88,16 +87,11 @@ const MethodDetails = (props: TMethodDetailsProps) => {
   ) => {
     try {
       if (method?.container && method?.key && formikValues) {
+        let clonedValues = { ...formikValues, ...{ status: status } };
         await customObjectUpdater.execute({
           container: method?.container,
           key: method?.key,
-          value: JSON.stringify({
-            id: formikValues.id,
-            description: formikValues.description,
-            status: status,
-            imageUrl: formikValues.imageUrl,
-            displayOrder: formikValues.displayOrder,
-          }),
+          value: JSON.stringify(clonedValues),
         });
         showNotification({
           kind: NOTIFICATION_KINDS_SIDE.success,
@@ -219,7 +213,10 @@ const MethodDetails = (props: TMethodDetailsProps) => {
                 />
                 <CustomFormModalPage.FormPrimaryButton
                   label={CustomFormModalPage.Intl.save}
-                  onClick={() => formProps.submitForm()}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    formProps.submitForm();
+                  }}
                   isDisabled={
                     formProps.isSubmitting || !formProps.isDirty || !canManage
                   }

@@ -65,7 +65,10 @@ const Welcome = () => {
       ),
     },
     { key: 'image', label: intl.formatMessage(messages.iconHeader) },
-    { key: 'order', label: intl.formatMessage(messages.displayOrderHeader) },
+    {
+      key: 'order',
+      label: intl.formatMessage(messages.displayOrderHeader),
+    },
   ];
   const customObjectUpdater = useCustomObjectDetailsUpdater();
   const { page, perPage } = usePaginationState();
@@ -85,7 +88,8 @@ const Welcome = () => {
   const [refresh, setRefresh] = useState<number>(0);
 
   const { fetchedData, fetchedDataLoading } = usePaymentMethodsFetcher(
-    extension?.destination?.url
+    extension?.destination?.url,
+    projectLanguages
   );
 
   const handleRefresh = useCallback(() => {
@@ -175,23 +179,19 @@ const Welcome = () => {
                   <CheckInactiveIcon color="neutral60"></CheckInactiveIcon>
                 );
               case 'name':
-                return (
-                  <Text.Wrap data-testid={`name-column-${item.id}`}>
-                    {item.name
-                      ? formatLocalizedString(
-                          {
-                            name: item.name,
-                          },
-                          {
-                            key: 'name',
-                            locale: dataLocale,
-                            fallbackOrder: projectLanguages,
-                            fallback: NO_VALUE_FALLBACK,
-                          }
-                        )
-                      : item.description}
-                  </Text.Wrap>
-                );
+                return item.name
+                  ? formatLocalizedString(
+                      {
+                        name: item.name,
+                      },
+                      {
+                        key: 'name',
+                        locale: dataLocale,
+                        fallbackOrder: projectLanguages,
+                        fallback: NO_VALUE_FALLBACK,
+                      }
+                    )
+                  : item.description;
               case 'image':
                 return (
                   <IconButton
@@ -209,11 +209,7 @@ const Welcome = () => {
                   ></IconButton>
                 );
               case 'order':
-                return (
-                  <Text.Wrap data-testid={`display-order-column-${item.id}`}>
-                    {item.displayOrder ?? '-'}
-                  </Text.Wrap>
-                );
+                return item.displayOrder ?? '-';
               default:
                 return null;
             }
