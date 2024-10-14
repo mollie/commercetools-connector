@@ -101,7 +101,7 @@ export const calculateDueDate = (input?: string): string => {
     input = DEFAULT_DUE_DATE + 'd';
   }
 
-  const match = input.match(DUE_DATE_PATTERN);
+  const match = DUE_DATE_PATTERN.exec(input);
 
   if (match) {
     const days = parseInt(match[1]);
