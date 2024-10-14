@@ -30,7 +30,8 @@ export type MollieMethod = {
 
 export type CustomMethodObject = {
   id: string;
-  description: string;
+  name: Record<string, string>;
+  description?: Record<string, string>;
   imageUrl: string;
   status: string;
   displayOrder?: number;
@@ -41,3 +42,16 @@ export type MollieResult = {
     methods: MollieMethod[];
   };
 };
+
+export enum SupportedPaymentMethods {
+  ideal = 'ideal',
+  creditcard = 'creditcard',
+  bancontact = 'bancontact',
+  banktransfer = 'banktransfer',
+  przelewy24 = 'przelewy24',
+  kbc = 'kbc',
+  blik = 'blik',
+  applepay = 'applepay',
+  paypal = 'paypal',
+  giftcard = 'giftcard',
+}

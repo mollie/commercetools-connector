@@ -40,8 +40,8 @@ export default defineMessages({
     id: 'Welcome.paymentMethodHeader',
     defaultMessage: 'Payment method',
   },
-  descriptionHeader: {
-    id: 'Welcome.descriptionHeader',
+  nameHeader: {
+    id: 'Welcome.nameHeader',
     defaultMessage: 'Payment method',
   },
 });

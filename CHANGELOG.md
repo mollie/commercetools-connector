@@ -10,6 +10,35 @@ Added
 
 - Mollie custom application initialization
 
+Updated
+
+- [getPaymentMethods](/docs/GetPaymentMethods.md) response has new returned format as follow
+
+  ```Typescript
+  {
+      id: string,
+      name: Record<string, string>
+      description: Record<string, string>
+      image: string;
+      order: number;
+  }
+
+  // e.g.
+  {
+    id: 'paypal',
+    name: {
+        'en-GB': 'PayPal',
+        'de-DE': 'PayPal',
+    },
+    description: {
+        'en-GB': '',
+        'de-DE': '',
+    },
+    image: 'https://example.img/paypal.svg',
+    order: 1
+  }
+  ```
+
 ## v1.1.2
 
 Added

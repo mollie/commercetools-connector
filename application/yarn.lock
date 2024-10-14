@@ -3179,6 +3179,26 @@
     "@emotion/react" "^11.10.5"
     prop-types "15.8.1"
 
+"@commercetools-uikit/number-field@^19.11.0":
+  version "19.11.0"
+  resolved "https://registry.yarnpkg.com/@commercetools-uikit/number-field/-/number-field-19.11.0.tgz#b92eea9eb8163eb37f84764ca8a1d904af213666"
+  integrity sha512-uYR8Pek6gp5emdlGdZkCleUTIkN8NOOtIveExkGFlJNMx+D/GNBGIs4PgJCbMa2rTuvQrMn3J6CTlRE4P8mxiQ==
+  dependencies:
+    "@babel/runtime" "^7.20.13"
+    "@babel/runtime-corejs3" "^7.20.13"
+    "@commercetools-uikit/constraints" "19.11.0"
+    "@commercetools-uikit/design-system" "19.11.0"
+    "@commercetools-uikit/field-errors" "19.11.0"
+    "@commercetools-uikit/field-label" "19.11.0"
+    "@commercetools-uikit/field-warnings" "19.11.0"
+    "@commercetools-uikit/number-input" "19.11.0"
+    "@commercetools-uikit/spacings-stack" "19.11.0"
+    "@commercetools-uikit/utils" "19.11.0"
+    "@emotion/react" "^11.10.5"
+    "@emotion/styled" "^11.10.5"
+    prop-types "15.8.1"
+    react-intl "^6.3.2"
+
 "@commercetools-uikit/number-input@19.11.0":
   version "19.11.0"
   resolved "https://registry.npmjs.org/@commercetools-uikit/number-input/-/number-input-19.11.0.tgz"
