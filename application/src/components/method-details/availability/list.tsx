@@ -1,27 +1,23 @@
-import DataTable from "@commercetools-uikit/data-table";
-import { useDataTableSortingState } from "@commercetools-uikit/hooks";
-import { ReactElement, useMemo } from 'react';
-import { useIntl } from "react-intl";
+import DataTable from '@commercetools-uikit/data-table';
+import { useDataTableSortingState } from '@commercetools-uikit/hooks';
+import { useMemo, useState } from 'react';
+import { useIntl } from 'react-intl';
 import messages from '../messages';
-import { TMethodObjectValueFormValues } from "../../../types";
-import { useFormik, type FormikHelpers } from 'formik';
-import { TFetchCustomObjectDetailsQuery } from "../../../types/generated/ctp";
-import { CustomMethodObject } from "../../../types/app";
-import { CustomFormModalPage, PageContentFull, useModalState } from "@commercetools-frontend/application-components";
-import PrimaryButton from '@commercetools-uikit/primary-button';
+import {
+  TPricingConstraintIdentifier,
+  TPricingConstraintItem,
+} from '../../../types';
+import { TFetchCustomObjectDetailsQuery } from '../../../types/generated/ctp';
+import { CustomMethodObject } from '../../../types/app';
+import {
+  PageContentFull,
+  useModalState,
+} from '@commercetools-frontend/application-components';
 import { PlusThinIcon } from '@commercetools-uikit/icons';
 import SpacingsInset from '@commercetools-uikit/spacings-inset';
-import AvailabilityDetail from "./detail";
-
-type Formik = ReturnType<typeof useFormik>;
-type FormProps = {
-  formElements: ReactElement;
-  values: Formik['values'];
-  isDirty: Formik['dirty'];
-  isSubmitting: Formik['isSubmitting'];
-  submitForm: Formik['handleSubmit'];
-  handleReset: Formik['handleReset'];
-};
+import AvailabilityDetails from './details';
+import { type TCurrencyCode } from '@commercetools-uikit/money-input';
+import SecondaryButton from '@commercetools-uikit/secondary-button';
 
 type TCustomObjectDetailsFormProps = {
   paymentMethodDetails: TFetchCustomObjectDetailsQuery['customObject'];
@@ -30,11 +26,18 @@ type TCustomObjectDetailsFormProps = {
 const AvailabilityList = (props: TCustomObjectDetailsFormProps) => {
   const intl = useIntl();
 
-  const paymentMethod = (props.paymentMethodDetails?.value as unknown as CustomMethodObject);
+  const formModalState = useModalState();
+
+  const [identifier, setIdentifier] = useState(
+    {} as TPricingConstraintIdentifier
+  );
+
+  const paymentMethod = props.paymentMethodDetails
+    ?.value as unknown as CustomMethodObject;
 
   const availabilityColumns = [
     {
-      key: 'currency',
+      key: 'currencyCode',
       label: intl.formatMessage(messages.headerCurrency),
       isSortable: true,
     },
@@ -47,7 +50,7 @@ const AvailabilityList = (props: TCustomObjectDetailsFormProps) => {
       label: intl.formatMessage(messages.headerMaxAmount),
     },
     {
-      key: 'country',
+      key: 'countryCode',
       label: intl.formatMessage(messages.headerCountry),
       isSortable: true,
     },
@@ -59,12 +62,15 @@ const AvailabilityList = (props: TCustomObjectDetailsFormProps) => {
   ];
 
   const tableSorting = useDataTableSortingState({
-    key: 'currency',
+    key: 'currencyCode',
     order: 'asc',
   });
 
-  const rows = useMemo(() => {
-    const items = paymentMethod.pricingConstraints || [];
+  const rows: TPricingConstraintItem[] = useMemo(() => {
+    const items = (paymentMethod.pricingConstraints || []).map((item, index) => ({
+      id: index + 1,
+      ...item,
+    })) as TPricingConstraintItem[];
 
     if (!tableSorting) {
       return items;
@@ -84,22 +90,34 @@ const AvailabilityList = (props: TCustomObjectDetailsFormProps) => {
       }
 
       return 0;
-    })
-  }, [tableSorting]);
+    });
+  }, [paymentMethod, tableSorting]);
 
-  const formModalState = useModalState();
-
-  console.log('formModalState log', formModalState);
-
+  const handleOnRowClick = (row: TPricingConstraintItem) => {
+    setIdentifier({
+      countryCode: row.countryCode,
+      currencyCode: row.currencyCode as TCurrencyCode,
+    });
+    formModalState.openModal();
+  };
   return (
     <PageContentFull>
       <SpacingsInset>
-        <div style={{display: 'flex', marginBottom: '30px', justifyContent: 'end'}}>
-          <PrimaryButton 
-              iconLeft={<PlusThinIcon />}
-              label="Add configuration"
-              onClick={() => formModalState.openModal()}
-              isDisabled={false}
+        <div
+          style={{
+            display: 'flex',
+            marginBottom: '30px',
+            justifyContent: 'end',
+          }}
+        >
+          <SecondaryButton
+            iconLeft={<PlusThinIcon />}
+            label="Add configuration"
+            onClick={() => {
+              setIdentifier({} as TPricingConstraintIdentifier);
+              formModalState.openModal();
+            }}
+            isDisabled={false}
           />
         </div>
         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
@@ -110,14 +128,14 @@ const AvailabilityList = (props: TCustomObjectDetailsFormProps) => {
           rows={rows}
           itemRenderer={(item, column) => {
             switch (column.key) {
-              case 'currency':
-                return item.currency ?? '';
+              case 'currencyCode':
+                return item.currencyCode ?? '';
               case 'maxAmount':
                 return item.maxAmount;
               case 'minAmount':
                 return item.minAmount;
-              case 'country':
-                return item.country ?? '';
+              case 'countryCode':
+                return item.countryCode ?? '';
               case 'surchargeCost':
                 return item.surchargeCost ?? '';
               default:
@@ -129,18 +147,17 @@ const AvailabilityList = (props: TCustomObjectDetailsFormProps) => {
           onSortChange={(column, direction) => {
             tableSorting.onChange(column, direction);
           }}
+          onRowClick={(row: TPricingConstraintItem) => handleOnRowClick(row)}
         />
-        <CustomFormModalPage
-          title={'Edit form test'}
-          isOpen={formModalState.isModalOpen}
-          onClose={formModalState.closeModal}
-        >
-          <AvailabilityDetail></AvailabilityDetail>
-        </CustomFormModalPage>
+        <AvailabilityDetails
+          method={props.paymentMethodDetails}
+          identifier={identifier}
+          formModalState={formModalState}
+        ></AvailabilityDetails>
       </SpacingsInset>
     </PageContentFull>
   );
-}
+};
 
 AvailabilityList.displayName = 'AvailabilityList';
 export default AvailabilityList;

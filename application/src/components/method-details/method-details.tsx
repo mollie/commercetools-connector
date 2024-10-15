@@ -30,6 +30,7 @@ import { ApplicationPageTitle } from '@commercetools-frontend/application-shell'
 import { useIsAuthorized } from '@commercetools-frontend/permissions';
 import { PERMISSIONS } from '../../constants';
 import { formatLocalizedString } from '@commercetools-frontend/l10n';
+import AvailabilityList from './availability/list';
 
 type TMethodDetailsProps = {
   onClose: () => void;
@@ -247,7 +248,9 @@ const MethodDetails = (props: TMethodDetailsProps) => {
                 <div>Icon</div>
               </Route>
               <Route path={`${match.path}/availability`}>
-                <div>Availability</div>
+                <AvailabilityList
+                  paymentMethodDetails={method}
+                ></AvailabilityList>
               </Route>
             </Switch>
           </TabularModalPage>
