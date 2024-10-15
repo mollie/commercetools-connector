@@ -1,4 +1,5 @@
 import type { TChannelRole } from './types/generated/ctp';
+import { type TCurrencyCode } from '@commercetools-uikit/money-input';
 
 export type TFormValues = {
   key: string;
@@ -28,4 +29,40 @@ export type TMethodObjectValueFormValues = {
   imageUrl: string;
   status: string;
   displayOrder: number;
+  pricingConstraints?: TPricingConstraintItem[];
+};
+
+export type TAvailabilityObjectValueFormValues = {
+  id?: string;
+  countryCode: string;
+  currencyCode: string;
+  minAmount: number;
+  maxAmount: number;
+};
+
+export type TAvailabilityAmount = {
+  minAmount: string;
+  maxAmount: string;
+};
+
+export type TAmountPerCurrency = {
+  [key in TCurrencyCode as string]: TAvailabilityAmount;
+};
+
+export type TAmountPerCountry = {
+  [key: string]: TAmountPerCurrency;
+};
+
+export type TPricingConstraintItem = {
+  id?: number; // Row ID
+  countryCode: string;
+  currencyCode: string;
+  minAmount: number;
+  maxAmount: number;
+  surchargeCost?: string;
+};
+
+export type TPricingConstraintIdentifier = {
+  countryCode: string;
+  currencyCode: TCurrencyCode;
 };

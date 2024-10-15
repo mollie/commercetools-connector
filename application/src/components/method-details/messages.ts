@@ -50,4 +50,32 @@ export default defineMessages({
     id: 'MethodDetails.fieldMethodDisplayOrderInfoTitle',
     defaultMessage: 'Display order in checkout',
   },
+  availabilityTitle: {
+    id: 'MethodDetails.Availability',
+    defaultMessage: 'Availability',
+  },
+  headerCountry: {
+    id: 'MethodDetails.Availability.headerCountry',
+    defaultMessage: 'Country',
+  },
+  headerCurrency: {
+    id: 'MethodDetails.Availability.headerCurrency',
+    defaultMessage: 'Currency',
+  },
+  headerMinAmount: {
+    id: 'MethodDetails.Availability.headerMinAmount',
+    defaultMessage: 'Min amount',
+  },
+  headerMaxAmount: {
+    id: 'MethodDetails.Availability.headerMaxAmount',
+    defaultMessage: 'Max amount',
+  },
+  headerSurchargeCost: {
+    id: 'MethodDetails.Availability.headerSurchargeCost',
+    defaultMessage: 'Surcharge transaction cost',
+  },
+  fieldMaxAmountInvalidValue: {
+    id: 'MethodDetails.fieldMaxAmountInvalidValue',
+    defaultMessage: 'Maximum amount has to be higher then minimum amount.',
+  },
 });

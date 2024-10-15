@@ -70,3 +70,7 @@ export const convertToActionData = (draft: Partial<TChannel>) => ({
   ...draft,
   name: transformLocalizedFieldToLocalizedString(draft.nameAllLocales || []),
 });
+
+export const convertCurrencyStringToNumber = (string: string): number => {
+  return Number(string.replace(/[^0-9.-]+/g, ''));
+};

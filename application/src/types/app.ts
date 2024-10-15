@@ -35,6 +35,16 @@ export type CustomMethodObject = {
   imageUrl: string;
   status: string;
   displayOrder?: number;
+  pricingConstraints?: TPricingConstraintItem[];
+};
+
+export type TPricingConstraintItem = {
+  id?: number | string;
+  currencyCode: string;
+  countryCode: string;
+  minAmount: number;
+  maxAmount: number;
+  surchargeCost?: string;
 };
 
 export type MollieResult = {
