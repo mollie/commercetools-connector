@@ -30,8 +30,8 @@ export const setCustomFields = (fieldName: string, fieldValue: string) => {
  */
 export const addInterfaceInteraction = (params: CreateInterfaceInteractionParams) => {
   const { sctm_action_type, sctm_request, sctm_response, sctm_id, sctm_created_at } = params;
-  const interfaceInteractionId = sctm_id ? sctm_id : uuid();
-  const interfaceInteractionTimestamp = sctm_created_at ? sctm_created_at : createDateNowString();
+  const interfaceInteractionId = sctm_id ?? uuid();
+  const interfaceInteractionTimestamp = sctm_created_at ?? createDateNowString();
 
   return {
     action: 'addInterfaceInteraction',

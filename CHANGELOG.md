@@ -39,6 +39,13 @@ Updated
   }
   ```
 
+## v1.1.2
+
+Added
+
+- Add configuration to enable authorization mode
+- OAuth middleware for securing connector endpoint
+
 ## v1.1.1
 
 Fixes
@@ -56,6 +63,7 @@ Added
 
 Added
 
+- Add docs for status checking endpoint
 - Endpoints for checking connector statuses
 
 ## v1.0.2
