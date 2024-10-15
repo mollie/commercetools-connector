@@ -1,5 +1,5 @@
 import { useFormik, type FormikHelpers } from 'formik';
-import { ReactElement, useMemo } from 'react';
+import { ReactElement } from 'react';
 import { TMethodObjectValueFormValues } from '../../types';
 import Spacings from '@commercetools-uikit/spacings';
 import TextField from '@commercetools-uikit/text-field';
@@ -13,8 +13,6 @@ import {
 } from '@commercetools-frontend/application-components';
 import Text from '@commercetools-uikit/text';
 import validate from './validate';
-import DataTable from '@commercetools-uikit/data-table';
-import { useDataTableSortingState } from '@commercetools-uikit/hooks';
 
 type Formik = ReturnType<typeof useFormik>;
 type FormProps = {
