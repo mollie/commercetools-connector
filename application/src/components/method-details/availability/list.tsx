@@ -67,10 +67,12 @@ const AvailabilityList = (props: TCustomObjectDetailsFormProps) => {
   });
 
   const rows: TPricingConstraintItem[] = useMemo(() => {
-    const items = (paymentMethod.pricingConstraints || []).map((item, index) => ({
-      id: index + 1,
-      ...item,
-    })) as TPricingConstraintItem[];
+    const items = (paymentMethod.pricingConstraints || []).map(
+      (item, index) => ({
+        id: index + 1,
+        ...item,
+      })
+    ) as TPricingConstraintItem[];
 
     if (!tableSorting) {
       return items;
