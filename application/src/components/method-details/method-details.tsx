@@ -164,7 +164,7 @@ const MethodDetails = (props: TMethodDetailsProps) => {
               <>
                 <TabHeader
                   to={`${match.url}/general`}
-                  label="General setting"
+                  label="General"
                   exactPathMatch={true}
                 />
                 <TabHeader
