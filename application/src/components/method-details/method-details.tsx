@@ -213,10 +213,7 @@ const MethodDetails = (props: TMethodDetailsProps) => {
                 />
                 <CustomFormModalPage.FormPrimaryButton
                   label={CustomFormModalPage.Intl.save}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    formProps.submitForm();
-                  }}
+                  onClick={() => formProps.submitForm()}
                   isDisabled={
                     formProps.isSubmitting || !formProps.isDirty || !canManage
                   }

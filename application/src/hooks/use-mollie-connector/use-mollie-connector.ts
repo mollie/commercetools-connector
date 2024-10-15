@@ -50,7 +50,7 @@ const convertMollieMethodToCustomMethod = (
     }, {} as Record<string, string>),
     imageUrl: method.image.svg,
     status: 'Inactive',
-    displayOrder: undefined,
+    displayOrder: 0,
   }));
 };
 
