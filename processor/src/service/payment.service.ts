@@ -59,6 +59,7 @@ import { ApplePaySessionRequest, CustomPayment, SupportedPaymentMethods } from '
 import { parseStringToJsonObject } from '../utils/app.utils';
 import ApplePaySession from '@mollie/api-client/dist/types/src/data/applePaySession/ApplePaySession';
 import { getMethodConfigObjects } from '../commercetools/customObjects.commercetools';
+import { getCartFromPayment } from '../commercetools/cart.commercetools';
 
 type CustomMethod = {
   id: string;
@@ -66,6 +67,16 @@ type CustomMethod = {
   description: Record<string, string>;
   image: string;
   order: number;
+  pricingConstraints?: PricingConstraintItem[];
+};
+
+type PricingConstraintItem = {
+  id?: number;
+  countryCode: string;
+  currencyCode: string;
+  minAmount: number;
+  maxAmount: number;
+  surchargeCost?: string;
 };
 
 /**
@@ -146,6 +157,8 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
     const mollieOptions = await mapCommercetoolsPaymentCustomFieldsToMollieListParams(ctPayment);
     const methods: List<Method> = await listPaymentMethods(mollieOptions);
     const configObjects: CustomObject[] = await getMethodConfigObjects();
+
+    const cart = await getCartFromPayment(ctPayment.id);
     const customMethods = methods.map((method) => ({
       id: method.id,
       name: { 'en-GB': method.description },
@@ -153,10 +166,10 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
       image: method.image.svg,
       order: 0,
     }));
+
     const validatedMethods = validateAndSortMethods(customMethods, configObjects);
 
     const enableCardComponent = shouldEnableCardComponent(validatedMethods);
-    const ctUpdateActions: UpdateAction[] = [];
 
     if (enableCardComponent) {
       validatedMethods.splice(
@@ -165,10 +178,35 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
       );
     }
 
+    if (cart.country) {
+      const currencyCode = ctPayment.amountPlanned.currencyCode;
+
+      configObjects.forEach((item: CustomObject) => {
+        const pricingConstraint = item.value.pricingConstraints?.find((pricingConstraint: PricingConstraintItem) => {
+          return pricingConstraint.countryCode === cart.country && pricingConstraint.currencyCode === currencyCode;
+        }) as PricingConstraintItem;
+
+        if (pricingConstraint) {
+          const amount = ctPayment.amountPlanned.centAmount / Math.pow(10, ctPayment.amountPlanned.fractionDigits);
+
+          if (
+            (pricingConstraint.minAmount && amount < pricingConstraint.minAmount) ||
+            (pricingConstraint.maxAmount && amount > pricingConstraint.maxAmount)
+          ) {
+            const index: number = validatedMethods.findIndex((method) => method.id === item.value.id);
+
+            validatedMethods.splice(index, 1);
+          }
+        }
+      });
+    }
+
     const availableMethods = JSON.stringify({
       count: validatedMethods.length,
       methods: validatedMethods.length ? validatedMethods : [],
     });
+
+    const ctUpdateActions: UpdateAction[] = [];
 
     ctUpdateActions.push(
       setCustomFields(CustomFields.payment.profileId, enableCardComponent ? readConfiguration().mollie.profileId : ''),
