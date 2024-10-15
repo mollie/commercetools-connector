@@ -165,7 +165,7 @@ const MethodDetails = (props: TMethodDetailsProps) => {
               <>
                 <TabHeader
                   to={`${match.url}/general`}
-                  label="General setting"
+                  label="General"
                   exactPathMatch={true}
                 />
                 <TabHeader
@@ -214,10 +214,7 @@ const MethodDetails = (props: TMethodDetailsProps) => {
                 />
                 <CustomFormModalPage.FormPrimaryButton
                   label={CustomFormModalPage.Intl.save}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    formProps.submitForm();
-                  }}
+                  onClick={() => formProps.submitForm()}
                   isDisabled={
                     formProps.isSubmitting || !formProps.isDirty || !canManage
                   }

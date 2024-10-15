@@ -33,7 +33,7 @@ const validate = (
   }
   if (
     !Number.isInteger(formikValues.displayOrder) ||
-    formikValues.displayOrder <= 0 ||
+    formikValues.displayOrder < 0 ||
     formikValues.displayOrder > 100
   ) {
     errors.displayOrder.isNotInteger = true;

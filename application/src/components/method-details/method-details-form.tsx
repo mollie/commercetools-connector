@@ -65,7 +65,6 @@ const MethodDetailsForm = (props: TCustomObjectDetailsFormProps) => {
         onBlur={formik.handleBlur}
         isReadOnly={props.isReadOnly}
         horizontalConstraint={13}
-        isRequired={false}
         renderError={(errorKey) => {
           if (errorKey === 'invalidLength') {
             return intl.formatMessage(messages.fieldMethodNameInvalidLength);
@@ -91,7 +90,6 @@ const MethodDetailsForm = (props: TCustomObjectDetailsFormProps) => {
         onBlur={formik.handleBlur}
         isReadOnly={props.isReadOnly}
         horizontalConstraint={13}
-        isRequired={false}
         renderError={(errorKey) => {
           if (errorKey === 'invalidLength') {
             return intl.formatMessage(
