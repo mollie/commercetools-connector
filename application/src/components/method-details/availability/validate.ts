@@ -1,8 +1,6 @@
 import omitEmpty from 'omit-empty-es';
 import type { FormikErrors } from 'formik';
-import {
-  TAmountPerCountry,
-} from '../../../types';
+import { TAmountPerCountry } from '../../../types';
 import { convertCurrencyStringToNumber } from '../../../helpers';
 import { type TCurrencyCode } from '@commercetools-uikit/money-input';
 
@@ -25,7 +23,7 @@ const validate = (
     for (const { minAmount, maxAmount } of Object.values(currencies)) {
       const nMinAmount = convertCurrencyStringToNumber(minAmount);
       const nMaxAmount = convertCurrencyStringToNumber(maxAmount);
-  
+
       if (nMaxAmount < nMinAmount) {
         errors.maxAmount.invalidValue = true;
         break;
