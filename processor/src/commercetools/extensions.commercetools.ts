@@ -20,10 +20,6 @@ export async function createPaymentExtension(applicationUrl: string): Promise<vo
         destination: {
           type: 'HTTP',
           url: applicationUrl,
-          authentication: {
-            type: 'AuthorizationHeader',
-            headerValue: 'Bearer _token_',
-          },
         },
         triggers: [
           {
