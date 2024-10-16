@@ -12,7 +12,7 @@ deployAs:
           required: true
           default: "europe-west1.gcp"
         - key: MOLLIE_CARD_COMPONENT
-          description: Enable Mollie card component (0 or 1)
+          description: Enable Mollie cart component (0 or 1)
           required: false
           default: "0"
         - key: CONNECTOR_MODE
@@ -26,10 +26,6 @@ deployAs:
         - key: MOLLIE_BANK_TRANSFER_DUE_DATE
           description: Payment method Bank Transfer due date (1d -> 100d)
           default: "14d"
-        - key: AUTHENTICATION_MODE
-          description: To enable secure mode for connector requests using OAuth authentication (0 or 1)
-          required: true
-          default: "0"
       securedConfiguration:
         - key: MOLLIE_API_TEST_KEY
           description: Mollie PSP test API key
@@ -52,26 +48,3 @@ deployAs:
         - key: CTP_SCOPE
           description: Commercetools Composable Commerce client scope
           required: true
-        - key: CTP_SESSION_AUDIENCE
-          description: Commercetools Composable Commerce client session audience. The value should only contain the origin URL (protocol, hostname, port).
-          required: true
-        - key: CTP_SESSION_ISSUER
-          description: Commercetools Composable Commerce client session issuer. The cloud identifier that maps to the MC API URL of the related cloud region or the MC API URL.
-          required: true
-
-  - name: application
-    applicationType: merchant-center-custom-application
-    scripts:  
-      postDeploy: yarn install && yarn build
-      preUndeploy: yarn install && yarn build
-    configuration:
-      standardConfiguration:
-      - key: CUSTOM_APPLICATION_ID
-        description: The Custom Application ID
-        required: true
-      - key: CLOUD_IDENTIFIER
-        description: The cloud identifier
-        default: 'gcp-eu'
-      - key: ENTRY_POINT_URI_PATH
-        description: The Application entry point URI path
-        required: true
