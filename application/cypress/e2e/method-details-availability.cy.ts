@@ -56,8 +56,7 @@ describe('Test method details - availability tab', () => {
 
     cy.findByText(paymentMethods).click();
     cy.url().should('contain', 'general');
-    // cy.wait(10000);
-    // console.log(cy.findAllByLabelText('Availability'));
+
     cy.findByText('Availability').should('exist').click();
 
     cy.findByText('EUR');
