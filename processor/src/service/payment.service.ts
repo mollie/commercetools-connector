@@ -201,10 +201,10 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
     const billingCountry = getBillingCountry(ctPayment);
 
     if (!billingCountry) {
-      logger.error(`SCTM - listPaymentMethodsByPayment - billingCountry is not provided`, {
+      logger.error(`SCTM - listPaymentMethodsByPayment - billingCountry is not provided.`, {
         commerceToolsPaymentId: ctPayment.id,
       });
-      return Promise.reject(new CustomError(400, 'billingCountry is not provided'));
+      throw new CustomError(400, 'billingCountry is not provided.');
     }
 
     const customMethods = methods.map(mapMollieMethodToCustomMethod);
