@@ -293,11 +293,6 @@ describe('Test listPaymentMethodsByPayment', () => {
       },
     ]);
 
-    (getCartFromPayment as jest.Mock).mockReturnValueOnce({
-      id: 'cart-id',
-      country: 'DE',
-    } as Cart);
-
     mockResource = {
       id: 'RANDOMID_12345',
       paymentMethodInfo: {
@@ -314,6 +309,7 @@ describe('Test listPaymentMethodsByPayment', () => {
         fields: {
           sctm_payment_methods_request: JSON.stringify({
             locale: 'de_DE',
+            billingCountry: 'DE',
           }),
         },
       } as unknown as CustomFields,
@@ -326,19 +322,8 @@ describe('Test listPaymentMethodsByPayment', () => {
     expect(response?.actions?.[0]?.action).toBe('setCustomField');
     expect((response?.actions?.[1] as any)?.value).toBe(
       JSON.stringify({
-        count: 3,
+        count: 2,
         methods: [
-          {
-            id: 'paypal',
-            name: {
-              'en-GB': 'PayPal',
-            },
-            description: {
-              'en-GB': '',
-            },
-            image: 'https://www.mollie.com/external/icons/payment-methods/applepay.svg',
-            order: 0,
-          },
           {
             id: 'bancontact',
             name: {
@@ -468,11 +453,6 @@ describe('Test listPaymentMethodsByPayment', () => {
       },
     ]);
 
-    (getCartFromPayment as jest.Mock).mockReturnValueOnce({
-      id: 'cart-id',
-      country: 'DE',
-    } as Cart);
-
     mockResource = {
       typeId: 'payment',
       paymentMethodInfo: {
@@ -485,6 +465,14 @@ describe('Test listPaymentMethodsByPayment', () => {
         centAmount: 1000,
         fractionDigits: 2,
       },
+      custom: {
+        fields: {
+          sctm_payment_methods_request: JSON.stringify({
+            locale: 'de_DE',
+            billingCountry: 'DE',
+          }),
+        },
+      } as unknown as CustomFields,
     } as unknown as Payment;
 
     const response: ControllerResponseType = await handleListPaymentMethodsByPayment(mockResource);
@@ -512,6 +500,7 @@ describe('Test listPaymentMethodsByPayment', () => {
         fields: {
           sctm_payment_methods_request: JSON.stringify({
             locale: 'de_DE',
+            billingCountry: 'DE',
           }),
         },
       } as unknown as CustomFields,
@@ -524,6 +513,37 @@ describe('Test listPaymentMethodsByPayment', () => {
     expect(response?.actions?.length).toEqual(0);
     expect(response?.actions?.[0]?.action).toBe(undefined);
     expect(JSON.stringify(response)).not.toContain('count');
+  });
+
+  test('call listPaymentMethodsByPayment with billingCountry', async () => {
+    mockResource = {
+      id: 'RANDOMID_12345',
+      paymentMethodInfo: {
+        paymentInterface: 'mollie',
+        method: 'card',
+      },
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'VND',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      custom: {
+        fields: {
+          sctm_payment_methods_request: JSON.stringify({
+            locale: 'de_DE',
+          }),
+        },
+      } as unknown as CustomFields,
+    } as unknown as Payment;
+
+    try {
+      await handleListPaymentMethodsByPayment(mockResource);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).message).toBe('billingCountry is not provided.');
+      expect((error as CustomError).statusCode).toBe(400);
+    }
   });
 
   test('call listPaymentMethodsByPayment with cardComponent deactivated', async () => {
@@ -688,6 +708,7 @@ describe('Test listPaymentMethodsByPayment', () => {
         fields: {
           sctm_payment_methods_request: JSON.stringify({
             locale: 'de_DE',
+            billingCountry: 'DE',
           }),
         },
       } as unknown as CustomFields,
@@ -868,6 +889,7 @@ describe('Test listPaymentMethodsByPayment', () => {
         fields: {
           sctm_payment_methods_request: JSON.stringify({
             locale: 'de_DE',
+            billingCountry: 'DE',
           }),
         },
       } as unknown as CustomFields,
@@ -885,7 +907,7 @@ describe('Test listPaymentMethodsByPayment', () => {
       name: 'sctm_mollie_profile_id',
       value: process.env.MOLLIE_PROFILE_ID,
     });
-    expect(JSON.stringify(response)).not.toContain('creditcard');
+    expect(JSON.stringify(response)).toContain('creditcard');
   });
 });
 

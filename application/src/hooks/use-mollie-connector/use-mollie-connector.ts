@@ -47,6 +47,7 @@ const convertMollieMethodToCustomMethod = (
   );
   return availableMethods.map((method: MollieMethod) => ({
     id: method.id,
+    technicalName: method.description,
     name: projectLanguages.reduce((acc, lang) => {
       acc[lang] = method.description;
       return acc;

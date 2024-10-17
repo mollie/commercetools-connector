@@ -157,13 +157,6 @@ const getBillingCountry = (ctPayment: Payment): string | undefined => {
   return requestField ? JSON.parse(requestField).billingCountry : undefined;
 };
 
-const removeCreditCardMethod = (methods: CustomMethod[]) => {
-  const index = methods.findIndex((method) => method.id === PaymentMethod.creditcard);
-  if (index !== -1) {
-    methods.splice(index, 1);
-  }
-};
-
 const filterMethodsByPricingConstraints = (
   methods: CustomMethod[],
   configObjects: CustomObject[],
@@ -207,15 +200,18 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
 
     const billingCountry = getBillingCountry(ctPayment);
 
+    if (!billingCountry) {
+      logger.error(`SCTM - listPaymentMethodsByPayment - billingCountry is not provided.`, {
+        commerceToolsPaymentId: ctPayment.id,
+      });
+      throw new CustomError(400, 'billingCountry is not provided.');
+    }
+
     const customMethods = methods.map(mapMollieMethodToCustomMethod);
 
     const validatedMethods = validateAndSortMethods(customMethods, configObjects);
 
     const enableCardComponent = shouldEnableCardComponent(validatedMethods);
-
-    if (enableCardComponent) {
-      removeCreditCardMethod(validatedMethods);
-    }
 
     if (billingCountry) {
       filterMethodsByPricingConstraints(validatedMethods, configObjects, ctPayment, billingCountry);
