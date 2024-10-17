@@ -25,9 +25,15 @@ import {
 const config = {
   headers: {
     'Content-Type': 'application/json',
-    'ngrok-skip-browser-warning': 'true',
   },
 };
+
+if (process.env.NODE_ENV === 'development') {
+  config.headers = {
+    ...config.headers,
+    ...{ 'ngrok-skip-browser-warning': 'true' },
+  };
+}
 
 const convertMollieMethodToCustomMethod = (
   results: MollieResult,
