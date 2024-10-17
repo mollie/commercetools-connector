@@ -52,7 +52,7 @@ describe('Test welcome.cy.ts', () => {
       });
     });
 
-    cy.findByText('Mollie yment methods').should('exist');
+    cy.findByText('Mollie payment methods').should('exist');
     cy.findByText('Content will follow...').should('not.exist');
     cy.get('[data-testid="no-data-notification"]').should('exist');
   });
