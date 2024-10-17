@@ -145,20 +145,9 @@ const MethodDetails = (props: TMethodDetailsProps) => {
       dataLocale={dataLocale}
     >
       {(formProps) => {
-        const methodName = formatLocalizedString(
-          {
-            name: formProps.values?.name,
-          },
-          {
-            key: 'name',
-            locale: dataLocale,
-            fallbackOrder: projectLanguages,
-            fallback: NO_VALUE_FALLBACK,
-          }
-        );
         return (
           <TabularModalPage
-            title={methodName}
+            title={formProps.values.technicalName || ''}
             isOpen
             onClose={() => props.onClose()}
             tabControls={
@@ -235,7 +224,11 @@ const MethodDetails = (props: TMethodDetailsProps) => {
                 </Text.Body>
               </ContentNotification>
             )}
-            {method && <ApplicationPageTitle additionalParts={[methodName]} />}
+            {method && (
+              <ApplicationPageTitle
+                additionalParts={[formProps.values.technicalName]}
+              />
+            )}
             {method === null && <PageNotFound />}
             <Switch>
               <Route path={`${match.path}/general`}>
