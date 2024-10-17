@@ -326,8 +326,19 @@ describe('Test listPaymentMethodsByPayment', () => {
     expect(response?.actions?.[0]?.action).toBe('setCustomField');
     expect((response?.actions?.[1] as any)?.value).toBe(
       JSON.stringify({
-        count: 2,
+        count: 3,
         methods: [
+          {
+            id: 'paypal',
+            name: {
+              'en-GB': 'PayPal',
+            },
+            description: {
+              'en-GB': '',
+            },
+            image: 'https://www.mollie.com/external/icons/payment-methods/applepay.svg',
+            order: 0,
+          },
           {
             id: 'bancontact',
             name: {
