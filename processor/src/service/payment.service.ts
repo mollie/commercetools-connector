@@ -59,7 +59,6 @@ import { ApplePaySessionRequest, CustomPayment, SupportedPaymentMethods } from '
 import { parseStringToJsonObject } from '../utils/app.utils';
 import ApplePaySession from '@mollie/api-client/dist/types/src/data/applePaySession/ApplePaySession';
 import { getMethodConfigObjects } from '../commercetools/customObjects.commercetools';
-import { getCartFromPayment } from '../commercetools/cart.commercetools';
 
 type CustomMethod = {
   id: string;
@@ -145,6 +144,54 @@ const shouldEnableCardComponent = (validatedMethods: CustomMethod[]): boolean =>
   );
 };
 
+const mapMollieMethodToCustomMethod = (method: Method) => ({
+  id: method.id,
+  name: { 'en-GB': method.description },
+  description: { 'en-GB': '' },
+  image: method.image.svg,
+  order: 0,
+});
+
+const getBillingCountry = (ctPayment: Payment): string | undefined => {
+  const requestField = ctPayment.custom?.fields[CustomFields.payment.request];
+  return requestField ? JSON.parse(requestField).billingCountry : undefined;
+};
+
+const removeCreditCardMethod = (methods: CustomMethod[]) => {
+  const index = methods.findIndex((method) => method.id === PaymentMethod.creditcard);
+  if (index !== -1) {
+    methods.splice(index, 1);
+  }
+};
+
+const filterMethodsByPricingConstraints = (
+  methods: CustomMethod[],
+  configObjects: CustomObject[],
+  ctPayment: Payment,
+  billingCountry: string,
+) => {
+  const currencyCode = ctPayment.amountPlanned.currencyCode;
+  const amount = ctPayment.amountPlanned.centAmount / Math.pow(10, ctPayment.amountPlanned.fractionDigits);
+
+  configObjects.forEach((item: CustomObject) => {
+    const pricingConstraint = item.value.pricingConstraints?.find((constraint: PricingConstraintItem) => {
+      return constraint.countryCode === billingCountry && constraint.currencyCode === currencyCode;
+    });
+
+    if (pricingConstraint) {
+      if (
+        (pricingConstraint.minAmount && amount < pricingConstraint.minAmount) ||
+        (pricingConstraint.maxAmount && amount > pricingConstraint.maxAmount)
+      ) {
+        const index = methods.findIndex((method) => method.id === item.value.id);
+        if (index !== -1) {
+          methods.splice(index, 1);
+        }
+      }
+    }
+  });
+};
+
 /**
  * Handles listing payment methods by payment.
  *
@@ -158,47 +205,20 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
     const methods: List<Method> = await listPaymentMethods(mollieOptions);
     const configObjects: CustomObject[] = await getMethodConfigObjects();
 
-    const cart = await getCartFromPayment(ctPayment.id);
-    const customMethods = methods.map((method) => ({
-      id: method.id,
-      name: { 'en-GB': method.description },
-      description: { 'en-GB': '' },
-      image: method.image.svg,
-      order: 0,
-    }));
+    const billingCountry = getBillingCountry(ctPayment);
+
+    const customMethods = methods.map(mapMollieMethodToCustomMethod);
 
     const validatedMethods = validateAndSortMethods(customMethods, configObjects);
 
     const enableCardComponent = shouldEnableCardComponent(validatedMethods);
 
     if (enableCardComponent) {
-      validatedMethods.splice(
-        validatedMethods.findIndex((method) => method.id === PaymentMethod.creditcard),
-        1,
-      );
+      removeCreditCardMethod(validatedMethods);
     }
 
-    if (cart.country) {
-      const currencyCode = ctPayment.amountPlanned.currencyCode;
-
-      configObjects.forEach((item: CustomObject) => {
-        const pricingConstraint = item.value.pricingConstraints?.find((pricingConstraint: PricingConstraintItem) => {
-          return pricingConstraint.countryCode === cart.country && pricingConstraint.currencyCode === currencyCode;
-        }) as PricingConstraintItem;
-
-        if (pricingConstraint) {
-          const amount = ctPayment.amountPlanned.centAmount / Math.pow(10, ctPayment.amountPlanned.fractionDigits);
-
-          if (
-            (pricingConstraint.minAmount && amount < pricingConstraint.minAmount) ||
-            (pricingConstraint.maxAmount && amount > pricingConstraint.maxAmount)
-          ) {
-            const index: number = validatedMethods.findIndex((method) => method.id === item.value.id);
-
-            validatedMethods.splice(index, 1);
-          }
-        }
-      });
+    if (billingCountry) {
+      filterMethodsByPricingConstraints(validatedMethods, configObjects, ctPayment, billingCountry);
     }
 
     const availableMethods = JSON.stringify({
@@ -206,12 +226,10 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
       methods: validatedMethods.length ? validatedMethods : [],
     });
 
-    const ctUpdateActions: UpdateAction[] = [];
-
-    ctUpdateActions.push(
+    const ctUpdateActions: UpdateAction[] = [
       setCustomFields(CustomFields.payment.profileId, enableCardComponent ? readConfiguration().mollie.profileId : ''),
-    );
-    ctUpdateActions.push(setCustomFields(CustomFields.payment.response, availableMethods));
+      setCustomFields(CustomFields.payment.response, availableMethods),
+    ];
 
     return {
       statusCode: 200,
@@ -226,7 +244,7 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
       },
     );
     if (error instanceof CustomError) {
-      Promise.reject(error);
+      return Promise.reject(error);
     }
 
     return { statusCode: 200, actions: [] };
