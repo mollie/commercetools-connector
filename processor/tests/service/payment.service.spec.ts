@@ -538,7 +538,7 @@ describe('Test listPaymentMethodsByPayment', () => {
     } as unknown as Payment;
 
     try {
-      const response = await handleListPaymentMethodsByPayment(mockResource);
+      await handleListPaymentMethodsByPayment(mockResource);
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect((error as CustomError).message).toBe('billingCountry is not provided.');
