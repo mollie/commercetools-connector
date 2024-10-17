@@ -6,6 +6,7 @@
       "key": "applepay",
       "value": {
         "id": "applepay",
+        "displayOrder": 2,
         "name": {
           "en-GB": "Apple Pay"
         },
@@ -13,7 +14,15 @@
           "en-GB": ""
         },
         "imageUrl": "https://www.mollie.com/external/icons/payment-methods/applepay.svg",
-        "status": "Inactive"
+        "status": "Inactive",
+        "pricingConstraints": [
+          {
+            "currencyCode": "EUR",
+            "countryCode": "DE",
+            "minAmount": 333,
+            "maxAmount": 999
+          }
+        ]
       },
       "__typename": "CustomObject"
     },

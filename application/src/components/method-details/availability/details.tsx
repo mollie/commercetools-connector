@@ -76,7 +76,7 @@ const AvailabilityDetails = (props: TAvailabilityDetailFormProps) => {
       // Set the currency object with min and max amount
       acc[countryCode][currencyCode] = {
         minAmount: minAmount.toString(),
-        maxAmount: maxAmount.toString(),
+        maxAmount: maxAmount?.toString(),
       };
 
       return acc;
@@ -125,7 +125,7 @@ const AvailabilityDetails = (props: TAvailabilityDetailFormProps) => {
         Object.entries(currencies ?? {}).forEach(
           ([currency, { minAmount, maxAmount }]) => {
             const nMinAmount = convertCurrencyStringToNumber(minAmount);
-            const nMaxAmount = convertCurrencyStringToNumber(maxAmount);
+            const nMaxAmount = convertCurrencyStringToNumber(maxAmount ?? '');
 
             if (nMinAmount === 0 && nMaxAmount === 0) return;
 
@@ -133,7 +133,7 @@ const AvailabilityDetails = (props: TAvailabilityDetailFormProps) => {
               countryCode: country,
               currencyCode: currency,
               minAmount: nMinAmount,
-              maxAmount: nMaxAmount,
+              maxAmount: nMaxAmount > 0 ? nMaxAmount : undefined,
             });
           }
         );
@@ -224,6 +224,9 @@ const AvailabilityDetails = (props: TAvailabilityDetailFormProps) => {
                     formProps.submitForm();
                   }}
                   isDisabled={!props?.identifier?.countryCode}
+                  dataAttributes={{
+                    'data-testid': 'availability-delete-button',
+                  }}
                 />
               </>
             }

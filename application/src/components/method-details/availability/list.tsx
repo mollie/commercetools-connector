@@ -120,6 +120,7 @@ const AvailabilityList = (props: TCustomObjectDetailsFormProps) => {
               formModalState.openModal();
             }}
             isDisabled={false}
+            data-testid="availability-add-configuration-button"
           />
         </div>
         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
@@ -133,7 +134,7 @@ const AvailabilityList = (props: TCustomObjectDetailsFormProps) => {
               case 'currencyCode':
                 return item.currencyCode ?? '';
               case 'maxAmount':
-                return item.maxAmount;
+                return item?.maxAmount ?? '';
               case 'minAmount':
                 return item.minAmount;
               case 'countryCode':

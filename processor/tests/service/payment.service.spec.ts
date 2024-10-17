@@ -285,7 +285,6 @@ describe('Test listPaymentMethodsByPayment', () => {
               currencyCode: 'EUR',
               countryCode: 'DE',
               minAmount: 1000,
-              maxAmount: 300000,
               surchargeCost: '2%',
             },
           ],
