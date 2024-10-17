@@ -28,6 +28,13 @@ const config = {
   },
 };
 
+if (process.env.NODE_ENV === 'development') {
+  config.headers = {
+    ...config.headers,
+    ...{ 'ngrok-skip-browser-warning': 'true' },
+  };
+}
+
 const convertMollieMethodToCustomMethod = (
   results: MollieResult,
   projectLanguages: string[]
@@ -40,6 +47,7 @@ const convertMollieMethodToCustomMethod = (
   );
   return availableMethods.map((method: MollieMethod) => ({
     id: method.id,
+    technicalName: method.description,
     name: projectLanguages.reduce((acc, lang) => {
       acc[lang] = method.description;
       return acc;

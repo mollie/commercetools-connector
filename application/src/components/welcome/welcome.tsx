@@ -179,19 +179,7 @@ const Welcome = () => {
                   <CheckInactiveIcon color="neutral60"></CheckInactiveIcon>
                 );
               case 'name':
-                return item.name
-                  ? formatLocalizedString(
-                      {
-                        name: item.name,
-                      },
-                      {
-                        key: 'name',
-                        locale: dataLocale,
-                        fallbackOrder: projectLanguages,
-                        fallback: NO_VALUE_FALLBACK,
-                      }
-                    )
-                  : item.description;
+                return item.technicalName;
               case 'image':
                 return (
                   <IconButton
