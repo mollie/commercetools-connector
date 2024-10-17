@@ -74,7 +74,7 @@ type PricingConstraintItem = {
   countryCode: string;
   currencyCode: string;
   minAmount: number;
-  maxAmount: number;
+  maxAmount?: number;
   surchargeCost?: string;
 };
 

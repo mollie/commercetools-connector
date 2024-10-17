@@ -42,7 +42,7 @@ export type TAvailabilityObjectValueFormValues = {
 
 export type TAvailabilityAmount = {
   minAmount: string;
-  maxAmount: string;
+  maxAmount?: string;
 };
 
 export type TAmountPerCurrency = {
@@ -58,7 +58,7 @@ export type TPricingConstraintItem = {
   countryCode: string;
   currencyCode: string;
   minAmount: number;
-  maxAmount: number;
+  maxAmount?: number;
   surchargeCost?: string;
 };
 

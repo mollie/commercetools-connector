@@ -147,6 +147,7 @@ const AvailabilityDetailsForm = (props: TAvailabilityDetailsFormProps) => {
         horizontalConstraint={15}
         controlShouldRenderValue={true}
         isSearchable={false}
+        data-testid="select-country"
       ></SelectField>
 
       <SelectField
@@ -167,9 +168,11 @@ const AvailabilityDetailsForm = (props: TAvailabilityDetailsFormProps) => {
         horizontalConstraint={15}
         controlShouldRenderValue={true}
         isSearchable={false}
+        data-testid="select-currency"
       ></SelectField>
 
       <MoneyField
+        data-testid="money-field-minAmount"
         title={intl.formatMessage(messages.headerMinAmount)}
         name="minAmount"
         onInfoButtonClick={() => {
@@ -206,6 +209,7 @@ const AvailabilityDetailsForm = (props: TAvailabilityDetailsFormProps) => {
       />
 
       <MoneyField
+        data-testid="money-field-maxAmount"
         title={intl.formatMessage(messages.headerMaxAmount)}
         name="maxAmount"
         onInfoButtonClick={() => {
@@ -222,7 +226,8 @@ const AvailabilityDetailsForm = (props: TAvailabilityDetailsFormProps) => {
             : projectCurrencies
         }
         value={{
-          amount: formik.values[selectedCountry][selectedCurrency].maxAmount,
+          amount:
+            formik.values[selectedCountry][selectedCurrency].maxAmount ?? '',
           currencyCode: selectedCurrency,
         }}
         onChange={(event) => {
@@ -248,7 +253,7 @@ const AvailabilityDetailsForm = (props: TAvailabilityDetailsFormProps) => {
         }}
         renderError={(errorKey) => {
           if (errorKey === 'invalidValue') {
-            return intl.formatMessage(messages.fieldMethodNameInvalidLength);
+            return intl.formatMessage(messages.fieldMaxAmountInvalidValue);
           }
           return null;
         }}
