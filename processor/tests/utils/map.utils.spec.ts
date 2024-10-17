@@ -93,6 +93,7 @@ describe('createMollieCreatePaymentParams', () => {
         value: mollieAmount.value,
       },
       webhookUrl: extensionUrl,
+      lines: [],
     });
   });
 
@@ -147,6 +148,7 @@ describe('createMollieCreatePaymentParams', () => {
       webhookUrl: extensionUrl, // Always use our default webhook endpoint
       description: customFieldObject.description,
       cardToken: customFieldObject.cardToken,
+      lines: [],
     });
   });
 
@@ -206,6 +208,7 @@ describe('createMollieCreatePaymentParams', () => {
       description: customFieldObject.description,
       issuer: 'ideal_TEST',
       include: customFieldObject.include,
+      lines: [],
     });
   });
 
@@ -265,6 +268,7 @@ describe('createMollieCreatePaymentParams', () => {
       webhookUrl: extensionUrl,
       description: customFieldObject.description,
       include: customFieldObject.include,
+      lines: [],
     });
   });
 
@@ -325,6 +329,7 @@ describe('createMollieCreatePaymentParams', () => {
       description: customFieldObject.description,
       billingAddress: customFieldObject.billingAddress,
       dueDate,
+      lines: [],
     });
   });
 
@@ -378,6 +383,7 @@ describe('createMollieCreatePaymentParams', () => {
       webhookUrl: extensionUrl,
       description: customFieldObject.description,
       billingEmail: customFieldObject.billingEmail,
+      lines: [],
     });
   });
 
@@ -429,6 +435,7 @@ describe('createMollieCreatePaymentParams', () => {
       redirectUrl: customFieldObject.redirectUrl,
       webhookUrl: extensionUrl,
       description: customFieldObject.description,
+      lines: [],
     });
   });
 
@@ -483,6 +490,7 @@ describe('createMollieCreatePaymentParams', () => {
       webhookUrl: customFieldObject.webhookUrl,
       description: customFieldObject.description,
       billingEmail: customFieldObject.billingEmail,
+      lines: [],
     });
   });
 
@@ -536,6 +544,7 @@ describe('createMollieCreatePaymentParams', () => {
       webhookUrl: extensionUrl,
       description: customFieldObject.description,
       applePayPaymentToken: JSON.stringify(customFieldObject.applePayPaymentToken),
+      lines: [],
     });
   });
 
@@ -591,6 +600,7 @@ describe('createMollieCreatePaymentParams', () => {
       description: customFieldObject.description,
       sessionId: customFieldObject.sessionId,
       digitalGoods: customFieldObject.digitalGoods,
+      lines: [],
     });
   });
 
@@ -646,6 +656,81 @@ describe('createMollieCreatePaymentParams', () => {
       description: customFieldObject.description,
       voucherNumber: customFieldObject.voucherNumber,
       voucherPin: customFieldObject.voucherPin,
+      lines: [],
+    });
+  });
+
+  it('should able to create a mollie payment params from CommerceTools payment object including lineItems', async () => {
+    const customFieldObject = {
+      description: 'Test payment',
+      locale: 'en_GB',
+      redirectUrl: 'https://example.com/success',
+      webhookUrl: 'https://example.com/webhook',
+      lines: [
+        {
+          description: 'Item 1',
+          quantity: 1,
+          quantityUnit: 'pcs',
+          unitPrice: { currency: 'EUR', value: '10.00' },
+          totalAmount: { currency: 'EUR', value: '10.00' },
+          sku: 'TEST1',
+          imageUrl: 'https://example.com/image1.jpg',
+          productUrl: 'https://example.com/product1',
+        },
+        {
+          description: 'Item 2',
+          quantity: 1,
+          quantityUnit: 'pcs',
+          unitPrice: { currency: 'EUR', value: '10.00' },
+          totalAmount: { currency: 'EUR', value: '10.00' },
+          sku: 'TEST2',
+          imageUrl: 'https://example.com/image2.jpg',
+          productUrl: 'https://example.com/product2',
+        },
+      ],
+    };
+
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 2000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: PaymentMethod.paypal,
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm_payment',
+        },
+        fields: {
+          sctm_create_payment_request: JSON.stringify(customFieldObject),
+        },
+      },
+    };
+    const extensionUrl = 'https://example.com/webhook';
+
+    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
+    expect(mollieCreatePaymentParams).toEqual({
+      method: PaymentMethod.paypal,
+      amount: {
+        currency: 'EUR',
+        value: '20.00',
+      },
+      locale: customFieldObject.locale,
+      redirectUrl: customFieldObject.redirectUrl,
+      webhookUrl: extensionUrl,
+      description: customFieldObject.description,
+      lines: customFieldObject.lines,
     });
   });
 });
