@@ -132,6 +132,7 @@ export const createMollieCreatePaymentParams = (payment: Payment, extensionUrl: 
     applicationFee: paymentRequest.applicationFee ?? {},
     include: paymentRequest.include ?? '',
     captureMode: paymentRequest.captureMode ?? '',
+    lines: paymentRequest.lines ?? [],
     ...getSpecificPaymentParams(method as PaymentMethod, paymentRequest),
   };
 
