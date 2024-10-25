@@ -1,9 +1,0 @@
-node_modules
-public
-dist
-!.env
-
-# Cypress
-cypress/.env
-cypress/screenshots/**
-cypress/videos/**
