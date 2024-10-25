@@ -61,5 +61,3 @@ export const CancelStatusText = 'Cancelled from shop side';
 export const DUE_DATE_PATTERN = /^(\d+)d$/;
 
 export const DEFAULT_DUE_DATE = 14;
-
-export const CUSTOM_OBJECT_CONTAINER_NAME = 'sctm-app-methods';

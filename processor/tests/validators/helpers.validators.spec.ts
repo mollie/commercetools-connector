@@ -255,9 +255,6 @@ describe('Test helpers.validators.ts', () => {
         projectKey: process.env.CTP_PROJECT_KEY as string,
         scope: process.env.CTP_SCOPE as string,
         region: process.env.CTP_REGION as string,
-        authMode: process.env.AUTHENTICATION_MODE as string,
-        sessionAudience: process.env.CTP_SESSION_AUDIENCE as string,
-        sessionIssuer: process.env.CTP_SESSION_ISSUER as string,
       },
       mollie: {
         liveApiKey: process.env.MOLLIE_API_LIVE_KEY as string,
@@ -282,9 +279,6 @@ describe('Test helpers.validators.ts', () => {
         projectKey: process.env.CTP_PROJECT_KEY as string,
         scope: process.env.CTP_SCOPE as string,
         region: process.env.CTP_REGION as string,
-        authMode: process.env.AUTHENTICATION_MODE as string,
-        sessionAudience: process.env.CTP_SESSION_AUDIENCE as string,
-        sessionIssuer: process.env.CTP_SESSION_ISSUER as string,
       },
       mollie: {
         liveApiKey: process.env.MOLLIE_API_LIVE_KEY as string,
@@ -349,9 +343,6 @@ describe('test getValidateMessages', () => {
         projectKey: process.env.CTP_PROJECT_KEY as string,
         scope: process.env.CTP_SCOPE as string,
         region: process.env.CTP_REGION as string,
-        authMode: process.env.AUTHENTICATION_MODE as string,
-        sessionAudience: process.env.CTP_SESSION_AUDIENCE as string,
-        sessionIssuer: process.env.CTP_SESSION_ISSUER as string,
       },
       mollie: {
         testApiKey: process.env.MOLLIE_API_TEST_KEY as string,
@@ -384,9 +375,6 @@ describe('test getValidateMessages', () => {
         projectKey: process.env.CTP_PROJECT_KEY as string,
         scope: process.env.CTP_SCOPE as string,
         region: process.env.CTP_REGION as string,
-        authMode: process.env.AUTHENTICATION_MODE as string,
-        sessionAudience: process.env.CTP_SESSION_AUDIENCE as string,
-        sessionIssuer: process.env.CTP_SESSION_ISSUER as string,
       },
       mollie: {
         testApiKey: process.env.MOLLIE_API_TEST_KEY as string,
@@ -419,9 +407,6 @@ describe('test getValidateMessages', () => {
         projectKey: process.env.CTP_PROJECT_KEY as string,
         scope: process.env.CTP_SCOPE as string,
         region: process.env.CTP_REGION as string,
-        authMode: process.env.AUTHENTICATION_MODE as string,
-        sessionAudience: process.env.CTP_SESSION_AUDIENCE as string,
-        sessionIssuer: process.env.CTP_SESSION_ISSUER as string,
       },
       mollie: {
         testApiKey: process.env.MOLLIE_API_TEST_KEY as string,
