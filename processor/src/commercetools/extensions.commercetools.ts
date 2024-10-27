@@ -3,7 +3,7 @@ import { Extension } from '@commercetools/platform-sdk';
 
 export const PAYMENT_EXTENSION_KEY = 'sctm-payment-create-update-extension';
 
-export async function createPaymentExtension(applicationUrl: string): Promise<void> {
+export async function createPaymentExtension(applicationUrl: string, accessToken: string): Promise<void> {
   const apiRoot = createApiRoot();
 
   const extension = await getPaymentExtension();
@@ -22,7 +22,7 @@ export async function createPaymentExtension(applicationUrl: string): Promise<vo
           url: applicationUrl,
           authentication: {
             type: 'AuthorizationHeader',
-            headerValue: 'Bearer _token_',
+            headerValue: `Bearer ${accessToken}`,
           },
         },
         triggers: [

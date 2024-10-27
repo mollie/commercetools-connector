@@ -17,7 +17,7 @@ CREAT/UPDATE Extension
         "url": "https://efd6-115-74-115-119.ngrok-free.app/processor",
         "authorization": {
             "type": "AuthorizationHeader",
-            "headerValue": "_token_"
+            "headerValue": "***tAjsIR2!srt"
         }
     }
     ...

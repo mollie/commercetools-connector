@@ -11,6 +11,10 @@ deployAs:
           description: Commercetools Composable Commerce API region
           required: true
           default: "europe-west1.gcp"
+        - key: CTP_AUTH_URL
+          description: Commercetools Auth URL
+          default: https://auth.europe-west1.gcp.commercetools.com
+          required: true
         - key: MOLLIE_CARD_COMPONENT
           description: Enable Mollie cart component (0 or 1)
           required: false

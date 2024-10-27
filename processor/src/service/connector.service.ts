@@ -4,8 +4,11 @@ import {
   createCustomPaymentInterfaceInteractionType,
   createCustomPaymentTransactionCancelReasonType,
 } from '../commercetools/customFields.commercetools';
+import { getAccessToken } from '../commercetools/auth.commercetools';
+
 export const createExtensionAndCustomFields = async (extensionUrl: string): Promise<void> => {
-  await createPaymentExtension(extensionUrl);
+  const response = await getAccessToken();
+  await createPaymentExtension(extensionUrl, response?.access_token as string);
   await createCustomPaymentType();
   await createCustomPaymentInterfaceInteractionType();
   await createCustomPaymentTransactionCancelReasonType();

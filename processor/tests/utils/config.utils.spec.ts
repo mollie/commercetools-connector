@@ -12,6 +12,7 @@ describe('Test src/utils/config.utils.ts', () => {
         projectKey: process.env.CTP_PROJECT_KEY,
         scope: process.env.CTP_SCOPE,
         region: process.env.CTP_REGION,
+        authUrl: process.env.CTP_AUTH_URL,
         authMode: process.env.AUTHENTICATION_MODE,
       },
       mollie: {

@@ -21,6 +21,7 @@ export type ConnectorEnvVars = {
     projectKey: string;
     scope: string;
     region: string;
+    authUrl: string;
     authMode: string;
   };
   mollie: {
