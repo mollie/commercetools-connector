@@ -1,4 +1,4 @@
-import { optional, standardKey, standardString, region, standardDueDate } from './helpers.validators';
+import { optional, standardKey, standardString, region, standardDueDate, standardUrl } from './helpers.validators';
 
 /**
  * Create here your own validators
@@ -43,6 +43,12 @@ const envValidators = [
   region(['commerceTools', 'region'], {
     code: 'InvalidRegion',
     message: 'Not a valid region.',
+    referencedBy: 'environmentVariables',
+  }),
+
+  standardUrl(['commerceTools', 'authUrl'], {
+    code: 'InvalidAuthUrl',
+    message: 'Not a valid url.',
     referencedBy: 'environmentVariables',
   }),
 
@@ -108,6 +114,19 @@ const envValidators = [
       'Bank transfer due date must be from 1d to 100d, the number must be an integer. If it was not set, the default will be 14d',
     referencedBy: 'environmentVariables',
   }),
+
+  standardString(
+    ['commerceTools', 'authMode'],
+    {
+      code: 'InvalidAuthMode',
+      message: 'AuthMode should be a valid string of either "0" or "1".',
+      referencedBy: 'environmentVariables',
+    },
+    {
+      min: 1,
+      max: 1,
+    },
+  ),
 ];
 
 export default envValidators;
