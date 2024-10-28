@@ -217,7 +217,6 @@ describe('Test extension.commercetools', () => {
 
     const accessToken = 'token123';
 
-
     await createPaymentExtension(mockUrl, accessToken);
 
     expect(getExtensions).toHaveBeenCalledTimes(1);
