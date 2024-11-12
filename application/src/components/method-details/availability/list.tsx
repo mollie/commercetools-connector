@@ -140,7 +140,28 @@ const AvailabilityList = (props: TCustomObjectDetailsFormProps) => {
               case 'countryCode':
                 return item.countryCode ?? '';
               case 'surchargeCost':
-                return item.surchargeCost ?? '';
+                if (
+                  !item?.surchargeCost?.percentageAmount &&
+                  !item?.surchargeCost?.fixedAmount
+                ) {
+                  return '';
+                }
+
+                if (
+                  item?.surchargeCost?.percentageAmount &&
+                  item?.surchargeCost?.fixedAmount
+                ) {
+                  return (
+                    item?.surchargeCost?.percentageAmount +
+                    '% + ' +
+                    item?.surchargeCost?.fixedAmount +
+                    item.currencyCode
+                  );
+                }
+
+                return item.surchargeCost?.percentageAmount
+                  ? item?.surchargeCost?.percentageAmount + '%'
+                  : item?.surchargeCost?.fixedAmount + item.currencyCode;
               default:
                 return null;
             }

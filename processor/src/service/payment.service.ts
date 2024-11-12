@@ -3,10 +3,18 @@ import { CancelStatusText, ConnectorActions, CustomFields, PAY_LATER_ENUMS } fro
 import { List, Method, Payment as MPayment, PaymentMethod, PaymentStatus, Refund } from '@mollie/api-client';
 import { logger } from '../utils/logger.utils';
 import {
+  createCartUpdateActions,
   createMollieCreatePaymentParams,
   mapCommercetoolsPaymentCustomFieldsToMollieListParams,
 } from '../utils/map.utils';
-import { CentPrecisionMoney, CustomObject, Extension, Payment, UpdateAction } from '@commercetools/platform-sdk';
+import {
+  CartUpdateAction,
+  CentPrecisionMoney,
+  CustomObject,
+  Extension,
+  Payment,
+  UpdateAction,
+} from '@commercetools/platform-sdk';
 import CustomError from '../errors/custom.error';
 import {
   cancelPayment,
@@ -22,8 +30,10 @@ import {
   CTTransaction,
   CTTransactionState,
   CTTransactionType,
+  CustomMethod,
   molliePaymentToCTStatusMap,
   mollieRefundToCTStatusMap,
+  PricingConstraintItem,
   UpdateActionKey,
 } from '../types/commercetools.types';
 import {
@@ -56,27 +66,10 @@ import { getPaymentExtension } from '../commercetools/extensions.commercetools';
 import { HttpDestination } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/extension';
 import { cancelPaymentRefund, createPaymentRefund, getPaymentRefund } from '../mollie/refund.mollie';
 import { ApplePaySessionRequest, CustomPayment, SupportedPaymentMethods } from '../types/mollie.types';
-import { parseStringToJsonObject } from '../utils/app.utils';
+import { calculateTotalSurchargeAmount, convertCentToEUR, parseStringToJsonObject } from '../utils/app.utils';
 import ApplePaySession from '@mollie/api-client/dist/types/src/data/applePaySession/ApplePaySession';
-import { getMethodConfigObjects } from '../commercetools/customObjects.commercetools';
-
-type CustomMethod = {
-  id: string;
-  name: Record<string, string>;
-  description: Record<string, string>;
-  image: string;
-  order: number;
-  pricingConstraints?: PricingConstraintItem[];
-};
-
-type PricingConstraintItem = {
-  id?: number;
-  countryCode: string;
-  currencyCode: string;
-  minAmount: number;
-  maxAmount?: number;
-  surchargeCost?: string;
-};
+import { getMethodConfigObjects, getSingleMethodConfigObject } from '../commercetools/customObjects.commercetools';
+import { getCartFromPayment, updateCart } from '../commercetools/cart.commercetools';
 
 /**
  * Validates and sorts the payment methods.
@@ -164,17 +157,21 @@ const filterMethodsByPricingConstraints = (
   billingCountry: string,
 ) => {
   const currencyCode = ctPayment.amountPlanned.currencyCode;
-  const amount = ctPayment.amountPlanned.centAmount / Math.pow(10, ctPayment.amountPlanned.fractionDigits);
+  const amount = convertCentToEUR(ctPayment.amountPlanned.centAmount, ctPayment.amountPlanned.fractionDigits);
 
   configObjects.forEach((item: CustomObject) => {
     const pricingConstraint = item.value.pricingConstraints?.find((constraint: PricingConstraintItem) => {
       return constraint.countryCode === billingCountry && constraint.currencyCode === currencyCode;
-    });
+    }) as PricingConstraintItem;
 
     if (pricingConstraint) {
+      const surchargeAmount = calculateTotalSurchargeAmount(ctPayment, pricingConstraint.surchargeCost);
+      const amountIncludedSurcharge = amount + surchargeAmount;
+
       if (
         (pricingConstraint.minAmount && amount < pricingConstraint.minAmount) ||
-        (pricingConstraint.maxAmount && amount > pricingConstraint.maxAmount)
+        (pricingConstraint.maxAmount && amount > pricingConstraint.maxAmount) ||
+        (pricingConstraint.maxAmount && amountIncludedSurcharge > pricingConstraint.maxAmount)
       ) {
         const index = methods.findIndex((method) => method.id === item.value.id);
         if (index !== -1) {
@@ -383,6 +380,8 @@ export const getPaymentStatusUpdateAction = (
 export const handleCreatePayment = async (ctPayment: Payment): Promise<ControllerResponseType> => {
   const extensionUrl = (((await getPaymentExtension()) as Extension)?.destination as HttpDestination).url;
 
+  const cart = await getCartFromPayment(ctPayment.id);
+
   const paymentParams = createMollieCreatePaymentParams(ctPayment, extensionUrl);
 
   let molliePayment;
@@ -396,6 +395,26 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
     );
 
     molliePayment = await createPaymentWithCustomMethod(paymentParams);
+  }
+
+  logger.debug(
+    `SCTM - handleCreatePayment - Getting customized configuration for payment method: ${paymentParams.method}`,
+  );
+  const paymentMethodConfig = await getSingleMethodConfigObject(paymentParams.method as string);
+  const billingCountry = getBillingCountry(ctPayment);
+  const pricingConstraint = paymentMethodConfig.value.pricingConstraints?.find((constraint: PricingConstraintItem) => {
+    return (
+      constraint.countryCode === billingCountry && constraint.currencyCode === ctPayment.amountPlanned.currencyCode
+    );
+  }) as PricingConstraintItem;
+
+  logger.debug(`SCTM - handleCreatePayment - Calculating total surcharge amount`);
+  const surchargeAmount = pricingConstraint
+    ? calculateTotalSurchargeAmount(ctPayment, pricingConstraint.surchargeCost)
+    : 0;
+  const cartUpdateActions = createCartUpdateActions(cart, ctPayment, surchargeAmount);
+  if (cartUpdateActions.length > 0) {
+    await updateCart(cart, cartUpdateActions as CartUpdateAction[]);
   }
 
   const ctActions = await getCreatePaymentUpdateAction(molliePayment, ctPayment);
