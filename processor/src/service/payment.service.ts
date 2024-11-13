@@ -1,5 +1,5 @@
 import { ControllerResponseType } from '../types/controller.types';
-import { CancelStatusText, ConnectorActions, CustomFields, PAY_LATER_ENUMS } from '../utils/constant.utils';
+import { CancelStatusText, ConnectorActions, CustomFields, MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM, PAY_LATER_ENUMS } from '../utils/constant.utils';
 import { List, Method, Payment as MPayment, PaymentMethod, PaymentStatus, Refund } from '@mollie/api-client';
 import { logger } from '../utils/logger.utils';
 import {
@@ -53,6 +53,7 @@ import {
   changeTransactionInteractionId,
   changeTransactionState,
   changeTransactionTimestamp,
+  removeCustomLineItem,
   setCustomFields,
   setTransactionCustomType,
 } from '../commercetools/action.commercetools';
@@ -70,6 +71,7 @@ import { calculateTotalSurchargeAmount, convertCentToEUR, parseStringToJsonObjec
 import ApplePaySession from '@mollie/api-client/dist/types/src/data/applePaySession/ApplePaySession';
 import { getMethodConfigObjects, getSingleMethodConfigObject } from '../commercetools/customObjects.commercetools';
 import { getCartFromPayment, updateCart } from '../commercetools/cart.commercetools';
+import { removeCartMollieCustomLineItem } from './cart.service';
 
 /**
  * Validates and sorts the payment methods.
@@ -295,6 +297,10 @@ export const handlePaymentWebhook = async (paymentId: string): Promise<boolean> 
   logger.info(`handlePaymentWebhook - actions:${JSON.stringify(action)}`);
 
   await updatePayment(ctPayment, action as PaymentUpdateAction[]);
+
+  if (molliePayment.status === PaymentStatus.canceled) {
+    await removeCartMollieCustomLineItem(ctPayment);
+  }
 
   return true;
 };
@@ -691,6 +697,8 @@ export const handleCancelPayment = async (ctPayment: Payment): Promise<Controlle
   }
 
   await cancelPayment(molliePayment.id);
+
+  await removeCartMollieCustomLineItem(ctPayment);
 
   return {
     statusCode: 200,

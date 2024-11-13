@@ -2,11 +2,12 @@ import { CustomFields, MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM } from './constant.util
 import { logger } from './logger.utils';
 import { calculateDueDate, makeMollieAmount } from './mollie.utils';
 import { CustomPaymentMethod, ParsedMethodsRequestType } from '../types/mollie.types';
-import { Cart, Payment } from '@commercetools/platform-sdk';
+import { Cart, CartUpdateAction, Payment, TaxCategoryResourceIdentifier } from '@commercetools/platform-sdk';
 import CustomError from '../errors/custom.error';
 import { MethodsListParams, PaymentCreateParams, PaymentMethod } from '@mollie/api-client';
 import { parseStringToJsonObject, removeEmptyProperties } from './app.utils';
 import { readConfiguration } from './config.utils';
+import { addCustomLineItem, removeCustomLineItem } from '../commercetools/action.commercetools';
 
 const extractMethodsRequest = (ctPayment: Payment): ParsedMethodsRequestType | undefined => {
   return parseStringToJsonObject(
@@ -139,38 +140,34 @@ export const createMollieCreatePaymentParams = (payment: Payment, extensionUrl: 
   return removeEmptyProperties(createPaymentParams) as PaymentCreateParams;
 };
 
-export const createCartUpdateActions = (cart: Cart, ctPayment: Payment, surchargeAmount: number) => {
+export const createCartUpdateActions = (cart: Cart, ctPayment: Payment, surchargeAmount: number): CartUpdateAction[] => {
   const mollieSurchargeCustomLine = cart.customLineItems.find((item) => {
     return item.key === MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM;
   });
 
-  const updateActions = [];
+  const updateActions: CartUpdateAction[] = [];
 
   if (mollieSurchargeCustomLine) {
-    updateActions.push({
-      action: 'removeCustomLineItem',
-      customLineItemId: mollieSurchargeCustomLine.id,
-    });
+    updateActions.push(removeCustomLineItem(mollieSurchargeCustomLine.id));
   }
 
   if (surchargeAmount > 0) {
-    updateActions.push({
-      action: 'addCustomLineItem',
-      name: {
-        en: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
-        de: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
-      },
-      quantity: 1,
-      slug: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
-      money: {
-        centAmount: Math.ceil(surchargeAmount * Math.pow(10, ctPayment.amountPlanned.fractionDigits)),
-        // centAmount: surchargeAmount,
-        currencyCode: ctPayment.amountPlanned.currencyCode,
-      },
-      taxCategory: {
-        id: cart.shippingInfo?.taxCategory?.id,
-      },
-    });
+    const name = {
+      en: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+      de: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+    };
+
+    const money =  {
+      centAmount: Math.round(surchargeAmount * Math.pow(10, ctPayment.amountPlanned.fractionDigits)),
+      currencyCode: ctPayment.amountPlanned.currencyCode,
+    };
+
+    const slug = MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM;
+    const taxCategory = cart.shippingInfo?.taxCategory?.id ? {
+      id: cart.shippingInfo.taxCategory?.id,
+    } as TaxCategoryResourceIdentifier: undefined;
+
+    updateActions.push(addCustomLineItem(name, 1, money, slug, taxCategory));
   }
 
   return updateActions;
