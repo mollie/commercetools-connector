@@ -2,7 +2,13 @@ import { v4 as uuid } from 'uuid';
 import { createDateNowString } from '../utils/app.utils';
 import { CustomFields } from '../utils/constant.utils';
 import { CTTransactionState, CreateInterfaceInteractionParams } from '../types/commercetools.types';
-import { CartAddCustomLineItemAction, CartRemoveCustomLineItemAction, LocalizedString, TaxCategoryResourceIdentifier, _Money } from '@commercetools/platform-sdk';
+import {
+  CartAddCustomLineItemAction,
+  CartRemoveCustomLineItemAction,
+  LocalizedString,
+  TaxCategoryResourceIdentifier,
+  _Money,
+} from '@commercetools/platform-sdk';
 
 /**
  * A function that sets custom fields with the given field name and field value.
@@ -105,9 +111,15 @@ export const removeCustomLineItem = (customLineItemId: string): CartRemoveCustom
     action: 'removeCustomLineItem',
     customLineItemId: customLineItemId,
   };
-}
+};
 
-export const addCustomLineItem = (name: LocalizedString, quantity: number, money: _Money, slug: string, taxCategory?: TaxCategoryResourceIdentifier): CartAddCustomLineItemAction => {
+export const addCustomLineItem = (
+  name: LocalizedString,
+  quantity: number,
+  money: _Money,
+  slug: string,
+  taxCategory?: TaxCategoryResourceIdentifier,
+): CartAddCustomLineItemAction => {
   if (!taxCategory) {
     return {
       action: 'addCustomLineItem',
@@ -124,6 +136,6 @@ export const addCustomLineItem = (name: LocalizedString, quantity: number, money
     quantity,
     money,
     slug,
-    taxCategory
-  }
-}
+    taxCategory,
+  };
+};

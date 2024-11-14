@@ -122,4 +122,15 @@ describe('Test calculateTotalSurchargeAmount', () => {
 
     expect(calculateTotalSurchargeAmount(payment, surcharge)).toBe(7);
   });
+
+  it('should return 0 if surcharge param is not defined', () => {
+    const payment = {
+      amountPlanned: {
+        centAmount: 2000,
+        fractionDigits: 2,
+      },
+    } as Payment;
+
+    expect(calculateTotalSurchargeAmount(payment, undefined)).toBe(0);
+  });
 });

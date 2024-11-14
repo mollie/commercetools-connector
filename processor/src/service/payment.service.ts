@@ -1,5 +1,5 @@
 import { ControllerResponseType } from '../types/controller.types';
-import { CancelStatusText, ConnectorActions, CustomFields, MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM, PAY_LATER_ENUMS } from '../utils/constant.utils';
+import { CancelStatusText, ConnectorActions, CustomFields, PAY_LATER_ENUMS } from '../utils/constant.utils';
 import { List, Method, Payment as MPayment, PaymentMethod, PaymentStatus, Refund } from '@mollie/api-client';
 import { logger } from '../utils/logger.utils';
 import {
@@ -53,7 +53,6 @@ import {
   changeTransactionInteractionId,
   changeTransactionState,
   changeTransactionTimestamp,
-  removeCustomLineItem,
   setCustomFields,
   setTransactionCustomType,
 } from '../commercetools/action.commercetools';
@@ -408,6 +407,7 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
   );
   const paymentMethodConfig = await getSingleMethodConfigObject(paymentParams.method as string);
   const billingCountry = getBillingCountry(ctPayment);
+
   const pricingConstraint = paymentMethodConfig.value.pricingConstraints?.find((constraint: PricingConstraintItem) => {
     return (
       constraint.countryCode === billingCountry && constraint.currencyCode === ctPayment.amountPlanned.currencyCode

@@ -1,10 +1,12 @@
-import { ConnectorActions } from '../../src/utils/constant.utils';
+import { ConnectorActions, MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM } from '../../src/utils/constant.utils';
 import { describe, test, expect, jest } from '@jest/globals';
 import {
+  addCustomLineItem,
   addInterfaceInteraction,
   changeTransactionInteractionId,
   changeTransactionState,
   changeTransactionTimestamp,
+  removeCustomLineItem,
   setCustomFields,
   setTransactionCustomType,
 } from '../../src/commercetools/action.commercetools';
@@ -149,6 +151,37 @@ describe('Test actions.utils.ts', () => {
       },
       fields,
       transactionId,
+    });
+  });
+
+  test('should be able to return the correct removeCustomLineItem action', () => {
+    const customId = 'custom-id';
+    expect(removeCustomLineItem(customId)).toStrictEqual({
+      action: 'removeCustomLineItem',
+      customLineItemId: customId,
+    });
+  });
+
+  test('should be able to return the correct addCustomLineItem action', () => {
+    const customId = 'custom-id';
+
+    const name = {
+      de: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+      en: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+    };
+    const quantity = 1;
+    const money = {
+      centAmount: 100,
+      currencyCode: 'EUR',
+    };
+    const slug = MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM;
+
+    expect(addCustomLineItem(name, quantity, money, slug)).toStrictEqual({
+      action: 'addCustomLineItem',
+      name,
+      quantity,
+      money,
+      slug,
     });
   });
 });

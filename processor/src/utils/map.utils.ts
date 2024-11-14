@@ -140,7 +140,11 @@ export const createMollieCreatePaymentParams = (payment: Payment, extensionUrl: 
   return removeEmptyProperties(createPaymentParams) as PaymentCreateParams;
 };
 
-export const createCartUpdateActions = (cart: Cart, ctPayment: Payment, surchargeAmount: number): CartUpdateAction[] => {
+export const createCartUpdateActions = (
+  cart: Cart,
+  ctPayment: Payment,
+  surchargeAmount: number,
+): CartUpdateAction[] => {
   const mollieSurchargeCustomLine = cart.customLineItems.find((item) => {
     return item.key === MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM;
   });
@@ -157,15 +161,17 @@ export const createCartUpdateActions = (cart: Cart, ctPayment: Payment, surcharg
       de: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
     };
 
-    const money =  {
+    const money = {
       centAmount: Math.round(surchargeAmount * Math.pow(10, ctPayment.amountPlanned.fractionDigits)),
       currencyCode: ctPayment.amountPlanned.currencyCode,
     };
 
     const slug = MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM;
-    const taxCategory = cart.shippingInfo?.taxCategory?.id ? {
-      id: cart.shippingInfo.taxCategory?.id,
-    } as TaxCategoryResourceIdentifier: undefined;
+    const taxCategory = cart.shippingInfo?.taxCategory?.id
+      ? ({
+          id: cart.shippingInfo.taxCategory?.id,
+        } as TaxCategoryResourceIdentifier)
+      : undefined;
 
     updateActions.push(addCustomLineItem(name, 1, money, slug, taxCategory));
   }
