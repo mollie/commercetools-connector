@@ -319,6 +319,7 @@ const AvailabilityDetailsForm = (props: TAvailabilityDetailsFormProps) => {
           %
         </span>
         <NumberField
+          data-testid="money-field-surchargeCost--percentageAmount"
           name="surchargeCost.percentageAmount"
           title={''}
           value={
@@ -348,6 +349,7 @@ const AvailabilityDetailsForm = (props: TAvailabilityDetailsFormProps) => {
         <PlusThinIcon />
 
         <MoneyField
+          data-testid="money-field-surchargeCost--fixedAmount"
           name="surchargeCost.fixedAmount"
           title={''}
           horizontalConstraint={14}
