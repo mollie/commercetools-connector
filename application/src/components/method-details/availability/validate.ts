@@ -26,7 +26,9 @@ const validate = (
       }
 
       const nMinAmount = convertCurrencyStringToNumber(minAmount);
-      const nMaxAmount = maxAmount ? convertCurrencyStringToNumber(maxAmount) : 0;
+      const nMaxAmount = maxAmount
+        ? convertCurrencyStringToNumber(maxAmount)
+        : 0;
 
       if (nMaxAmount < nMinAmount) {
         errors.maxAmount.invalidValue = true;

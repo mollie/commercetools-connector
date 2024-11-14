@@ -51,7 +51,6 @@ beforeEach(() => {
 
 describe('Test method details - availability tab', () => {
   it('should be fully functional', () => {
-    const LOCALE = Cypress.env('LOCALE');
     const paymentMethods = 'Apple Pay';
 
     cy.findByText(paymentMethods).click();
@@ -89,8 +88,8 @@ describe('Test method details - availability tab', () => {
       maxAmount: 444,
       surchargeCost: {
         percentageAmount: 2,
-        fixedAmount: 10
-      }
+        fixedAmount: 10,
+      },
     };
 
     cy.findByTestId('money-field-maxAmount').type(
@@ -110,7 +109,11 @@ describe('Test method details - availability tab', () => {
       newAvailability.surchargeCost.fixedAmount.toString()
     );
 
-    const totalSurchargeCost = newAvailability.surchargeCost.percentageAmount + '% + ' + newAvailability.surchargeCost.fixedAmount + newAvailability.currencyCode;
+    const totalSurchargeCost =
+      newAvailability.surchargeCost.percentageAmount +
+      '% + ' +
+      newAvailability.surchargeCost.fixedAmount +
+      newAvailability.currencyCode;
 
     const updatedPricingConstraints =
       customObjects.results[0].value.pricingConstraints ?? [];
