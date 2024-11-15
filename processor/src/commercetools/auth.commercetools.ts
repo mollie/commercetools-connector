@@ -5,8 +5,10 @@ import fetch from 'node-fetch';
 export const getAccessToken = async (): Promise<any> => {
   const config = readConfiguration();
 
+  const credentials = btoa(config.commerceTools.clientId + ':' + config.commerceTools.clientSecret);
+
   const headers = {
-    Authorization: `Basic ${btoa(`${config.commerceTools.clientId}:${config.commerceTools.clientSecret}`)}`,
+    Authorization: `Basic ${credentials}`,
     'Content-Type': 'application/json',
   };
 
