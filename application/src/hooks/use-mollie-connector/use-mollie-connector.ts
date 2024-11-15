@@ -56,7 +56,7 @@ const convertMollieMethodToCustomMethod = (
       acc[lang] = '';
       return acc;
     }, {} as Record<string, string>),
-    imageUrl: method.image.svg,
+    imageUrl: method.image.svg || '',
     status: 'Inactive',
     displayOrder: 0,
   }));

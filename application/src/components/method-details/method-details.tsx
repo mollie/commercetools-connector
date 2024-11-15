@@ -158,9 +158,9 @@ const MethodDetails = (props: TMethodDetailsProps) => {
                   exactPathMatch={true}
                 />
                 <TabHeader
-                  isDisabled={true}
                   to={`${match.url}/icon`}
                   label="Icon"
+                  exactPathMatch={true}
                 />
                 <TabHeader
                   isDisabled={false}
@@ -235,7 +235,7 @@ const MethodDetails = (props: TMethodDetailsProps) => {
                 {method && formProps.formElements}
               </Route>
               <Route path={`${match.path}/icon`}>
-                <div>Icon</div>
+                {method && formProps.iconElements}
               </Route>
               <Route path={`${match.path}/availability`}>
                 <AvailabilityList

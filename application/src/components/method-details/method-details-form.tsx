@@ -17,6 +17,7 @@ import validate from './validate';
 type Formik = ReturnType<typeof useFormik>;
 type FormProps = {
   formElements: ReactElement;
+  iconElements: ReactElement;
   values: Formik['values'];
   isDirty: Formik['dirty'];
   isSubmitting: Formik['isSubmitting'];
@@ -172,8 +173,47 @@ const MethodDetailsForm = (props: TCustomObjectDetailsFormProps) => {
     </Spacings.Stack>
   );
 
+  const iconElements = (
+    <Spacings.Inline scale="l" alignItems="center">
+      <img
+        data-testid="image-preview"
+        src={formik.values.imageUrl}
+        height={70}
+        width={100}
+        alt="icon"
+      />
+      <TextField
+        name="imageUrl"
+        title={intl.formatMessage(messages.fieldImageUrl)}
+        value={formik.values.imageUrl || ''}
+        errors={
+          TextField.toFieldErrors<TMethodObjectValueFormValues>(formik.errors)
+            .imageUrl
+        }
+        touched={Boolean(formik.touched.displayOrder)}
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        isReadOnly={props.isReadOnly}
+        horizontalConstraint={13}
+        onInfoButtonClick={() => {
+          infoModalState.openModal();
+        }}
+        renderError={(errorKey) => {
+          if (errorKey === 'isNotInteger') {
+            return intl.formatMessage(
+              messages.fieldMethodDisplayOrderIsNotInteger
+            );
+          }
+          return null;
+        }}
+        data-testid="image-url-input"
+      ></TextField>
+    </Spacings.Inline>
+  );
+
   return props.children({
     formElements,
+    iconElements,
     values: formik.values,
     isDirty: formik.dirty,
     isSubmitting: formik.isSubmitting,

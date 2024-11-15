@@ -35,6 +35,7 @@ const mockMethods = ForwardToFixture._embedded.methods.map((method) => {
       'en-GB': '',
     },
     name: {
+      'de-DE': method.description,
       'en-GB': method.description,
     },
     status: method.status === 'active' ? 'Active' : 'Inactive',
