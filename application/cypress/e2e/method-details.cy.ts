@@ -42,7 +42,7 @@ describe('Test welcome.cy.ts', () => {
   });
 
   it('should update display order successfully', () => {
-    const paymentMethodIds = ['paypal', 'ideal', 'bancontact'];
+    const paymentMethodIds = ['paypal'];
 
     cy.findByTestId(`display-order-column-${paymentMethodIds[0]}`).click();
     cy.url().should('contain', 'general');
