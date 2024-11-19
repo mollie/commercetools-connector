@@ -164,8 +164,6 @@ describe('Test actions.utils.ts', () => {
   });
 
   test('should be able to return the correct addCustomLineItem action', () => {
-    const customId = 'custom-id';
-
     const name = {
       de: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
       en: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
