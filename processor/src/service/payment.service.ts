@@ -393,7 +393,7 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
 
   const cart = await getCartFromPayment(ctPayment.id);
 
-  const [method, issuer] = ctPayment?.paymentMethodInfo?.method?.split(',') ?? [null, null];
+  const [method, ] = ctPayment?.paymentMethodInfo?.method?.split(',') ?? [null, null];
 
   logger.debug(`SCTM - handleCreatePayment - Getting customized configuration for payment method: ${method}`);
   const paymentMethodConfig = await getSingleMethodConfigObject(method as string);
