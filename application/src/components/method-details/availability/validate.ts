@@ -21,7 +21,7 @@ const validate = (
 
   for (const currencies of Object.values(formikValues)) {
     for (const { minAmount, maxAmount } of Object.values(currencies)) {
-      if (maxAmount === '') {
+      if (maxAmount === '' || maxAmount === undefined) {
         continue;
       }
 
