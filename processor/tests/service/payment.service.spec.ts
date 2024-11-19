@@ -1209,7 +1209,7 @@ describe('Test getCreatePaymentUpdateAction', () => {
       action: 'setTransactionCustomField',
       name: CustomFieldName.transactionSurchargeCost,
       value: JSON.stringify({
-        surchargeAmountInCent: 1000
+        surchargeAmountInCent: 1000,
       }),
       transactionId: CTPayment.transactions[0].id,
     });
@@ -1384,7 +1384,9 @@ describe('Test handleCreatePayment', () => {
       CTPayment,
       methodConfig.value.pricingConstraints[0].surchargeCost,
     );
-    expect(calculateTotalSurchargeAmount).toHaveReturnedWith(totalSurchargeAmount / Math.pow(10, CTPayment.amountPlanned.fractionDigits));
+    expect(calculateTotalSurchargeAmount).toHaveReturnedWith(
+      totalSurchargeAmount / Math.pow(10, CTPayment.amountPlanned.fractionDigits),
+    );
 
     expect(createCartUpdateActions).toHaveBeenCalledTimes(1);
     expect(createCartUpdateActions).toHaveBeenCalledWith(mockedCart, CTPayment, totalSurchargeAmount);
@@ -1419,13 +1421,13 @@ describe('Test handleCreatePayment', () => {
         state: 'Pending',
       },
       {
-        "action": "setTransactionCustomField",
-        "name": "sctm_transaction_surcharge_cost",
-        "transactionId": "5c8b0375-305a-4f19-ae8e-07806b101999",
-        "value": JSON.stringify({
-          surchargeAmountInCent: totalSurchargeAmount
+        action: 'setTransactionCustomField',
+        name: 'sctm_transaction_surcharge_cost',
+        transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        value: JSON.stringify({
+          surchargeAmountInCent: totalSurchargeAmount,
         }),
-      }
+      },
     ];
 
     expect(actual).toEqual({
@@ -1551,7 +1553,9 @@ describe('Test handleCreatePayment', () => {
       CTPayment,
       methodConfig.value.pricingConstraints[0].surchargeCost,
     );
-    expect(calculateTotalSurchargeAmount).toHaveReturnedWith(totalSurchargeAmount / Math.pow(10, CTPayment.amountPlanned.fractionDigits));
+    expect(calculateTotalSurchargeAmount).toHaveReturnedWith(
+      totalSurchargeAmount / Math.pow(10, CTPayment.amountPlanned.fractionDigits),
+    );
 
     expect(createCartUpdateActions).toHaveBeenCalledTimes(1);
     expect(createCartUpdateActions).toHaveBeenCalledWith(cart, CTPayment, totalSurchargeAmount);
@@ -1586,13 +1590,13 @@ describe('Test handleCreatePayment', () => {
         state: 'Pending',
       },
       {
-        "action": "setTransactionCustomField",
-        "name": "sctm_transaction_surcharge_cost",
-        "transactionId": "5c8b0375-305a-4f19-ae8e-07806b101999",
-        "value": JSON.stringify({
-          surchargeAmountInCent: totalSurchargeAmount
+        action: 'setTransactionCustomField',
+        name: 'sctm_transaction_surcharge_cost',
+        transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        value: JSON.stringify({
+          surchargeAmountInCent: totalSurchargeAmount,
         }),
-      }
+      },
     ];
 
     expect(createPaymentWithCustomMethod).toBeCalledTimes(1);

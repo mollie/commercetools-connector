@@ -146,7 +146,7 @@ describe('createMollieCreatePaymentParams', () => {
             currency: CTPayment.amountPlanned.currencyCode,
             value: '10.00',
           },
-        }
+        },
       ],
     });
   });
@@ -893,11 +893,11 @@ describe('Test createMollieLineForSurchargeAmount', () => {
       quantityUnit: 'pcs',
       unitPrice: {
         currency,
-        value: '10.20'
+        value: '10.20',
       },
       totalAmount: {
         currency,
-        value: '10.20'
+        value: '10.20',
       },
     };
 
