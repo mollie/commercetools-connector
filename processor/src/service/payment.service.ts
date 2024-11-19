@@ -54,6 +54,7 @@ import {
   changeTransactionState,
   changeTransactionTimestamp,
   setCustomFields,
+  setTransactionCustomField,
   setTransactionCustomType,
 } from '../commercetools/action.commercetools';
 import { readConfiguration } from '../utils/config.utils';
@@ -66,7 +67,12 @@ import { getPaymentExtension } from '../commercetools/extensions.commercetools';
 import { HttpDestination } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/extension';
 import { cancelPaymentRefund, createPaymentRefund, getPaymentRefund } from '../mollie/refund.mollie';
 import { ApplePaySessionRequest, CustomPayment, SupportedPaymentMethods } from '../types/mollie.types';
-import { calculateTotalSurchargeAmount, convertCentToEUR, parseStringToJsonObject } from '../utils/app.utils';
+import {
+  calculateTotalSurchargeAmount,
+  convertCentToEUR,
+  parseStringToJsonObject,
+  roundSurchargeAmountToCent,
+} from '../utils/app.utils';
 import ApplePaySession from '@mollie/api-client/dist/types/src/data/applePaySession/ApplePaySession';
 import { getMethodConfigObjects, getSingleMethodConfigObject } from '../commercetools/customObjects.commercetools';
 import { getCartFromPayment, updateCart } from '../commercetools/cart.commercetools';
@@ -387,7 +393,27 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
 
   const cart = await getCartFromPayment(ctPayment.id);
 
-  const paymentParams = createMollieCreatePaymentParams(ctPayment, extensionUrl);
+  const [method, issuer] = ctPayment?.paymentMethodInfo?.method?.split(',') ?? [null, null];
+
+  logger.debug(`SCTM - handleCreatePayment - Getting customized configuration for payment method: ${method}`);
+  const paymentMethodConfig = await getSingleMethodConfigObject(method as string);
+  const billingCountry = getBillingCountry(ctPayment);
+
+  const pricingConstraint = paymentMethodConfig.value.pricingConstraints?.find((constraint: PricingConstraintItem) => {
+    return (
+      constraint.countryCode === billingCountry && constraint.currencyCode === ctPayment.amountPlanned.currencyCode
+    );
+  }) as PricingConstraintItem;
+
+  logger.debug(`SCTM - handleCreatePayment - Calculating total surcharge amount`);
+  const surchargeAmountInCent = pricingConstraint
+    ? roundSurchargeAmountToCent(
+        calculateTotalSurchargeAmount(ctPayment, pricingConstraint.surchargeCost),
+        ctPayment.amountPlanned.fractionDigits,
+      )
+    : 0;
+
+  const paymentParams = createMollieCreatePaymentParams(ctPayment, extensionUrl, surchargeAmountInCent);
 
   let molliePayment;
   if (PaymentMethod[paymentParams.method as PaymentMethod]) {
@@ -402,28 +428,12 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
     molliePayment = await createPaymentWithCustomMethod(paymentParams);
   }
 
-  logger.debug(
-    `SCTM - handleCreatePayment - Getting customized configuration for payment method: ${paymentParams.method}`,
-  );
-  const paymentMethodConfig = await getSingleMethodConfigObject(paymentParams.method as string);
-  const billingCountry = getBillingCountry(ctPayment);
-
-  const pricingConstraint = paymentMethodConfig.value.pricingConstraints?.find((constraint: PricingConstraintItem) => {
-    return (
-      constraint.countryCode === billingCountry && constraint.currencyCode === ctPayment.amountPlanned.currencyCode
-    );
-  }) as PricingConstraintItem;
-
-  logger.debug(`SCTM - handleCreatePayment - Calculating total surcharge amount`);
-  const surchargeAmount = pricingConstraint
-    ? calculateTotalSurchargeAmount(ctPayment, pricingConstraint.surchargeCost)
-    : 0;
-  const cartUpdateActions = createCartUpdateActions(cart, ctPayment, surchargeAmount);
+  const cartUpdateActions = createCartUpdateActions(cart, ctPayment, surchargeAmountInCent);
   if (cartUpdateActions.length > 0) {
     await updateCart(cart, cartUpdateActions as CartUpdateAction[]);
   }
 
-  const ctActions = await getCreatePaymentUpdateAction(molliePayment, ctPayment);
+  const ctActions = await getCreatePaymentUpdateAction(molliePayment, ctPayment, surchargeAmountInCent);
 
   return {
     statusCode: 201,
@@ -439,7 +449,11 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
  * @return {Promise<UpdateAction[]>} A promise that resolves to an array of update actions.
  * @throws {Error} If the original transaction is not found.
  */
-export const getCreatePaymentUpdateAction = async (molliePayment: MPayment | CustomPayment, CTPayment: Payment) => {
+export const getCreatePaymentUpdateAction = async (
+  molliePayment: MPayment | CustomPayment,
+  CTPayment: Payment,
+  surchargeAmountInCent: number,
+) => {
   try {
     // Find the original transaction which triggered create order
     const originalTransaction = CTPayment.transactions?.find((transaction) => {
@@ -475,7 +489,7 @@ export const getCreatePaymentUpdateAction = async (molliePayment: MPayment | Cus
       sctm_created_at: molliePayment.createdAt,
     };
 
-    return Promise.resolve([
+    const actions: UpdateAction[] = [
       // Add interface interaction
       addInterfaceInteraction(interfaceInteractionParams),
       // Update transaction interactionId
@@ -484,7 +498,20 @@ export const getCreatePaymentUpdateAction = async (molliePayment: MPayment | Cus
       changeTransactionTimestamp(originalTransaction.id, molliePayment.createdAt),
       // Update transaction state
       changeTransactionState(originalTransaction.id, CTTransactionState.Pending),
-    ]);
+    ];
+
+    if (surchargeAmountInCent > 0) {
+      // Add surcharge amount to the custom field of the transaction
+      actions.push(
+        setTransactionCustomField(
+          CustomFields.transactionSurchargeCost,
+          JSON.stringify({ surchargeAmountInCent }),
+          originalTransaction.id,
+        ),
+      );
+    }
+
+    return Promise.resolve(actions);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return Promise.reject(error);

@@ -139,3 +139,12 @@ export const addCustomLineItem = (
     taxCategory,
   };
 };
+
+export const setTransactionCustomField = (name: string, value: string, transactionId: string) => {
+  return {
+    action: 'setTransactionCustomField',
+    name,
+    value,
+    transactionId,
+  };
+};

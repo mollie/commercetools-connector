@@ -2,13 +2,14 @@ import { describe, test, expect, it, jest } from '@jest/globals';
 import {
   createCartUpdateActions,
   createMollieCreatePaymentParams,
+  createMollieLineForSurchargeAmount,
   mapCommercetoolsPaymentCustomFieldsToMollieListParams,
 } from '../../src/utils/map.utils';
 import { Cart, Payment } from '@commercetools/platform-sdk';
 import { MethodsListParams, PaymentCreateParams, PaymentMethod } from '@mollie/api-client';
 import { calculateDueDate, makeMollieAmount } from '../../src/utils/mollie.utils';
 import { CustomPaymentMethod } from '../../src/types/mollie.types';
-import { MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM } from '../../src/utils/constant.utils';
+import { MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM, MOLLIE_SURCHARGE_LINE_DESCRIPTION } from '../../src/utils/constant.utils';
 
 jest.mock('../../src/utils/mollie.utils.ts', () => ({
   // @ts-expect-error ignore type error
@@ -85,7 +86,7 @@ describe('createMollieCreatePaymentParams', () => {
     };
     const extensionUrl = 'https://example.com/webhook';
 
-    const mollieCreatePaymentParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
+    const mollieCreatePaymentParams = createMollieCreatePaymentParams(CTPayment, extensionUrl, 0);
     const mollieAmount = makeMollieAmount(CTPayment.amountPlanned);
 
     expect(mollieCreatePaymentParams).toEqual({
@@ -96,6 +97,57 @@ describe('createMollieCreatePaymentParams', () => {
       },
       webhookUrl: extensionUrl,
       lines: [],
+    });
+  });
+
+  it('should able to create a mollie payment params from CommerceTools payment object for with method as creditcard and surcharge amount is not 0', async () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'creditcard',
+      },
+    };
+    const extensionUrl = 'https://example.com/webhook';
+
+    const surchargeAmountInCent = 1000;
+
+    const mollieCreatePaymentParams = createMollieCreatePaymentParams(CTPayment, extensionUrl, surchargeAmountInCent);
+    const mollieAmount = {
+      currency: CTPayment.amountPlanned.currencyCode,
+      value: '20.00',
+    };
+
+    expect(mollieCreatePaymentParams).toEqual({
+      method: CTPayment.paymentMethodInfo.method,
+      amount: mollieAmount,
+      webhookUrl: extensionUrl,
+      lines: [
+        {
+          description: MOLLIE_SURCHARGE_LINE_DESCRIPTION,
+          quantity: 1,
+          quantityUnit: 'pcs',
+          unitPrice: {
+            currency: CTPayment.amountPlanned.currencyCode,
+            value: '10.00',
+          },
+          totalAmount: {
+            currency: CTPayment.amountPlanned.currencyCode,
+            value: '10.00',
+          },
+        }
+      ],
     });
   });
 
@@ -137,7 +189,7 @@ describe('createMollieCreatePaymentParams', () => {
     };
     const extensionUrl = 'https://example.com/webhook';
 
-    const mollieCreatePaymentParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
+    const mollieCreatePaymentParams = createMollieCreatePaymentParams(CTPayment, extensionUrl, 0);
 
     expect(mollieCreatePaymentParams).toEqual({
       method: 'creditcard',
@@ -197,7 +249,7 @@ describe('createMollieCreatePaymentParams', () => {
     };
     const extensionUrl = 'https://example.com/webhook';
 
-    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
+    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl, 0);
     expect(mollieCreatePaymentParams).toEqual({
       method: PaymentMethod.ideal,
       amount: {
@@ -258,7 +310,7 @@ describe('createMollieCreatePaymentParams', () => {
     };
     const extensionUrl = 'https://example.com/webhook';
 
-    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
+    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl, 0);
     expect(mollieCreatePaymentParams).toEqual({
       method: PaymentMethod.bancontact,
       amount: {
@@ -317,7 +369,7 @@ describe('createMollieCreatePaymentParams', () => {
     const dueDate = '2024-01-01';
     (calculateDueDate as jest.Mock).mockReturnValueOnce(dueDate);
 
-    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
+    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl, 0);
 
     expect(mollieCreatePaymentParams).toEqual({
       method: PaymentMethod.banktransfer,
@@ -373,7 +425,7 @@ describe('createMollieCreatePaymentParams', () => {
     };
     const extensionUrl = 'https://example.com/webhook';
 
-    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
+    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl, 0);
     expect(mollieCreatePaymentParams).toEqual({
       method: PaymentMethod.przelewy24,
       amount: {
@@ -426,7 +478,7 @@ describe('createMollieCreatePaymentParams', () => {
     };
     const extensionUrl = 'https://example.com/webhook';
 
-    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
+    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl, 0);
     expect(mollieCreatePaymentParams).toEqual({
       method: PaymentMethod.kbc,
       amount: {
@@ -480,7 +532,7 @@ describe('createMollieCreatePaymentParams', () => {
 
     const extensionUrl = 'https://example.com/webhook';
 
-    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
+    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl, 0);
     expect(mollieCreatePaymentParams).toEqual({
       method: CustomPaymentMethod.blik,
       amount: {
@@ -534,7 +586,7 @@ describe('createMollieCreatePaymentParams', () => {
     };
     const extensionUrl = 'https://example.com/webhook';
 
-    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
+    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl, 0);
     expect(mollieCreatePaymentParams).toEqual({
       method: PaymentMethod.applepay,
       amount: {
@@ -589,7 +641,7 @@ describe('createMollieCreatePaymentParams', () => {
     };
     const extensionUrl = 'https://example.com/webhook';
 
-    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
+    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl, 0);
     expect(mollieCreatePaymentParams).toEqual({
       method: PaymentMethod.paypal,
       amount: {
@@ -645,7 +697,7 @@ describe('createMollieCreatePaymentParams', () => {
     };
     const extensionUrl = 'https://example.com/webhook';
 
-    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
+    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl, 0);
     expect(mollieCreatePaymentParams).toEqual({
       method: PaymentMethod.giftcard,
       amount: {
@@ -721,7 +773,7 @@ describe('createMollieCreatePaymentParams', () => {
     };
     const extensionUrl = 'https://example.com/webhook';
 
-    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl);
+    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(CTPayment, extensionUrl, 0);
     expect(mollieCreatePaymentParams).toEqual({
       method: PaymentMethod.paypal,
       amount: {
@@ -754,7 +806,7 @@ describe('Test createCartUpdateActions', () => {
         currencyCode: 'EUR',
       },
     } as Payment;
-    const surchargeAmount = 10;
+    const surchargeAmountInCent = 10;
 
     const expectedResult = [
       {
@@ -766,8 +818,7 @@ describe('Test createCartUpdateActions', () => {
         quantity: 1,
         slug: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
         money: {
-          centAmount: Math.ceil(surchargeAmount * Math.pow(10, ctPayment.amountPlanned.fractionDigits)),
-          // centAmount: surchargeAmount,
+          centAmount: surchargeAmountInCent,
           currencyCode: ctPayment.amountPlanned.currencyCode,
         },
         taxCategory: {
@@ -776,7 +827,7 @@ describe('Test createCartUpdateActions', () => {
       },
     ];
 
-    expect(createCartUpdateActions(cart, ctPayment, surchargeAmount)).toEqual(expectedResult);
+    expect(createCartUpdateActions(cart, ctPayment, surchargeAmountInCent)).toEqual(expectedResult);
   });
 
   it('should able to create cart update actions including remove the existing custom line item and insert new custom line item', async () => {
@@ -800,7 +851,7 @@ describe('Test createCartUpdateActions', () => {
         currencyCode: 'EUR',
       },
     } as Payment;
-    const surchargeAmount = 10;
+    const surchargeAmountInCent = 10;
 
     const expectedResult = [
       {
@@ -816,7 +867,7 @@ describe('Test createCartUpdateActions', () => {
         quantity: 1,
         slug: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
         money: {
-          centAmount: Math.ceil(surchargeAmount * Math.pow(10, ctPayment.amountPlanned.fractionDigits)),
+          centAmount: surchargeAmountInCent,
           // centAmount: surchargeAmount,
           currencyCode: ctPayment.amountPlanned.currencyCode,
         },
@@ -826,6 +877,30 @@ describe('Test createCartUpdateActions', () => {
       },
     ];
 
-    expect(createCartUpdateActions(cart, ctPayment, surchargeAmount)).toEqual(expectedResult);
+    expect(createCartUpdateActions(cart, ctPayment, surchargeAmountInCent)).toEqual(expectedResult);
+  });
+});
+
+describe('Test createMollieLineForSurchargeAmount', () => {
+  it('should return a Mollie line for the surcharge amount', () => {
+    const surchargeAmountInCent = 1020;
+    const fractionDigits = 2;
+    const currency = 'EUR';
+
+    const expected = {
+      description: MOLLIE_SURCHARGE_LINE_DESCRIPTION,
+      quantity: 1,
+      quantityUnit: 'pcs',
+      unitPrice: {
+        currency,
+        value: '10.20'
+      },
+      totalAmount: {
+        currency,
+        value: '10.20'
+      },
+    };
+
+    expect(createMollieLineForSurchargeAmount(surchargeAmountInCent, fractionDigits, currency)).toStrictEqual(expected);
   });
 });

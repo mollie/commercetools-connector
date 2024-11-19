@@ -5,6 +5,7 @@ import {
   createDateNowString,
   parseStringToJsonObject,
   removeEmptyProperties,
+  roundSurchargeAmountToCent,
   validateEmail,
 } from '../../src/utils/app.utils';
 import { logger } from '../../src/utils/logger.utils';
@@ -132,5 +133,15 @@ describe('Test calculateTotalSurchargeAmount', () => {
     } as Payment;
 
     expect(calculateTotalSurchargeAmount(payment, undefined)).toBe(0);
+  });
+});
+
+describe('Test roundSurchargeAmountToCent', () => {
+  it('should return correct surcharge amount in cent', () => {
+    const surchargeAmountInEur = 300.998;
+
+    const fractionDigits = 2;
+
+    expect(roundSurchargeAmountToCent(surchargeAmountInEur, fractionDigits)).toBe(30100);
   });
 });
