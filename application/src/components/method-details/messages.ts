@@ -78,6 +78,10 @@ export default defineMessages({
     id: 'MethodDetails.fieldMaxAmountInvalidValue',
     defaultMessage: 'Maximum amount has to be higher then minimum amount.',
   },
+  fieldImageUrl: {
+    id: 'MethodDetails.fieldImageUrl',
+    defaultMessage: 'Image URL',
+  },
   fieldMustBeEqualOrGreaterThanZero: {
     id: 'MethodDetails.fieldMustBeEqualOrGreaterThanZero',
     defaultMessage: 'The amount must be equal or greater than 0',

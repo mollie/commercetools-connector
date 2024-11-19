@@ -30,9 +30,7 @@ import { getErrorMessage } from '../../helpers';
 import { SuspendedRoute } from '@commercetools-frontend/application-shell';
 import MethodDetails from '../method-details';
 import { useIntl } from 'react-intl';
-import { formatLocalizedString } from '@commercetools-frontend/l10n';
 import { useApplicationContext } from '@commercetools-frontend/application-shell-connectors';
-import { NO_VALUE_FALLBACK } from '@commercetools-frontend/constants';
 
 const Welcome = () => {
   const intl = useIntl();
@@ -179,7 +177,11 @@ const Welcome = () => {
                   <CheckInactiveIcon color="neutral60"></CheckInactiveIcon>
                 );
               case 'name':
-                return item.technicalName;
+                return (
+                  <div data-testid={`name-column-${item.id}`}>
+                    {item.technicalName}
+                  </div>
+                );
               case 'image':
                 return (
                   <IconButton
@@ -197,7 +199,11 @@ const Welcome = () => {
                   ></IconButton>
                 );
               case 'order':
-                return item.displayOrder ?? '-';
+                return (
+                  <div data-testid={`display-order-column-${item.id}`}>
+                    {item.displayOrder ?? '-'}
+                  </div>
+                );
               default:
                 return null;
             }

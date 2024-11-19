@@ -24,10 +24,10 @@ describe('Test welcome.cy.ts', () => {
 
     const paymentMethods = [
       'PayPal',
-      'iDEAL Pay in 3 instalments, 0% interest',
       'iDEAL',
       'Bancontact',
       'Blik',
+      'Bank transfer',
     ];
 
     const headers = ['Payment method', 'Active', 'Icon', 'Display order'];
