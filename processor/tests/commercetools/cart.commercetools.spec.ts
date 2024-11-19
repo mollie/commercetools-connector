@@ -1,6 +1,6 @@
-import { getCartFromPayment } from './../../src/commercetools/cart.commercetools';
+import { getCartFromPayment, updateCart } from './../../src/commercetools/cart.commercetools';
 import { afterEach, describe, expect, jest, it } from '@jest/globals';
-import { Cart } from '@commercetools/platform-sdk';
+import { Cart, CartUpdateAction } from '@commercetools/platform-sdk';
 import { createApiRoot } from '../../src/client/create.client';
 import { logger } from '../../src/utils/logger.utils';
 import CustomError from '../../src/errors/custom.error';
@@ -84,5 +84,51 @@ describe('Test getCartFromPayment', () => {
       expect(logger.error).toHaveBeenCalledTimes(1);
       expect(logger.error).toHaveBeenCalledWith('There is no cart which attached this target payment');
     }
+  });
+});
+
+describe('Test updateCart', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should receive the result', async () => {
+    const mockWithId = jest.fn();
+    const mockPost = jest.fn();
+    const cart = {
+      id: 'test-123123',
+      version: 1,
+    } as unknown as Cart;
+
+    (createApiRoot as jest.Mock).mockReturnValue({
+      carts: jest.fn().mockReturnValue({
+        withId: mockWithId,
+      }),
+    });
+
+    mockWithId.mockReturnValue({
+      post: mockPost,
+    });
+
+    mockPost.mockReturnValue({
+      execute: jest.fn().mockReturnValue({
+        body: cart,
+      }),
+    });
+
+    const updateActions = [] as unknown as CartUpdateAction[];
+    const updateCartResult = await updateCart(cart, updateActions);
+    expect(mockWithId).toBeCalledTimes(1);
+    expect(mockWithId).toBeCalledWith({
+      ID: cart.id,
+    });
+    expect(mockPost).toBeCalledTimes(1);
+    expect(mockPost).toBeCalledWith({
+      body: {
+        version: cart.version,
+        actions: updateActions,
+      },
+    });
+    expect(updateCartResult).toEqual(cart);
   });
 });

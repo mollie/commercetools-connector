@@ -7,6 +7,7 @@
       "value": {
         "id": "applepay",
         "displayOrder": 2,
+        "technicalName": "Apple Pay",
         "name": {
           "en-GB": "Apple Pay"
         },
@@ -32,6 +33,7 @@
       "key": "bancomatpay",
       "value": {
         "id": "bancomatpay",
+        "technicalName": "Bancomat Pay",
         "name": {
           "en-GB": "Bancomat Pay"
         },
@@ -49,6 +51,7 @@
       "key": "bancontact",
       "value": {
         "id": "bancontact",
+        "technicalName": "Bancontact",
         "name": {
           "en-GB": "Bancontact"
         },
@@ -66,6 +69,7 @@
       "key": "banktransfer",
       "value": {
         "id": "banktransfer",
+        "technicalName" : "Bank transfer",
         "name": {
           "en-GB": "Bank transfer"
         },
@@ -83,6 +87,7 @@
       "key": "belfius",
       "value": {
         "id": "belfius",
+        "technicalName": "Belfius Pay Button",
         "name": {
           "en-GB": "Belfius Pay Button"
         },
@@ -100,6 +105,7 @@
       "key": "billie",
       "value": {
         "id": "billie",
+        "technicalName": "Pay by Invoice for Businesses - Billie",
         "name": {
           "en-GB": "Pay by Invoice for Businesses - Billie"
         },
@@ -117,6 +123,7 @@
       "key": "blik",
       "value": {
         "id": "blik",
+        "technicalName": "Blik",
         "name": {
           "en-GB": "Blik"
         },
@@ -134,6 +141,7 @@
       "key": "creditcard",
       "value": {
         "id": "creditcard",
+        "technicalName": "Card",
         "name": {
           "en-GB": "Card"
         },
@@ -152,6 +160,7 @@
       "key": "directdebit",
       "value": {
         "id": "directdebit",
+        "technicalName": "SEPA Direct Debit",
         "name": {
           "en-GB": "SEPA Direct Debit"
         },
@@ -169,6 +178,7 @@
       "key": "eps",
       "value": {
         "id": "eps",
+        "technicalName": "eps",
         "name": {
           "en-GB": "eps"
         },
@@ -186,6 +196,7 @@
       "key": "giftcard",
       "value": {
         "id": "giftcard",
+        "technicalName": "Gift cards",
         "name": {
           "en-GB": "Gift cards"
         },
@@ -203,6 +214,7 @@
       "key": "ideal",
       "value": {
         "id": "ideal",
+        "technicalName": "iDEAL",
         "name": {
           "en-GB": "iDEAL"
         },
@@ -220,6 +232,7 @@
       "key": "in3",
       "value": {
         "id": "in3",
+        "technicalName": "iDEAL Pay in 3 instalments, 0% interest",
         "name": {
           "en-GB": "iDEAL Pay in 3 instalments, 0% interest"
         },
@@ -237,6 +250,7 @@
       "key": "kbc",
       "value": {
         "id": "kbc",
+        "technicalName": "KBC/CBC Payment Button",
         "name": {
           "en-GB": "KBC/CBC Payment Button"
         },
@@ -254,6 +268,7 @@
       "key": "klarna",
       "value": {
         "id": "klarna",
+        "technicalName": "Pay with Klarna",
         "name": {
           "en-GB": "Pay with Klarna"
         },
@@ -271,6 +286,7 @@
       "key": "paypal",
       "value": {
         "id": "paypal",
+        "technicalName": "PayPal",
         "name": {
           "en-GB": "PayPal"
         },
@@ -288,6 +304,7 @@
       "key": "przelewy24",
       "value": {
         "id": "przelewy24",
+        "technicalName": "Przelewy24",
         "name": {
           "en-GB": "Przelewy24"
         },
@@ -305,6 +322,7 @@
       "key": "trustly",
       "value": {
         "id": "trustly",
+        "technicalName": "Trustly",
         "name": {
           "en-GB": "Trustly"
         },
@@ -322,6 +340,7 @@
       "key": "twint",
       "value": {
         "id": "twint",
+        "technicalName": "TWINT",
         "name": {
           "en-GB": "TWINT"
         },
@@ -339,6 +358,7 @@
       "key": "voucher",
       "value": {
         "id": "voucher",
+        "technicalName": "Vouchers",
         "name": {
           "en-GB": "Vouchers"
         },

@@ -49,6 +49,7 @@
     "@commercetools-uikit/checkbox-input": "^19.11.0",
     "@commercetools-uikit/constraints": "^19.9.0",
     "@commercetools-uikit/data-table": "^19.9.0",
+    "@commercetools-uikit/field-label": "^19.13.0",
     "@commercetools-uikit/flat-button": "^19.9.0",
     "@commercetools-uikit/grid": "^19.9.0",
     "@commercetools-uikit/hooks": "^19.9.0",

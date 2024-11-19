@@ -1,4 +1,7 @@
-import { getMethodConfigObjects } from './../../src/commercetools/customObjects.commercetools';
+import {
+  getMethodConfigObjects,
+  getSingleMethodConfigObject,
+} from './../../src/commercetools/customObjects.commercetools';
 import { afterEach, beforeEach, describe, expect, it, jest, test } from '@jest/globals';
 import { Cart, CustomFields, Payment } from '@commercetools/platform-sdk';
 import {
@@ -14,7 +17,12 @@ import {
   handlePaymentWebhook,
 } from '../../src/service/payment.service';
 import { ControllerResponseType } from '../../src/types/controller.types';
-import { CancelStatusText, ConnectorActions, CustomFields as CustomFieldName } from '../../src/utils/constant.utils';
+import {
+  CancelStatusText,
+  ConnectorActions,
+  CustomFields as CustomFieldName,
+  MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+} from '../../src/utils/constant.utils';
 import { Payment as molliePayment, PaymentStatus, Refund, RefundStatus } from '@mollie/api-client';
 import {
   ChangeTransactionState,
@@ -37,11 +45,13 @@ import { logger } from '../../src/utils/logger.utils';
 import { getPaymentByMolliePaymentId, updatePayment } from '../../src/commercetools/payment.commercetools';
 import { CreateParameters } from '@mollie/api-client/dist/types/src/binders/payments/refunds/parameters';
 import { getPaymentExtension } from '../../src/commercetools/extensions.commercetools';
-import { createMollieCreatePaymentParams } from '../../src/utils/map.utils';
+import { createCartUpdateActions, createMollieCreatePaymentParams } from '../../src/utils/map.utils';
 import { CustomPayment } from '../../src/types/mollie.types';
 import { changeTransactionState } from '../../src/commercetools/action.commercetools';
 import { makeCTMoney, shouldRefundStatusUpdate } from '../../src/utils/mollie.utils';
-import { getCartFromPayment } from '../../src/commercetools/cart.commercetools';
+import { getCartFromPayment, updateCart } from '../../src/commercetools/cart.commercetools';
+import { calculateTotalSurchargeAmount } from '../../src/utils/app.utils';
+import { removeCartMollieCustomLineItem } from '../../src/service/cart.service';
 
 const uuid = '5c8b0375-305a-4f19-ae8e-07806b101999';
 jest.mock('uuid', () => ({
@@ -59,10 +69,12 @@ jest.mock('../../src/commercetools/payment.commercetools', () => ({
 
 jest.mock('../../src/commercetools/cart.commercetools', () => ({
   getCartFromPayment: jest.fn(),
+  updateCart: jest.fn(),
 }));
 
 jest.mock('../../src/commercetools/customObjects.commercetools', () => ({
   getMethodConfigObjects: jest.fn(),
+  getSingleMethodConfigObject: jest.fn(),
 }));
 
 jest.mock('../../src/service/payment.service.ts', () => ({
@@ -686,10 +698,12 @@ describe('Test listPaymentMethodsByPayment', () => {
       },
     ]);
 
-    (getCartFromPayment as jest.Mock).mockReturnValueOnce({
+    const cart = {
       id: 'cart-id',
       country: 'DE',
-    } as Cart);
+    };
+
+    (getCartFromPayment as jest.Mock).mockReturnValue(cart);
 
     mockResource = {
       id: 'RANDOMID_12345',
@@ -867,7 +881,7 @@ describe('Test listPaymentMethodsByPayment', () => {
       },
     ]);
 
-    (getCartFromPayment as jest.Mock).mockReturnValueOnce({
+    (getCartFromPayment as jest.Mock).mockReturnValue({
       id: 'cart-id',
       country: 'DE',
     } as Cart);
@@ -1118,6 +1132,17 @@ describe('Test handleCreatePayment', () => {
     paymentMethodInfo: {
       method: 'creditcard',
     },
+    custom: {
+      type: {
+        typeId: 'type',
+        id: 'test',
+      },
+      fields: {
+        sctm_payment_methods_request: JSON.stringify({
+          billingCountry: 'DE',
+        }),
+      },
+    },
   };
 
   beforeEach(() => {
@@ -1161,6 +1186,41 @@ describe('Test handleCreatePayment', () => {
       },
     } as molliePayment;
 
+    const customLineItem = {
+      id: 'custom-line',
+      key: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+    };
+
+    const mockedCart = {
+      id: 'mocked-cart',
+      customLineItems: [customLineItem],
+    } as Cart;
+
+    const methodConfig = {
+      value: {
+        pricingConstraints: [
+          {
+            currencyCode: CTPayment.amountPlanned.currencyCode,
+            countryCode: JSON.parse(CTPayment.custom?.fields?.sctm_payment_methods_request).billingCountry,
+            surchargeCost: {
+              percentageAmount: 2,
+              fixedAmount: 10,
+            },
+          },
+        ],
+      },
+    };
+
+    const appUtils = require('../../src/utils/app.utils');
+
+    jest.spyOn(appUtils, 'calculateTotalSurchargeAmount');
+
+    const mapUtils = require('../../src/utils/map.utils');
+
+    jest.spyOn(mapUtils, 'createCartUpdateActions');
+
+    (getCartFromPayment as jest.Mock).mockReturnValue(mockedCart);
+    (getSingleMethodConfigObject as jest.Mock).mockReturnValueOnce(methodConfig);
     (createMolliePayment as jest.Mock).mockReturnValueOnce(molliePayment);
     (getPaymentExtension as jest.Mock).mockReturnValueOnce({
       destination: {
@@ -1178,7 +1238,43 @@ describe('Test handleCreatePayment', () => {
       transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
     });
 
+    (updateCart as jest.Mock).mockReturnValue(mockedCart);
+
+    const totalSurchargeAmount = 10.2;
+
     const actual = await handleCreatePayment(CTPayment);
+
+    const expectedCartUpdateActions = [
+      {
+        action: 'removeCustomLineItem',
+        customLineItemId: customLineItem.id,
+      },
+      {
+        action: 'addCustomLineItem',
+        name: {
+          de: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+          en: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+        },
+        quantity: 1,
+        money: {
+          centAmount: Math.round(totalSurchargeAmount * Math.pow(10, CTPayment.amountPlanned.fractionDigits)),
+          currencyCode: CTPayment.amountPlanned.currencyCode,
+        },
+        slug: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+      },
+    ];
+
+    expect(getSingleMethodConfigObject).toHaveBeenCalledWith(CTPayment.paymentMethodInfo.method);
+    expect(calculateTotalSurchargeAmount).toHaveBeenCalledTimes(1);
+    expect(calculateTotalSurchargeAmount).toHaveBeenCalledWith(
+      CTPayment,
+      methodConfig.value.pricingConstraints[0].surchargeCost,
+    );
+    expect(calculateTotalSurchargeAmount).toHaveReturnedWith(totalSurchargeAmount);
+
+    expect(createCartUpdateActions).toHaveBeenCalledTimes(1);
+    expect(createCartUpdateActions).toHaveBeenCalledWith(mockedCart, CTPayment, totalSurchargeAmount);
+    expect(createCartUpdateActions).toHaveReturnedWith(expectedCartUpdateActions);
 
     const ctActions = [
       {
@@ -1250,6 +1346,41 @@ describe('Test handleCreatePayment', () => {
       },
     } as CustomPayment;
 
+    const customLineItem = {
+      id: 'custom-line',
+      key: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+    };
+
+    const cart = {
+      customLineItems: [customLineItem],
+    } as Cart;
+
+    const methodConfig = {
+      value: {
+        pricingConstraints: [
+          {
+            currencyCode: CTPayment.amountPlanned.currencyCode,
+            countryCode: JSON.parse(CTPayment.custom?.fields?.sctm_payment_methods_request).billingCountry,
+            surchargeCost: {
+              percentageAmount: 2,
+              fixedAmount: 10,
+            },
+          },
+        ],
+      },
+    };
+
+    const appUtils = require('../../src/utils/app.utils');
+
+    jest.spyOn(appUtils, 'calculateTotalSurchargeAmount');
+
+    const mapUtils = require('../../src/utils/map.utils');
+
+    jest.spyOn(mapUtils, 'createCartUpdateActions');
+
+    (getCartFromPayment as jest.Mock).mockReturnValueOnce(cart);
+    (getSingleMethodConfigObject as jest.Mock).mockReturnValueOnce(methodConfig);
+
     (createPaymentWithCustomMethod as jest.Mock).mockReturnValueOnce(molliePayment);
     (getPaymentExtension as jest.Mock).mockReturnValueOnce({
       destination: {
@@ -1267,7 +1398,42 @@ describe('Test handleCreatePayment', () => {
       transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
     });
 
+    (updateCart as jest.Mock).mockReturnValueOnce(cart);
+
+    const totalSurchargeAmount = 10.2;
+
     const actual = await handleCreatePayment(CTPayment);
+
+    const expectedCartUpdateActions = [
+      {
+        action: 'removeCustomLineItem',
+        customLineItemId: customLineItem.id,
+      },
+      {
+        action: 'addCustomLineItem',
+        name: {
+          de: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+          en: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+        },
+        quantity: 1,
+        money: {
+          centAmount: Math.round(totalSurchargeAmount * Math.pow(10, CTPayment.amountPlanned.fractionDigits)),
+          currencyCode: CTPayment.amountPlanned.currencyCode,
+        },
+        slug: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+      },
+    ];
+
+    expect(calculateTotalSurchargeAmount).toHaveBeenCalledTimes(1);
+    expect(calculateTotalSurchargeAmount).toHaveBeenCalledWith(
+      CTPayment,
+      methodConfig.value.pricingConstraints[0].surchargeCost,
+    );
+    expect(calculateTotalSurchargeAmount).toHaveReturnedWith(totalSurchargeAmount);
+
+    expect(createCartUpdateActions).toHaveBeenCalledTimes(1);
+    expect(createCartUpdateActions).toHaveBeenCalledWith(cart, CTPayment, totalSurchargeAmount);
+    expect(createCartUpdateActions).toHaveReturnedWith(expectedCartUpdateActions);
 
     const ctActions = [
       {
@@ -1756,6 +1922,10 @@ describe('Test handlePaymentWebhook', () => {
   });
 
   it('should return true and perform update with specific actions if the targeted status is canceled', async () => {
+    const cartService = require('../../src/service/cart.service');
+
+    jest.spyOn(cartService, 'removeCartMollieCustomLineItem');
+
     const fakePaymentId = 'tr_XXXX';
     (getPaymentById as jest.Mock).mockReturnValue({
       id: fakePaymentId,
@@ -1824,6 +1994,8 @@ describe('Test handlePaymentWebhook', () => {
 
     expect(updatePayment).toBeCalledTimes(1);
     expect(updatePayment).toBeCalledWith(ctPayment, actions);
+
+    expect(removeCartMollieCustomLineItem).toBeCalledTimes(1);
   });
 
   it('should handle for manual capture payment', async () => {
@@ -2057,6 +2229,10 @@ describe('Test handleCancelPayment', () => {
   });
 
   it('should return status code and array of actions', async () => {
+    const cartService = require('../../src/service/cart.service');
+
+    jest.spyOn(cartService, 'removeCartMollieCustomLineItem');
+
     const molliePayment: molliePayment = {
       resource: 'payment',
       id: 'tr_7UhSN1zuXS',
@@ -2094,12 +2270,15 @@ describe('Test handleCancelPayment', () => {
     expect(cancelPayment).toBeCalledTimes(1);
     expect(cancelPayment).toBeCalledWith(molliePayment.id);
 
+    expect(removeCartMollieCustomLineItem).toBeCalledTimes(1);
+
     expect(actual).toEqual({
       statusCode: 200,
       actions: [],
     });
   });
 });
+
 describe('Test handleGetApplePaySession', () => {
   beforeEach(() => {
     jest.clearAllMocks();

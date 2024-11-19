@@ -82,4 +82,8 @@ export default defineMessages({
     id: 'MethodDetails.fieldImageUrl',
     defaultMessage: 'Image URL',
   },
+  fieldMustBeEqualOrGreaterThanZero: {
+    id: 'MethodDetails.fieldMustBeEqualOrGreaterThanZero',
+    defaultMessage: 'The amount must be equal or greater than 0',
+  },
 });

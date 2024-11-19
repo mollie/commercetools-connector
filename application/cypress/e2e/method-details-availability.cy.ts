@@ -51,13 +51,18 @@ beforeEach(() => {
 
 describe('Test method details - availability tab', () => {
   it('should be fully functional', () => {
-    const LOCALE = Cypress.env('LOCALE');
     const paymentMethods = 'Apple Pay';
 
     cy.findByText(paymentMethods).click();
     cy.url().should('contain', 'general');
 
     cy.findByText('Availability').should('exist').click();
+
+    cy.findByText('Currency');
+    cy.findByText('Min amount');
+    cy.findByText('Max amount');
+    cy.findByText('Country');
+    cy.findByText('Surcharge transaction cost');
 
     cy.findByText('EUR');
     cy.findByText('DE');
@@ -81,6 +86,10 @@ describe('Test method details - availability tab', () => {
       currencyCode: 'GBP',
       minAmount: 100,
       maxAmount: 444,
+      surchargeCost: {
+        percentageAmount: 2,
+        fixedAmount: 10,
+      },
     };
 
     cy.findByTestId('money-field-maxAmount').type(
@@ -92,6 +101,19 @@ describe('Test method details - availability tab', () => {
     cy.findByText(
       'Maximum amount has to be higher then minimum amount.'
     ).should('not.exist');
+
+    cy.findByTestId('money-field-surchargeCost--percentageAmount').type(
+      newAvailability.surchargeCost.percentageAmount.toString()
+    );
+    cy.findByTestId('money-field-surchargeCost--fixedAmount').type(
+      newAvailability.surchargeCost.fixedAmount.toString()
+    );
+
+    const totalSurchargeCost =
+      newAvailability.surchargeCost.percentageAmount +
+      '% + ' +
+      newAvailability.surchargeCost.fixedAmount +
+      newAvailability.currencyCode;
 
     const updatedPricingConstraints =
       customObjects.results[0].value.pricingConstraints ?? [];
@@ -125,5 +147,7 @@ describe('Test method details - availability tab', () => {
       cy.findByText(item.minAmount.toString()).should('exist');
       cy.findByText(item.maxAmount.toString()).should('exist');
     });
+
+    cy.findByText(totalSurchargeCost).should('exist');
   });
 });

@@ -1,5 +1,7 @@
 import { describe, test, expect, it, jest } from '@jest/globals';
 import {
+  calculateTotalSurchargeAmount,
+  convertCentToEUR,
   createDateNowString,
   parseStringToJsonObject,
   removeEmptyProperties,
@@ -7,6 +9,8 @@ import {
 } from '../../src/utils/app.utils';
 import { logger } from '../../src/utils/logger.utils';
 import CustomError from '../../src/errors/custom.error';
+import { Payment } from '@commercetools/platform-sdk';
+import { SurchargeCost } from '../../src/types/commercetools.types';
 
 describe('Test createDateNowString', () => {
   test('should return correct time', async () => {
@@ -93,5 +97,40 @@ describe('Test validateEmail', () => {
 
   it('should return true when the targeted string is a valid email', () => {
     expect(validateEmail('n.tran@shopmacher.de')).toBe(true);
+  });
+});
+
+describe('Test convertCentToEUR', () => {
+  it('should return correct result', () => {
+    expect(convertCentToEUR(100, 2)).toBe(1);
+  });
+});
+
+describe('Test calculateTotalSurchargeAmount', () => {
+  it('should return correct surcharge amount', () => {
+    const payment = {
+      amountPlanned: {
+        centAmount: 2000,
+        fractionDigits: 2,
+      },
+    } as Payment;
+
+    const surcharge = {
+      percentageAmount: 10,
+      fixedAmount: 5,
+    } as SurchargeCost;
+
+    expect(calculateTotalSurchargeAmount(payment, surcharge)).toBe(7);
+  });
+
+  it('should return 0 if surcharge param is not defined', () => {
+    const payment = {
+      amountPlanned: {
+        centAmount: 2000,
+        fractionDigits: 2,
+      },
+    } as Payment;
+
+    expect(calculateTotalSurchargeAmount(payment, undefined)).toBe(0);
   });
 });

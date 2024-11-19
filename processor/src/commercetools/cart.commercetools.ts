@@ -1,3 +1,4 @@
+import { Cart, CartUpdateAction } from '@commercetools/platform-sdk';
 import { createApiRoot } from '../client/create.client';
 import CustomError from '../errors/custom.error';
 import { logger } from '../utils/logger.utils';
@@ -22,4 +23,21 @@ export const getCartFromPayment = async (paymentId: string) => {
   logger.info(`Found cart with id ${results[0].id}`);
 
   return results[0];
+};
+
+export const updateCart = async (cart: Cart, updateActions: CartUpdateAction[]) => {
+  const response = await createApiRoot()
+    .carts()
+    .withId({ ID: cart.id })
+    .post({
+      body: {
+        version: cart.version,
+        actions: updateActions,
+      },
+    })
+    .execute();
+
+  const { body: cartObject } = response;
+
+  return cartObject;
 };

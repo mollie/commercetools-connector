@@ -15,6 +15,12 @@ import {
 } from '../../../types';
 import { ReactElement } from 'react';
 import validate from './validate';
+import FieldLabel from '@commercetools-uikit/field-label';
+import { FormattedMessage } from 'react-intl';
+import NumberField from '@commercetools-uikit/number-field';
+import SpacingsInline from '@commercetools-uikit/spacings-inline';
+import { PlusThinIcon } from '@commercetools-uikit/icons';
+import { convertCurrencyStringToNumber } from '../../../helpers';
 
 type Formik = ReturnType<typeof useFormik>;
 type FormProps = {
@@ -114,6 +120,7 @@ const AvailabilityDetailsForm = (props: TAvailabilityDetailsFormProps) => {
   const [currencyHint, setCurrencyHint] = useState<boolean>(false);
   const [minAmountHint, setMinAmountHint] = useState<boolean>(false);
   const [maxAmountHint, setMaxAmountHint] = useState<boolean>(false);
+  const [surchargeCostHint, setSurchargeCostHint] = useState<boolean>(false);
 
   const handleOnDeleteItem = () => {
     const clonedObject: { [key: string]: TAmountPerCurrency } = Object.assign(
@@ -125,6 +132,46 @@ const AvailabilityDetailsForm = (props: TAvailabilityDetailsFormProps) => {
     clonedObject[selectedCountry][selectedCurrency].maxAmount = '';
 
     formik.setValues(clonedObject);
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const getFormikOnChangeEvent = (event: any) => {
+    let eventName = undefined;
+    // let value = event.target.value;
+    switch (event?.target?.name) {
+      case 'minAmount.currencyCode':
+      case 'minAmount.amount':
+        eventName = `${selectedCountry}.${selectedCurrency}.minAmount`;
+        break;
+
+      case 'maxAmount.currencyCode':
+      case 'maxAmount.amount':
+        eventName = `${selectedCountry}.${selectedCurrency}.maxAmount`;
+        break;
+
+      case 'surchargeCost.percentageAmount':
+        eventName = `${selectedCountry}.${selectedCurrency}.surchargeCost.percentageAmount`;
+        break;
+
+      case 'surchargeCost.fixedAmount.currencyCode':
+      case 'surchargeCost.fixedAmount.amount':
+        eventName = `${selectedCountry}.${selectedCurrency}.surchargeCost.fixedAmount`;
+        break;
+
+      default:
+        break;
+    }
+
+    if (!eventName) {
+      console.error('Invalid event', event);
+    }
+
+    return {
+      target: {
+        name: eventName,
+        value: event.target.value,
+      },
+    };
   };
 
   const formElements = (
@@ -193,19 +240,13 @@ const AvailabilityDetailsForm = (props: TAvailabilityDetailsFormProps) => {
           currencyCode: selectedCurrency,
         }}
         onChange={(event) => {
-          const formikOnChangeEvent = {
-            target: {
-              name: `${selectedCountry}.${selectedCurrency}.minAmount`,
-              value: event.target.value,
-            },
-          };
+          const formikOnChangeEvent = getFormikOnChangeEvent(event);
           formik.handleChange(formikOnChangeEvent);
 
           if (event.target.name === 'minAmount.currencyCode') {
             setSelectedCurrency(event.target.value as TCurrencyCode);
           }
         }}
-        onBlur={() => {}}
       />
 
       <MoneyField
@@ -231,16 +272,10 @@ const AvailabilityDetailsForm = (props: TAvailabilityDetailsFormProps) => {
           currencyCode: selectedCurrency,
         }}
         onChange={(event) => {
-          const formikOnChangeEvent = {
-            target: {
-              name: `${selectedCountry}.${selectedCurrency}.maxAmount`,
-              value: event.target.value,
-            },
-          };
+          const formikOnChangeEvent = getFormikOnChangeEvent(event);
           formik.handleChange(formikOnChangeEvent);
 
           if (event.target.name === 'maxAmount.currencyCode') {
-            formik.handleChange(event);
             setSelectedCurrency(event.target.value as TCurrencyCode);
           }
         }}
@@ -258,6 +293,108 @@ const AvailabilityDetailsForm = (props: TAvailabilityDetailsFormProps) => {
           return null;
         }}
       />
+
+      <FieldLabel
+        title={intl.formatMessage(messages.headerSurchargeCost)}
+        onInfoButtonClick={() => {
+          setSurchargeCostHint(!surchargeCostHint);
+        }}
+        hint={
+          surchargeCostHint &&
+          'If additional surcharge transaction costs are to be charged to the customer, these can be configured here. The default is 0.00. If additional fees are to be charged, please refer to the legal requirements for transparent communication with your customers.'
+        }
+      />
+
+      <Spacings.Inline
+        scale="xl"
+        alignItems="center"
+        justifyContent="space-around"
+      >
+        <span
+          style={{
+            fontSize: '20px',
+            marginRight: '-20px',
+          }}
+        >
+          %
+        </span>
+        <NumberField
+          data-testid="money-field-surchargeCost--percentageAmount"
+          name="surchargeCost.percentageAmount"
+          title={''}
+          value={
+            formik.values[selectedCountry][selectedCurrency].surchargeCost
+              .percentageAmount
+          }
+          horizontalConstraint={12}
+          onChange={(event) => {
+            const formikOnChangeEvent = getFormikOnChangeEvent(event);
+            formik.handleChange(formikOnChangeEvent);
+          }}
+          onBlur={(event) => {
+            const percentageAmountOnBlurEvent = {
+              target: {
+                name: `${selectedCountry}.${selectedCurrency}.surchargeCost.percentageAmount`,
+                value:
+                  Number(event.target.value) >= 0
+                    ? Number(event.target.value)
+                    : 0,
+              },
+            };
+
+            formik.handleChange(percentageAmountOnBlurEvent);
+          }}
+        />
+
+        <PlusThinIcon />
+
+        <MoneyField
+          data-testid="money-field-surchargeCost--fixedAmount"
+          name="surchargeCost.fixedAmount"
+          title={''}
+          horizontalConstraint={14}
+          currencies={
+            currencyOptions.length === 1
+              ? [currencyOptions[0].value]
+              : projectCurrencies
+          }
+          value={{
+            amount:
+              formik.values[selectedCountry][selectedCurrency].surchargeCost
+                .fixedAmount,
+            currencyCode: selectedCurrency,
+          }}
+          onChange={(event) => {
+            const formikOnChangeEvent = getFormikOnChangeEvent(event);
+            formik.handleChange(formikOnChangeEvent);
+
+            if (
+              event.target.name === 'surchargeCost.fixedAmount.currencyCode'
+            ) {
+              setSelectedCurrency(event.target.value as TCurrencyCode);
+            }
+          }}
+          onBlur={(event) => {
+            if (event.target.name === 'surchargeCost.fixedAmount.amount') {
+              const convertedValue = convertCurrencyStringToNumber(
+                formik.values[selectedCountry][selectedCurrency].surchargeCost
+                  .fixedAmount
+              );
+              const validatedValue =
+                convertedValue >= 0 ? convertedValue.toFixed(2) : '0';
+
+              const fixedAmountOnBlurEvent = {
+                target: {
+                  name: `${selectedCountry}.${selectedCurrency}.surchargeCost.fixedAmount`,
+                  value: validatedValue,
+                },
+              };
+
+              formik.handleChange(fixedAmountOnBlurEvent);
+            }
+          }}
+        />
+      </Spacings.Inline>
     </Spacings.Stack>
   );
 

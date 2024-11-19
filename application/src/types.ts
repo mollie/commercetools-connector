@@ -38,11 +38,13 @@ export type TAvailabilityObjectValueFormValues = {
   currencyCode: string;
   minAmount: number;
   maxAmount: number;
+  surchargeCost?: TSurchargeCost;
 };
 
 export type TAvailabilityAmount = {
   minAmount: string;
   maxAmount?: string;
+  surchargeCost: TSurchargeCostFormValues;
 };
 
 export type TAmountPerCurrency = {
@@ -59,7 +61,17 @@ export type TPricingConstraintItem = {
   currencyCode: string;
   minAmount: number;
   maxAmount?: number;
-  surchargeCost?: string;
+  surchargeCost?: TSurchargeCost;
+};
+
+export type TSurchargeCost = {
+  percentageAmount: number;
+  fixedAmount: number;
+};
+
+export type TSurchargeCostFormValues = {
+  percentageAmount: number;
+  fixedAmount: string;
 };
 
 export type TPricingConstraintIdentifier = {

@@ -51,6 +51,10 @@ const AvailabilityDetails = (props: TAvailabilityDetailFormProps) => {
           obj[currency] = {
             minAmount: '0',
             maxAmount: '',
+            surchargeCost: {
+              percentageAmount: 0,
+              fixedAmount: '0',
+            },
           };
 
           return obj;
@@ -67,7 +71,10 @@ const AvailabilityDetails = (props: TAvailabilityDetailFormProps) => {
   const existingPricingConstraints = (
     props.method?.value as unknown as TMethodObjectValueFormValues
   ).pricingConstraints?.reduce(
-    (acc, { countryCode, currencyCode, minAmount, maxAmount }) => {
+    (
+      acc,
+      { countryCode, currencyCode, minAmount, maxAmount, surchargeCost }
+    ) => {
       // Initialize the country if it doesn't exist
       if (!acc[countryCode]) {
         acc[countryCode] = {};
@@ -77,6 +84,10 @@ const AvailabilityDetails = (props: TAvailabilityDetailFormProps) => {
       acc[countryCode][currencyCode] = {
         minAmount: minAmount.toString(),
         maxAmount: maxAmount?.toString(),
+        surchargeCost: {
+          percentageAmount: surchargeCost?.percentageAmount ?? 0,
+          fixedAmount: surchargeCost?.fixedAmount.toString() ?? '0',
+        },
       };
 
       return acc;
@@ -101,6 +112,14 @@ const AvailabilityDetails = (props: TAvailabilityDetailFormProps) => {
             currencyResult[currency] = {
               minAmount: submittedValues.minAmount ?? initialValues.maxAmount,
               maxAmount: submittedValues.maxAmount ?? initialValues.maxAmount,
+              surchargeCost: {
+                percentageAmount:
+                  submittedValues?.surchargeCost?.percentageAmount ??
+                  initialValues?.surchargeCost?.percentageAmount,
+                fixedAmount:
+                  submittedValues?.surchargeCost?.fixedAmount ??
+                  initialValues?.surchargeCost?.fixedAmount,
+              },
             };
 
             return currencyResult;
@@ -123,17 +142,30 @@ const AvailabilityDetails = (props: TAvailabilityDetailFormProps) => {
     return Object.entries(formikValues).reduce(
       (constraints, [country, currencies]) => {
         Object.entries(currencies ?? {}).forEach(
-          ([currency, { minAmount, maxAmount }]) => {
+          ([currency, { minAmount, maxAmount, surchargeCost }]) => {
             const nMinAmount = convertCurrencyStringToNumber(minAmount);
             const nMaxAmount = convertCurrencyStringToNumber(maxAmount ?? '');
+            const nFixedAmount = convertCurrencyStringToNumber(
+              surchargeCost.fixedAmount
+            );
 
-            if (nMinAmount === 0 && nMaxAmount === 0) return;
+            if (
+              nMinAmount === 0 &&
+              nMaxAmount === 0 &&
+              surchargeCost.percentageAmount === 0 &&
+              nFixedAmount === 0
+            )
+              return;
 
             constraints.push({
               countryCode: country,
               currencyCode: currency,
               minAmount: nMinAmount,
               maxAmount: nMaxAmount > 0 ? nMaxAmount : undefined,
+              surchargeCost: {
+                percentageAmount: surchargeCost.percentageAmount,
+                fixedAmount: nFixedAmount,
+              },
             });
           }
         );

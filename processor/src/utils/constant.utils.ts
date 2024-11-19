@@ -63,3 +63,5 @@ export const DUE_DATE_PATTERN = /^(\d+)d$/;
 export const DEFAULT_DUE_DATE = 14;
 
 export const CUSTOM_OBJECT_CONTAINER_NAME = 'sctm-app-methods';
+
+export const MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM = 'mollie-surcharge-line-item';
