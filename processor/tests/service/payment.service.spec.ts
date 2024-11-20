@@ -1206,11 +1206,13 @@ describe('Test getCreatePaymentUpdateAction', () => {
     });
 
     expect(actual[4]).toEqual({
-      action: 'setTransactionCustomField',
-      name: CustomFieldName.transactionSurchargeCost,
-      value: JSON.stringify({
+      action: 'setTransactionCustomType',
+      type: {
+        key: 'sctm_transaction_surcharge_cost',
+      },
+      fields: {
         surchargeAmountInCent: 1000,
-      }),
+      },
       transactionId: CTPayment.transactions[0].id,
     });
   });
@@ -1421,12 +1423,14 @@ describe('Test handleCreatePayment', () => {
         state: 'Pending',
       },
       {
-        action: 'setTransactionCustomField',
-        name: 'sctm_transaction_surcharge_cost',
-        transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
-        value: JSON.stringify({
-          surchargeAmountInCent: totalSurchargeAmount,
-        }),
+        action: 'setTransactionCustomType',
+        type: {
+          key: 'sctm_transaction_surcharge_cost',
+        },
+        fields: {
+          surchargeAmountInCent: 1020,
+        },
+        transactionId: CTPayment.transactions[0].id,
       },
     ];
 
@@ -1590,12 +1594,14 @@ describe('Test handleCreatePayment', () => {
         state: 'Pending',
       },
       {
-        action: 'setTransactionCustomField',
-        name: 'sctm_transaction_surcharge_cost',
-        transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
-        value: JSON.stringify({
+        action: 'setTransactionCustomType',
+        type: {
+          key: 'sctm_transaction_surcharge_cost',
+        },
+        fields: {
           surchargeAmountInCent: totalSurchargeAmount,
-        }),
+        },
+        transactionId: CTPayment.transactions[0].id,
       },
     ];
 
