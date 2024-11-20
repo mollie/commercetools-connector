@@ -299,3 +299,83 @@ export async function createCustomPaymentTransactionCancelReasonType(): Promise<
       .execute();
   }
 }
+
+export async function createTransactionSurchargeCustomType(): Promise<void> {
+  const apiRoot = createApiRoot();
+  const customFields: FieldDefinition[] = [
+    {
+      name: 'surchargeAmountInCent',
+      label: {
+        en: 'Total surcharge amount in cent',
+        de: 'Gesamtbetrag des Zuschlags in Cent',
+      },
+      required: false,
+      type: {
+        name: 'Number',
+      },
+      inputHint: 'MultiLine',
+    },
+  ];
+
+  const {
+    body: { results: types },
+  } = await apiRoot
+    .types()
+    .get({
+      queryArgs: {
+        where: `key = "${CustomFields.transactionSurchargeCost}"`,
+      },
+    })
+    .execute();
+
+  if (types.length <= 0) {
+    await apiRoot
+      .types()
+      .post({
+        body: {
+          key: CustomFields.createPayment.interfaceInteraction.key,
+          name: {
+            en: 'SCTM - Transaction surcharge amount',
+            de: 'SCTM - Betrag des Transaktionszuschlags',
+          },
+          resourceTypeIds: ['transaction'],
+          fieldDefinitions: customFields,
+        },
+      })
+      .execute();
+
+    return;
+  }
+
+  const type = types[0];
+  const definitions = type.fieldDefinitions;
+
+  if (definitions.length > 0) {
+    const actions: TypeUpdateAction[] = [];
+    definitions.forEach((definition) => {
+      actions.push({
+        action: 'removeFieldDefinition',
+        fieldName: definition.name,
+      });
+    });
+    customFields.forEach((field) => {
+      actions.push({
+        action: 'addFieldDefinition',
+        fieldDefinition: field,
+      });
+    });
+
+    await apiRoot
+      .types()
+      .withKey({ key: CustomFields.transactionSurchargeCost })
+      .post({
+        body: {
+          version: type.version,
+          actions,
+        },
+      })
+      .execute();
+
+    return;
+  }
+}
