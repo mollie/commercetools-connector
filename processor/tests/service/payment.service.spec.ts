@@ -983,11 +983,11 @@ describe('Test getCreatePaymentUpdateAction', () => {
     (getCreatePaymentUpdateAction as jest.Mock).mockImplementationOnce(() => {
       const paymentService = jest.requireActual(
         '../../src/service/payment.service.ts',
-      ) as typeof import('../../src/service/payment.service.ts');
-      return paymentService.getCreatePaymentUpdateAction(molliePayment, CTPayment);
+      ) as typeof import('../../src/service/payment.service');
+      return paymentService.getCreatePaymentUpdateAction(molliePayment, CTPayment, 0);
     });
 
-    getCreatePaymentUpdateAction(molliePayment, CTPayment).catch((error) => {
+    getCreatePaymentUpdateAction(molliePayment, CTPayment, 0).catch((error) => {
       expect(error).toEqual({
         status: 400,
         title: 'Cannot find original transaction',
@@ -1048,8 +1048,8 @@ describe('Test getCreatePaymentUpdateAction', () => {
     (getCreatePaymentUpdateAction as jest.Mock).mockImplementationOnce(() => {
       const paymentService = jest.requireActual(
         '../../src/service/payment.service.ts',
-      ) as typeof import('../../src/service/payment.service.ts');
-      return paymentService.getCreatePaymentUpdateAction(molliePayment, CTPayment);
+      ) as typeof import('../../src/service/payment.service');
+      return paymentService.getCreatePaymentUpdateAction(molliePayment, CTPayment, 0);
     });
 
     (changeTransactionState as jest.Mock).mockReturnValueOnce({
@@ -1058,7 +1058,7 @@ describe('Test getCreatePaymentUpdateAction', () => {
       transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
     });
 
-    const actual = await getCreatePaymentUpdateAction(molliePayment, CTPayment);
+    const actual = await getCreatePaymentUpdateAction(molliePayment, CTPayment, 0);
     expect(actual).toHaveLength(4);
 
     expect(actual[0]).toEqual({
@@ -1098,6 +1098,120 @@ describe('Test getCreatePaymentUpdateAction', () => {
       action: 'changeTransactionState',
       transactionId: CTPayment.transactions[0].id,
       state: CTTransactionState.Pending,
+    });
+  });
+
+  test('should return an array of actions included setTransactionCustomField when surcharge amount is not 0', async () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [
+        {
+          id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          type: 'Authorization',
+          amount: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 1000,
+            fractionDigits: 2,
+          },
+          state: 'Initial',
+        },
+      ],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'creditcard',
+      },
+    };
+
+    const molliePayment: molliePayment = {
+      resource: 'payment',
+      id: 'tr_7UhSN1zuXS',
+      amount: { currency: 'USD', value: '10.00' },
+      createdAt: '2024-07-05T04:24:12+00:00',
+      _links: {
+        checkout: {
+          href: 'https://api.mollie.com/v2/payments/tr_7UhSN1zuXS',
+          type: 'https://api.mollie.com/v2/payments/tr_7UhSN1zuXS',
+        },
+        documentation: {
+          href: 'https://api.mollie.com/v2/payments/tr_7UhSN1zuXS',
+          type: 'https://api.mollie.com/v2/payments/tr_7UhSN1zuXS',
+        },
+      },
+    } as molliePayment;
+
+    (getCreatePaymentUpdateAction as jest.Mock).mockImplementationOnce(() => {
+      const paymentService = jest.requireActual(
+        '../../src/service/payment.service.ts',
+      ) as typeof import('../../src/service/payment.service');
+      return paymentService.getCreatePaymentUpdateAction(molliePayment, CTPayment, 1000);
+    });
+
+    (changeTransactionState as jest.Mock).mockReturnValueOnce({
+      action: 'changeTransactionState',
+      state: 'Pending',
+      transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+    });
+
+    const actual = await getCreatePaymentUpdateAction(molliePayment, CTPayment, 1000);
+    expect(actual).toHaveLength(5);
+
+    expect(actual[0]).toEqual({
+      action: 'addInterfaceInteraction',
+      type: {
+        key: 'sctm_interface_interaction_type',
+      },
+      fields: {
+        sctm_id: uuid,
+        sctm_action_type: ConnectorActions.CreatePayment,
+        sctm_created_at: molliePayment.createdAt,
+        sctm_request: JSON.stringify({
+          transactionId: CTPayment.transactions[0].id,
+          paymentMethod: CTPayment.paymentMethodInfo.method,
+        }),
+        sctm_response: JSON.stringify({
+          molliePaymentId: molliePayment.id,
+          checkoutUrl: molliePayment._links.checkout?.href,
+          transactionId: CTPayment.transactions[0].id,
+        }),
+      },
+    });
+
+    expect(actual[1]).toEqual({
+      action: 'changeTransactionInteractionId',
+      transactionId: CTPayment.transactions[0].id,
+      interactionId: molliePayment.id,
+    });
+
+    expect(actual[2]).toEqual({
+      action: 'changeTransactionTimestamp',
+      transactionId: CTPayment.transactions[0].id,
+      timestamp: molliePayment.createdAt,
+    });
+
+    expect(actual[3]).toEqual({
+      action: 'changeTransactionState',
+      transactionId: CTPayment.transactions[0].id,
+      state: CTTransactionState.Pending,
+    });
+
+    expect(actual[4]).toEqual({
+      action: 'setTransactionCustomField',
+      name: CustomFieldName.transactionSurchargeCost,
+      value: JSON.stringify({
+        surchargeAmountInCent: 1000,
+      }),
+      transactionId: CTPayment.transactions[0].id,
     });
   });
 });
@@ -1240,7 +1354,7 @@ describe('Test handleCreatePayment', () => {
 
     (updateCart as jest.Mock).mockReturnValue(mockedCart);
 
-    const totalSurchargeAmount = 10.2;
+    const totalSurchargeAmount = 1020;
 
     const actual = await handleCreatePayment(CTPayment);
 
@@ -1257,7 +1371,7 @@ describe('Test handleCreatePayment', () => {
         },
         quantity: 1,
         money: {
-          centAmount: Math.round(totalSurchargeAmount * Math.pow(10, CTPayment.amountPlanned.fractionDigits)),
+          centAmount: totalSurchargeAmount,
           currencyCode: CTPayment.amountPlanned.currencyCode,
         },
         slug: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
@@ -1270,7 +1384,9 @@ describe('Test handleCreatePayment', () => {
       CTPayment,
       methodConfig.value.pricingConstraints[0].surchargeCost,
     );
-    expect(calculateTotalSurchargeAmount).toHaveReturnedWith(totalSurchargeAmount);
+    expect(calculateTotalSurchargeAmount).toHaveReturnedWith(
+      totalSurchargeAmount / Math.pow(10, CTPayment.amountPlanned.fractionDigits),
+    );
 
     expect(createCartUpdateActions).toHaveBeenCalledTimes(1);
     expect(createCartUpdateActions).toHaveBeenCalledWith(mockedCart, CTPayment, totalSurchargeAmount);
@@ -1303,6 +1419,14 @@ describe('Test handleCreatePayment', () => {
         action: 'changeTransactionState',
         transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
         state: 'Pending',
+      },
+      {
+        action: 'setTransactionCustomField',
+        name: 'sctm_transaction_surcharge_cost',
+        transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        value: JSON.stringify({
+          surchargeAmountInCent: totalSurchargeAmount,
+        }),
       },
     ];
 
@@ -1400,7 +1524,7 @@ describe('Test handleCreatePayment', () => {
 
     (updateCart as jest.Mock).mockReturnValueOnce(cart);
 
-    const totalSurchargeAmount = 10.2;
+    const totalSurchargeAmount = 1020;
 
     const actual = await handleCreatePayment(CTPayment);
 
@@ -1417,7 +1541,7 @@ describe('Test handleCreatePayment', () => {
         },
         quantity: 1,
         money: {
-          centAmount: Math.round(totalSurchargeAmount * Math.pow(10, CTPayment.amountPlanned.fractionDigits)),
+          centAmount: totalSurchargeAmount,
           currencyCode: CTPayment.amountPlanned.currencyCode,
         },
         slug: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
@@ -1429,7 +1553,9 @@ describe('Test handleCreatePayment', () => {
       CTPayment,
       methodConfig.value.pricingConstraints[0].surchargeCost,
     );
-    expect(calculateTotalSurchargeAmount).toHaveReturnedWith(totalSurchargeAmount);
+    expect(calculateTotalSurchargeAmount).toHaveReturnedWith(
+      totalSurchargeAmount / Math.pow(10, CTPayment.amountPlanned.fractionDigits),
+    );
 
     expect(createCartUpdateActions).toHaveBeenCalledTimes(1);
     expect(createCartUpdateActions).toHaveBeenCalledWith(cart, CTPayment, totalSurchargeAmount);
@@ -1462,6 +1588,14 @@ describe('Test handleCreatePayment', () => {
         action: 'changeTransactionState',
         transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
         state: 'Pending',
+      },
+      {
+        action: 'setTransactionCustomField',
+        name: 'sctm_transaction_surcharge_cost',
+        transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        value: JSON.stringify({
+          surchargeAmountInCent: totalSurchargeAmount,
+        }),
       },
     ];
 

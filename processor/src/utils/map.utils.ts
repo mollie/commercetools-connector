@@ -1,11 +1,11 @@
-import { CustomFields, MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM } from './constant.utils';
+import { CustomFields, MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM, MOLLIE_SURCHARGE_LINE_DESCRIPTION } from './constant.utils';
 import { logger } from './logger.utils';
 import { calculateDueDate, makeMollieAmount } from './mollie.utils';
 import { CustomPaymentMethod, ParsedMethodsRequestType } from '../types/mollie.types';
 import { Cart, CartUpdateAction, Payment, TaxCategoryResourceIdentifier } from '@commercetools/platform-sdk';
 import CustomError from '../errors/custom.error';
 import { MethodsListParams, PaymentCreateParams, PaymentMethod } from '@mollie/api-client';
-import { parseStringToJsonObject, removeEmptyProperties } from './app.utils';
+import { convertCentToEUR, parseStringToJsonObject, removeEmptyProperties } from './app.utils';
 import { readConfiguration } from './config.utils';
 import { addCustomLineItem, removeCustomLineItem } from '../commercetools/action.commercetools';
 
@@ -105,7 +105,11 @@ const getSpecificPaymentParams = (method: PaymentMethod | CustomPaymentMethod, p
   }
 };
 
-export const createMollieCreatePaymentParams = (payment: Payment, extensionUrl: string): PaymentCreateParams => {
+export const createMollieCreatePaymentParams = (
+  payment: Payment,
+  extensionUrl: string,
+  surchargeAmountInCent: number,
+): PaymentCreateParams => {
   const { amountPlanned, paymentMethodInfo } = payment;
 
   const [method, issuer] = paymentMethodInfo?.method?.split(',') ?? [null, null];
@@ -116,10 +120,21 @@ export const createMollieCreatePaymentParams = (payment: Payment, extensionUrl: 
     payment.id,
   );
 
+  const mollieLines = paymentRequest.lines ?? [];
+  if (surchargeAmountInCent > 0) {
+    mollieLines.push(
+      createMollieLineForSurchargeAmount(
+        surchargeAmountInCent,
+        amountPlanned.fractionDigits,
+        amountPlanned.currencyCode,
+      ),
+    );
+  }
+
   const defaultWebhookEndpoint = new URL(extensionUrl).origin + '/webhook';
 
   const createPaymentParams = {
-    amount: makeMollieAmount(amountPlanned),
+    amount: makeMollieAmount(amountPlanned, surchargeAmountInCent),
     description: paymentRequest.description ?? '',
     redirectUrl: paymentRequest.redirectUrl ?? null,
     webhookUrl: defaultWebhookEndpoint,
@@ -133,7 +148,7 @@ export const createMollieCreatePaymentParams = (payment: Payment, extensionUrl: 
     applicationFee: paymentRequest.applicationFee ?? {},
     include: paymentRequest.include ?? '',
     captureMode: paymentRequest.captureMode ?? '',
-    lines: paymentRequest.lines ?? [],
+    lines: mollieLines,
     ...getSpecificPaymentParams(method as PaymentMethod, paymentRequest),
   };
 
@@ -143,7 +158,7 @@ export const createMollieCreatePaymentParams = (payment: Payment, extensionUrl: 
 export const createCartUpdateActions = (
   cart: Cart,
   ctPayment: Payment,
-  surchargeAmount: number,
+  surchargeAmountInCent: number,
 ): CartUpdateAction[] => {
   const mollieSurchargeCustomLine = cart.customLineItems.find((item) => {
     return item.key === MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM;
@@ -155,14 +170,14 @@ export const createCartUpdateActions = (
     updateActions.push(removeCustomLineItem(mollieSurchargeCustomLine.id));
   }
 
-  if (surchargeAmount > 0) {
+  if (surchargeAmountInCent > 0) {
     const name = {
       en: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
       de: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
     };
 
     const money = {
-      centAmount: Math.round(surchargeAmount * Math.pow(10, ctPayment.amountPlanned.fractionDigits)),
+      centAmount: surchargeAmountInCent,
       currencyCode: ctPayment.amountPlanned.currencyCode,
     };
 
@@ -177,4 +192,23 @@ export const createCartUpdateActions = (
   }
 
   return updateActions;
+};
+
+export const createMollieLineForSurchargeAmount = (
+  surchargeAmountInCent: number,
+  fractionDigits: number,
+  currency: string,
+) => {
+  const totalSurchargeAmount = {
+    currency,
+    value: convertCentToEUR(surchargeAmountInCent, fractionDigits).toFixed(2),
+  };
+
+  return {
+    description: MOLLIE_SURCHARGE_LINE_DESCRIPTION,
+    quantity: 1,
+    quantityUnit: 'pcs',
+    unitPrice: totalSurchargeAmount,
+    totalAmount: totalSurchargeAmount,
+  };
 };

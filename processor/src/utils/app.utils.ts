@@ -97,3 +97,7 @@ export const calculateTotalSurchargeAmount = (ctPayment: Payment, surcharges?: S
 
   return (amount * percentageAmount) / 100 + fixedAmount;
 };
+
+export const roundSurchargeAmountToCent = (surchargeAmountInEur: number, fractionDigits: number): number => {
+  return Math.round(surchargeAmountInEur * Math.pow(10, fractionDigits));
+};

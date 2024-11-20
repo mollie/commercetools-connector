@@ -58,19 +58,6 @@ describe('Test getMethodConfigObjects', () => {
   });
 
   it('should throw error', async () => {
-    const mockWithContainer = jest.fn();
-    const mockGet = jest.fn();
-    const customObjects = [
-      {
-        id: '123',
-        name: '123',
-      },
-      {
-        id: 'test',
-        name: 'test',
-      },
-    ] as unknown as CustomObject[];
-
     const error = new Error('dummy error');
 
     (createApiRoot as jest.Mock).mockReturnValue({
@@ -132,12 +119,6 @@ describe('Test getSingleMethodConfigObject', () => {
 
   it('should throw error', async () => {
     const key = 'test';
-
-    const customObject = {
-      id: '123',
-      key,
-      name: '123',
-    } as unknown as CustomObject[];
 
     const mockError = new Error('dummy error');
 
