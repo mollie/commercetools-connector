@@ -1,7 +1,7 @@
 {
   "name": "shopmacher-mollie-processor",
   "description": "Integration between commercetools and mollie payment service provider",
-  "version": "1.2.0-alpha15.11.24.0000",
+  "version": "1.2.0-alpha20.11.24.1510",
   "main": "index.js",
   "private": true,
   "scripts": {

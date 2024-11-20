@@ -80,7 +80,7 @@ export default defineMessages({
   },
   fieldImageUrl: {
     id: 'MethodDetails.fieldImageUrl',
-    defaultMessage: 'Image URL',
+    defaultMessage: 'URL',
   },
   fieldMustBeEqualOrGreaterThanZero: {
     id: 'MethodDetails.fieldMustBeEqualOrGreaterThanZero',
