@@ -195,9 +195,6 @@ const MethodDetailsForm = (props: TCustomObjectDetailsFormProps) => {
         onBlur={formik.handleBlur}
         isReadOnly={props.isReadOnly}
         horizontalConstraint={13}
-        onInfoButtonClick={() => {
-          infoModalState.openModal();
-        }}
         renderError={(errorKey) => {
           if (errorKey === 'isNotInteger') {
             return intl.formatMessage(
