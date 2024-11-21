@@ -922,6 +922,179 @@ describe('Test listPaymentMethodsByPayment', () => {
     });
     expect(JSON.stringify(response)).toContain('creditcard');
   });
+
+  test('call listPaymentMethodsByPayment w/o custom objects', async () => {
+    (listPaymentMethods as jest.Mock).mockReturnValueOnce([
+      {
+        resource: 'method',
+        id: 'paypal',
+        description: 'PayPal',
+        minimumAmount: { value: '0.01', currency: 'EUR' },
+        maximumAmount: null,
+        image: {
+          size1x: 'https://www.mollie.com/external/icons/payment-methods/paypal.png',
+          size2x: 'https://www.mollie.com/external/icons/payment-methods/paypal%402x.png',
+          svg: 'https://www.mollie.com/external/icons/payment-methods/paypal.svg',
+        },
+        status: 'activated',
+        _links: {
+          self: {
+            href: 'https://api.mollie.com/v2/methods/paypal',
+            type: 'application/hal+json',
+          },
+        },
+      },
+      {
+        resource: 'method',
+        id: 'giftcard',
+        description: 'Geschenkkarten',
+        minimumAmount: { value: '0.01', currency: 'EUR' },
+        maximumAmount: null,
+        image: {
+          size1x: 'https://www.mollie.com/external/icons/payment-methods/giftcard.png',
+          size2x: 'https://www.mollie.com/external/icons/payment-methods/giftcard%402x.png',
+          svg: 'https://www.mollie.com/external/icons/payment-methods/giftcard.svg',
+        },
+        status: 'activated',
+        _links: {
+          self: {
+            href: 'https://api.mollie.com/v2/methods/giftcard',
+            type: 'application/hal+json',
+          },
+        },
+      },
+      {
+        resource: 'method',
+        id: 'bancontact',
+        description: 'Bancontact',
+        minimumAmount: { value: '0.01', currency: 'EUR' },
+        maximumAmount: null,
+        image: {
+          size1x: 'https://www.mollie.com/external/icons/payment-methods/bancontact.png',
+          size2x: 'https://www.mollie.com/external/icons/payment-methods/bancontact%402x.png',
+          svg: 'https://www.mollie.com/external/icons/payment-methods/bancontact.svg',
+        },
+        status: 'activated',
+        _links: {
+          self: {
+            href: 'https://api.mollie.com/v2/methods/bancontact',
+            type: 'application/hal+json',
+          },
+        },
+      },
+      {
+        resource: 'method',
+        id: 'banktransfer',
+        description: 'Bank transfer',
+        minimumAmount: { value: '0.01', currency: 'EUR' },
+        maximumAmount: null,
+        image: {
+          size1x: 'https://www.mollie.com/external/icons/payment-methods/banktransfer.png',
+          size2x: 'https://www.mollie.com/external/icons/payment-methods/banktransfer%402x.png',
+          svg: 'https://www.mollie.com/external/icons/payment-methods/banktransfer.svg',
+        },
+        status: 'activated',
+        _links: {
+          self: {
+            href: 'https://api.mollie.com/v2/methods/banktransfer',
+            type: 'application/hal+json',
+          },
+        },
+      },
+    ]);
+
+    (getMethodConfigObjects as jest.Mock).mockReturnValueOnce([]);
+
+    mockResource = {
+      id: 'RANDOMID_12345',
+      paymentMethodInfo: {
+        paymentInterface: 'mollie',
+        method: 'card',
+      },
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 500000,
+        fractionDigits: 2,
+      },
+      custom: {
+        fields: {
+          sctm_payment_methods_request: JSON.stringify({
+            locale: 'de_DE',
+            billingCountry: 'DE',
+          }),
+        },
+      } as unknown as CustomFields,
+    } as unknown as Payment;
+
+    const response = await handleListPaymentMethodsByPayment(mockResource);
+    expect(response).toBeDefined();
+    expect(response.statusCode).toBe(200);
+    expect(response?.actions?.length).toBeGreaterThan(0);
+    expect(response?.actions?.[0]?.action).toBe('setCustomField');
+    expect((response?.actions?.[1] as any)?.value).toBe(
+      JSON.stringify({
+        count: 5,
+        methods: [
+          {
+            id: 'paypal',
+            name: {
+              'en-GB': 'PayPal',
+            },
+            description: {
+              'en-GB': '',
+            },
+            image: 'https://www.mollie.com/external/icons/payment-methods/paypal.svg',
+            order: 0,
+          },
+          {
+            id: 'giftcard',
+            name: {
+              'en-GB': 'Geschenkkarten',
+            },
+            description: {
+              'en-GB': '',
+            },
+            image: 'https://www.mollie.com/external/icons/payment-methods/giftcard.svg',
+            order: 0,
+          },
+          {
+            id: 'bancontact',
+            name: {
+              'en-GB': 'Bancontact',
+            },
+            description: {
+              'en-GB': '',
+            },
+            image: 'https://www.mollie.com/external/icons/payment-methods/bancontact.svg',
+            order: 0,
+          },
+          {
+            id: 'banktransfer',
+            name: {
+              'en-GB': 'Bank transfer',
+            },
+            description: {
+              'en-GB': '',
+            },
+            image: 'https://www.mollie.com/external/icons/payment-methods/banktransfer.svg',
+            order: 0,
+          },
+          {
+            id: 'googlepay',
+            name: {
+              'en-GB': 'Google Pay',
+            },
+            description: {
+              'en-GB': '',
+            },
+            image: '',
+            order: 0,
+          },
+        ],
+      }),
+    );
+  });
 });
 
 describe('Test getCreatePaymentUpdateAction', () => {
@@ -1606,6 +1779,219 @@ describe('Test handleCreatePayment', () => {
     ];
 
     expect(createPaymentWithCustomMethod).toBeCalledTimes(1);
+
+    expect(actual).toEqual({
+      statusCode: 201,
+      actions: ctActions,
+    });
+  });
+
+  it('should return status code and array of actions', async () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [
+        {
+          id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          type: 'Authorization',
+          amount: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 1000,
+            fractionDigits: 2,
+          },
+          state: 'Initial',
+        },
+      ],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'googlepay',
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'test',
+        },
+        fields: {
+          sctm_payment_methods_request: JSON.stringify({
+            billingCountry: 'DE',
+          }),
+        },
+      },
+    };
+
+    const molliePayment: molliePayment = {
+      resource: 'payment',
+      id: 'tr_7UhSN1zuXS',
+      amount: {
+        value: '10.00',
+        currency: 'EUR',
+      },
+      description: 'Order #12345',
+      redirectUrl: 'https://webshop.example.org/order/12345/',
+      webhookUrl: 'https://webshop.example.org/payments/webhook/',
+      metadata: '{"order_id":12345}',
+      profileId: 'pfl_QkEhN94Ba',
+      status: PaymentStatus.open,
+      isCancelable: false,
+      createdAt: '2024-03-20T09:13:37+00:00',
+      expiresAt: '2024-03-20T09:28:37+00:00',
+      _links: {
+        self: {
+          href: '...',
+          type: 'application/hal+json',
+        },
+        checkout: {
+          href: 'https://www.mollie.com/checkout/select-method/7UhSN1zuXS',
+          type: 'text/html',
+        },
+        documentation: {
+          href: '...',
+          type: 'text/html',
+        },
+      },
+    } as molliePayment;
+
+    const customLineItem = {
+      id: 'custom-line',
+      key: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+    };
+
+    const mockedCart = {
+      id: 'mocked-cart',
+      customLineItems: [customLineItem],
+    } as Cart;
+
+    const methodConfig = {
+      value: {
+        pricingConstraints: [
+          {
+            currencyCode: CTPayment.amountPlanned.currencyCode,
+            countryCode: JSON.parse(CTPayment.custom?.fields?.sctm_payment_methods_request).billingCountry,
+            surchargeCost: {
+              percentageAmount: 2,
+              fixedAmount: 10,
+            },
+          },
+        ],
+      },
+    };
+
+    const appUtils = require('../../src/utils/app.utils');
+
+    jest.spyOn(appUtils, 'calculateTotalSurchargeAmount');
+
+    const mapUtils = require('../../src/utils/map.utils');
+
+    jest.spyOn(mapUtils, 'createCartUpdateActions');
+
+    (getCartFromPayment as jest.Mock).mockReturnValue(mockedCart);
+    (getSingleMethodConfigObject as jest.Mock).mockReturnValueOnce(methodConfig);
+    (createMolliePayment as jest.Mock).mockReturnValueOnce(molliePayment);
+    (getPaymentExtension as jest.Mock).mockReturnValueOnce({
+      destination: {
+        url: 'https://example.com',
+      },
+    });
+
+    (createMollieCreatePaymentParams as jest.Mock).mockReturnValueOnce({
+      method: 'googlepay',
+    });
+
+    (changeTransactionState as jest.Mock).mockReturnValueOnce({
+      action: 'changeTransactionState',
+      state: 'Pending',
+      transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+    });
+
+    (updateCart as jest.Mock).mockReturnValue(mockedCart);
+
+    const totalSurchargeAmount = 1020;
+
+    const actual = await handleCreatePayment(CTPayment);
+
+    const expectedCartUpdateActions = [
+      {
+        action: 'removeCustomLineItem',
+        customLineItemId: customLineItem.id,
+      },
+      {
+        action: 'addCustomLineItem',
+        name: {
+          de: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+          en: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+        },
+        quantity: 1,
+        money: {
+          centAmount: totalSurchargeAmount,
+          currencyCode: CTPayment.amountPlanned.currencyCode,
+        },
+        slug: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+      },
+    ];
+
+    expect(getSingleMethodConfigObject).toHaveBeenCalledWith(CTPayment.paymentMethodInfo.method);
+    expect(calculateTotalSurchargeAmount).toHaveBeenCalledTimes(1);
+    expect(calculateTotalSurchargeAmount).toHaveBeenCalledWith(
+      CTPayment,
+      methodConfig.value.pricingConstraints[0].surchargeCost,
+    );
+    expect(calculateTotalSurchargeAmount).toHaveReturnedWith(
+      totalSurchargeAmount / Math.pow(10, CTPayment.amountPlanned.fractionDigits),
+    );
+
+    expect(createCartUpdateActions).toHaveBeenCalledTimes(1);
+    expect(createCartUpdateActions).toHaveBeenCalledWith(mockedCart, CTPayment, totalSurchargeAmount);
+    expect(createCartUpdateActions).toHaveReturnedWith(expectedCartUpdateActions);
+
+    const ctActions = [
+      {
+        action: 'addInterfaceInteraction',
+        type: { key: 'sctm_interface_interaction_type' },
+        fields: {
+          sctm_id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          sctm_action_type: 'createPayment',
+          sctm_created_at: '2024-03-20T09:13:37+00:00',
+          sctm_request: '{"transactionId":"5c8b0375-305a-4f19-ae8e-07806b101999","paymentMethod":"googlepay"}',
+          sctm_response:
+            '{"molliePaymentId":"tr_7UhSN1zuXS","checkoutUrl":"https://www.mollie.com/checkout/select-method/7UhSN1zuXS","transactionId":"5c8b0375-305a-4f19-ae8e-07806b101999"}',
+        },
+      },
+      {
+        action: 'changeTransactionInteractionId',
+        transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        interactionId: 'tr_7UhSN1zuXS',
+      },
+      {
+        action: 'changeTransactionTimestamp',
+        transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        timestamp: '2024-03-20T09:13:37+00:00',
+      },
+      {
+        action: 'changeTransactionState',
+        transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        state: 'Pending',
+      },
+      {
+        action: 'setTransactionCustomType',
+        type: {
+          key: 'sctm_transaction_surcharge_cost',
+        },
+        fields: {
+          surchargeAmountInCent: 1020,
+        },
+        transactionId: CTPayment.transactions[0].id,
+      },
+    ];
 
     expect(actual).toEqual({
       statusCode: 201,
