@@ -17,7 +17,7 @@ import DataTable from '@commercetools-uikit/data-table';
 import IconButton from '@commercetools-uikit/icon-button';
 import { usePaymentMethodsFetcher } from '../../hooks/use-mollie-connector';
 import { ContentNotification } from '@commercetools-uikit/notifications';
-import { CustomMethodObject } from '../../types/app';
+import { CustomMethodObject, CustomObjectUpdaterError } from '../../types/app';
 import LoadingSpinner from '@commercetools-uikit/loading-spinner';
 import Tootltip from '@commercetools-uikit/tooltip';
 import {
@@ -74,7 +74,7 @@ const Welcome = () => {
     key: 'key',
     order: 'asc',
   });
-  const { customObjectsPaginatedResult, error, loading } =
+  const { customObjectsPaginatedResult, error, loading, refetch } =
     useCustomObjectsFetcher({
       page,
       perPage,
@@ -110,7 +110,13 @@ const Welcome = () => {
                 value: JSON.stringify(method),
               })
               .catch((error) => {
-                console.error(`Error creating custom object: ${error}`);
+                Object.values(error).forEach((e) => {
+                  console.error(
+                    `SCTM custom application: ${
+                      (e as CustomObjectUpdaterError).message
+                    }`
+                  );
+                });
               });
             return method;
           } else {
@@ -120,9 +126,15 @@ const Welcome = () => {
           }
         })
       );
+      refetch();
       setMethods(updatedMethods);
     }
-  }, [customObjectUpdater, customObjectsPaginatedResult?.results, fetchedData]);
+  }, [
+    customObjectUpdater,
+    customObjectsPaginatedResult?.results,
+    fetchedData,
+    refetch,
+  ]);
 
   useEffect(() => {
     if (
@@ -212,13 +224,13 @@ const Welcome = () => {
           sortDirection={tableSorting.value.order}
           onSortChange={tableSorting.onChange}
           onRowClick={(row) => {
-            push(
-              `${match.url}/${
-                customObjectsPaginatedResult?.results.filter(
-                  (obj) => obj.key === row.id
-                )?.[0]?.id
-              }/general`
+            const target = customObjectsPaginatedResult?.results.filter(
+              (obj) => obj.key === row.id
             );
+
+            if (target) {
+              push(`${match.url}/${target[0].id}/general`);
+            }
           }}
         />
         <Switch>
