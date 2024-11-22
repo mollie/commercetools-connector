@@ -130,6 +130,10 @@ const AvailabilityDetailsForm = (props: TAvailabilityDetailsFormProps) => {
 
     clonedObject[selectedCountry][selectedCurrency].minAmount = '';
     clonedObject[selectedCountry][selectedCurrency].maxAmount = '';
+    clonedObject[selectedCountry][selectedCurrency].surchargeCost = {
+      percentageAmount: 0,
+      fixedAmount: '',
+    };
 
     formik.setValues(clonedObject);
   };
