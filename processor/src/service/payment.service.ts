@@ -434,6 +434,8 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
 
   const ctActions = await getCreatePaymentUpdateAction(molliePayment, ctPayment, surchargeAmountInCent);
 
+  logger.debug('SCTM - handleCreatePayment - actionslogging', ctActions);
+
   return {
     statusCode: 201,
     actions: ctActions,
