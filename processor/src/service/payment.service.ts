@@ -85,6 +85,14 @@ import { removeCartMollieCustomLineItem } from './cart.service';
  * @return {CustomMethod[]} - The validated and sorted payment methods.
  */
 const validateAndSortMethods = (methods: CustomMethod[], configObjects: CustomObject[]): CustomMethod[] => {
+  methods.push({
+    id: 'googlepay',
+    name: { 'en-GB': 'Google Pay' },
+    description: { 'en-GB': '' },
+    image: '',
+    order: 0,
+  });
+
   if (!configObjects.length) {
     return methods.filter(
       (method: CustomMethod) => SupportedPaymentMethods[method.id.toString() as SupportedPaymentMethods],
@@ -413,6 +421,10 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
     : 0;
 
   const paymentParams = createMollieCreatePaymentParams(ctPayment, extensionUrl, surchargeAmountInCent);
+
+  if (method && method.toString() === 'googlepay') {
+    paymentParams.method = PaymentMethod.creditcard;
+  }
 
   let molliePayment;
   if (PaymentMethod[paymentParams.method as PaymentMethod]) {

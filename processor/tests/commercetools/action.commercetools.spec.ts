@@ -8,6 +8,7 @@ import {
   changeTransactionTimestamp,
   removeCustomLineItem,
   setCustomFields,
+  setTransactionCustomField,
   setTransactionCustomType,
 } from '../../src/commercetools/action.commercetools';
 import { CTTransactionState, CreateInterfaceInteractionParams } from '../../src/types/commercetools.types';
@@ -180,6 +181,19 @@ describe('Test actions.utils.ts', () => {
       quantity,
       money,
       slug,
+    });
+  });
+
+  test('should return a action for adding transaction custom fields', () => {
+    const name = 'customFieldName';
+    const value = 'customFieldValue';
+    const transactionId = 'transactionId';
+
+    expect(setTransactionCustomField(name, value, transactionId)).toStrictEqual({
+      action: 'setTransactionCustomField',
+      name,
+      value,
+      transactionId,
     });
   });
 });
