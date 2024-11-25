@@ -143,12 +143,10 @@ const AvailabilityDetailsForm = (props: TAvailabilityDetailsFormProps) => {
     let eventName = undefined;
     // let value = event.target.value;
     switch (event?.target?.name) {
-      case 'minAmount.currencyCode':
       case 'minAmount.amount':
         eventName = `${selectedCountry}.${selectedCurrency}.minAmount`;
         break;
 
-      case 'maxAmount.currencyCode':
       case 'maxAmount.amount':
         eventName = `${selectedCountry}.${selectedCurrency}.maxAmount`;
         break;
@@ -157,7 +155,6 @@ const AvailabilityDetailsForm = (props: TAvailabilityDetailsFormProps) => {
         eventName = `${selectedCountry}.${selectedCurrency}.surchargeCost.percentageAmount`;
         break;
 
-      case 'surchargeCost.fixedAmount.currencyCode':
       case 'surchargeCost.fixedAmount.amount':
         eventName = `${selectedCountry}.${selectedCurrency}.surchargeCost.fixedAmount`;
         break;
