@@ -1,4 +1,9 @@
-import { CustomFields, MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM, MOLLIE_SURCHARGE_LINE_DESCRIPTION } from './constant.utils';
+import {
+  CustomFields,
+  MOLLIE_SHIPPING_LINE_DESCRIPTION,
+  MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+  MOLLIE_SURCHARGE_LINE_DESCRIPTION,
+} from './constant.utils';
 import { logger } from './logger.utils';
 import { calculateDueDate, makeMollieAmount } from './mollie.utils';
 import { CustomPaymentMethod, ParsedMethodsRequestType } from '../types/mollie.types';
@@ -109,6 +114,7 @@ export const createMollieCreatePaymentParams = (
   payment: Payment,
   extensionUrl: string,
   surchargeAmountInCent: number,
+  cart: Cart,
 ): PaymentCreateParams => {
   const { amountPlanned, paymentMethodInfo } = payment;
 
@@ -121,12 +127,27 @@ export const createMollieCreatePaymentParams = (
   );
 
   const mollieLines = paymentRequest.lines ?? [];
+
+  // Add another line for creating Mollie payment request if surcharge exists
   if (surchargeAmountInCent > 0) {
     mollieLines.push(
-      createMollieLineForSurchargeAmount(
+      createMollieLineForAdditionalAmount(
+        MOLLIE_SURCHARGE_LINE_DESCRIPTION,
         surchargeAmountInCent,
         amountPlanned.fractionDigits,
         amountPlanned.currencyCode,
+      ),
+    );
+  }
+
+  // Add another line for creating Mollie payment request if shipping cost exists
+  if (cart?.shippingInfo?.price) {
+    mollieLines.push(
+      createMollieLineForAdditionalAmount(
+        MOLLIE_SHIPPING_LINE_DESCRIPTION,
+        cart.shippingInfo.price.centAmount,
+        cart.shippingInfo.price.fractionDigits,
+        cart.shippingInfo.price.currencyCode,
       ),
     );
   }
@@ -194,21 +215,24 @@ export const createCartUpdateActions = (
   return updateActions;
 };
 
-export const createMollieLineForSurchargeAmount = (
-  surchargeAmountInCent: number,
+export const createMollieLineForAdditionalAmount = (
+  description: string,
+  amountInCent: number,
   fractionDigits: number,
   currency: string,
+  quantity: number = 1,
+  quantityUnit: string = 'pcs',
 ) => {
-  const totalSurchargeAmount = {
+  const unitPrice = {
     currency,
-    value: convertCentToEUR(surchargeAmountInCent, fractionDigits).toFixed(2),
+    value: convertCentToEUR(amountInCent, fractionDigits).toFixed(2),
   };
 
   return {
-    description: MOLLIE_SURCHARGE_LINE_DESCRIPTION,
-    quantity: 1,
-    quantityUnit: 'pcs',
-    unitPrice: totalSurchargeAmount,
-    totalAmount: totalSurchargeAmount,
+    description,
+    quantity,
+    quantityUnit,
+    unitPrice: unitPrice,
+    totalAmount: unitPrice,
   };
 };

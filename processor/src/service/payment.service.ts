@@ -420,7 +420,7 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
       )
     : 0;
 
-  const paymentParams = createMollieCreatePaymentParams(ctPayment, extensionUrl, surchargeAmountInCent);
+  const paymentParams = createMollieCreatePaymentParams(ctPayment, extensionUrl, surchargeAmountInCent, cart);
 
   if (method && method.toString() === 'googlepay') {
     paymentParams.method = PaymentMethod.creditcard;
