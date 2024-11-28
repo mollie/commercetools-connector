@@ -413,7 +413,7 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
       )
     : 0;
 
-  const paymentParams = createMollieCreatePaymentParams(ctPayment, extensionUrl, surchargeAmountInCent);
+  const paymentParams = createMollieCreatePaymentParams(ctPayment, extensionUrl, surchargeAmountInCent, cart);
 
   let molliePayment;
   if (PaymentMethod[paymentParams.method as PaymentMethod]) {
