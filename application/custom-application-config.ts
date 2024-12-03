@@ -15,7 +15,7 @@ const config = {
   cloudIdentifier: CLOUD_IDENTIFIER,
   env: {
     development: {
-      initialProjectKey: 'your-project-key',
+      initialProjectKey: 'shopm-adv-windev',
     },
     production: {
       applicationId: CUSTOM_APPLICATION_ID,
