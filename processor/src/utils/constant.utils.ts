@@ -38,6 +38,7 @@ export const CustomFields = {
       response: 'sctm_apple_pay_session_response',
     },
   },
+  transactionSurchargeCost: 'sctm_transaction_surcharge_cost',
 };
 
 export enum ConnectorActions {
@@ -61,3 +62,11 @@ export const CancelStatusText = 'Cancelled from shop side';
 export const DUE_DATE_PATTERN = /^(\d+)d$/;
 
 export const DEFAULT_DUE_DATE = 14;
+
+export const CUSTOM_OBJECT_CONTAINER_NAME = 'sctm-app-methods';
+
+export const MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM = 'mollie-surcharge-line-item';
+
+export const MOLLIE_SURCHARGE_LINE_DESCRIPTION = 'Total surcharge amount';
+
+export const MOLLIE_SHIPPING_LINE_DESCRIPTION = 'Shipping amount';

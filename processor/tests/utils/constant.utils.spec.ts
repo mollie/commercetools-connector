@@ -9,6 +9,9 @@ import {
   PAY_LATER_ENUMS,
   DUE_DATE_PATTERN,
   DEFAULT_DUE_DATE,
+  MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+  MOLLIE_SURCHARGE_LINE_DESCRIPTION,
+  MOLLIE_SHIPPING_LINE_DESCRIPTION,
 } from '../../src/utils/constant.utils';
 import { version } from '../../package.json';
 
@@ -77,5 +80,20 @@ describe('Test constant.utils.ts', () => {
   test('should return correct {DEFAULT_DUE_DATE} pattern', () => {
     expect(DEFAULT_DUE_DATE).toBeDefined();
     expect(DEFAULT_DUE_DATE).toBe(14);
+  });
+
+  test('should return correct {MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM} pattern', () => {
+    expect(MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM).toBeDefined();
+    expect(MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM).toBe('mollie-surcharge-line-item');
+  });
+
+  test('should return correct {MOLLIE_SURCHARGE_LINE_DESCRIPTION} pattern', () => {
+    expect(MOLLIE_SURCHARGE_LINE_DESCRIPTION).toBeDefined();
+    expect(MOLLIE_SURCHARGE_LINE_DESCRIPTION).toBe('Total surcharge amount');
+  });
+
+  test('should return correct {MOLLIE_SHIPPING_LINE_DESCRIPTION} pattern', () => {
+    expect(MOLLIE_SHIPPING_LINE_DESCRIPTION).toBeDefined();
+    expect(MOLLIE_SHIPPING_LINE_DESCRIPTION).toBe('Shipping amount');
   });
 });

@@ -14,6 +14,8 @@ describe('Test src/utils/config.utils.ts', () => {
         region: process.env.CTP_REGION,
         authUrl: process.env.CTP_AUTH_URL,
         authMode: process.env.AUTHENTICATION_MODE,
+        sessionAudience: process.env.CTP_SESSION_AUDIENCE,
+        sessionIssuer: process.env.CTP_SESSION_ISSUER,
       },
       mollie: {
         liveApiKey: process.env.MOLLIE_API_LIVE_KEY,

@@ -11,9 +11,12 @@ const convertCTToMollieAmountValue = (ctValue: number, fractionDigits = 2): stri
   return (ctValue / divider).toFixed(fractionDigits);
 };
 
-export const makeMollieAmount = ({ centAmount, fractionDigits, currencyCode }: CentPrecisionMoney): Amount => {
+export const makeMollieAmount = (
+  { centAmount, fractionDigits, currencyCode }: CentPrecisionMoney,
+  surchargeAmountInCent: number = 0,
+): Amount => {
   return {
-    value: convertCTToMollieAmountValue(centAmount, fractionDigits),
+    value: convertCTToMollieAmountValue(centAmount + surchargeAmountInCent, fractionDigits),
     currency: currencyCode,
   };
 };

@@ -152,3 +152,26 @@ export const mollieRefundToCTStatusMap: StatusMap = {
 export type WebhookRequest = {
   id: string;
 };
+
+export type CustomMethod = {
+  id: string;
+  name: Record<string, string>;
+  description: Record<string, string>;
+  image: string;
+  order: number;
+  pricingConstraints?: PricingConstraintItem[];
+};
+
+export type PricingConstraintItem = {
+  id?: number;
+  countryCode: string;
+  currencyCode: string;
+  minAmount: number;
+  maxAmount?: number;
+  surchargeCost?: SurchargeCost;
+};
+
+export type SurchargeCost = {
+  percentageAmount: number;
+  fixedAmount: number;
+};
