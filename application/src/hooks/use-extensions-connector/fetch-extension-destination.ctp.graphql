@@ -1,0 +1,10 @@
+query FetchExtensionDestination($key: String) {
+  extension(key: $key) {
+    destination {
+      type
+      ... on HttpDestination {
+        url
+      }
+    }
+  }
+}
