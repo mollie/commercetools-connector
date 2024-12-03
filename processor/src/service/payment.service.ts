@@ -54,7 +54,6 @@ import {
   changeTransactionState,
   changeTransactionTimestamp,
   setCustomFields,
-  setTransactionCustomField,
   setTransactionCustomType,
 } from '../commercetools/action.commercetools';
 import { readConfiguration } from '../utils/config.utils';
@@ -503,11 +502,9 @@ export const getCreatePaymentUpdateAction = async (
     if (surchargeAmountInCent > 0) {
       // Add surcharge amount to the custom field of the transaction
       actions.push(
-        setTransactionCustomField(
-          CustomFields.transactionSurchargeCost,
-          JSON.stringify({ surchargeAmountInCent }),
-          originalTransaction.id,
-        ),
+        setTransactionCustomType(originalTransaction.id, CustomFields.transactionSurchargeCost, {
+          surchargeAmountInCent,
+        }),
       );
     }
 
