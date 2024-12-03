@@ -1,3 +1,5 @@
+import { SurchargeCost } from './../types/commercetools.types';
+import { Payment } from '@commercetools/platform-sdk';
 import CustomError from '../errors/custom.error';
 import { logger } from './logger.utils';
 /**
@@ -79,3 +81,23 @@ export function validateEmail(email: string): boolean {
 
   return emailRegex.test(email);
 }
+
+export const convertCentToEUR = (amount: number, fractionDigits: number): number => {
+  return amount / Math.pow(10, fractionDigits);
+};
+
+export const calculateTotalSurchargeAmount = (ctPayment: Payment, surcharges?: SurchargeCost): number => {
+  if (!surcharges) {
+    return 0;
+  }
+  const amount = convertCentToEUR(ctPayment.amountPlanned.centAmount, ctPayment.amountPlanned.fractionDigits);
+
+  const percentageAmount = surcharges.percentageAmount ?? 0;
+  const fixedAmount = surcharges.fixedAmount ?? 0;
+
+  return (amount * percentageAmount) / 100 + fixedAmount;
+};
+
+export const roundSurchargeAmountToCent = (surchargeAmountInEur: number, fractionDigits: number): number => {
+  return Math.round(surchargeAmountInEur * Math.pow(10, fractionDigits));
+};

@@ -1,4 +1,4 @@
-import { optional, standardKey, standardString, region, standardDueDate, standardUrl } from './helpers.validators';
+import { optional, standardKey, standardString, region, standardDueDate } from './helpers.validators';
 
 /**
  * Create here your own validators
@@ -46,11 +46,25 @@ const envValidators = [
     referencedBy: 'environmentVariables',
   }),
 
-  standardUrl(['commerceTools', 'authUrl'], {
-    code: 'InvalidAuthUrl',
-    message: 'Not a valid url.',
-    referencedBy: 'environmentVariables',
-  }),
+  standardString(
+    ['commerceTools', 'sessionAudience'],
+    {
+      code: 'InvalidSessionAudience',
+      message: 'Not a valid sessionAudience.',
+      referencedBy: 'environmentVariables',
+    },
+    { min: 1, max: undefined },
+  ),
+
+  standardString(
+    ['commerceTools', 'sessionIssuer'],
+    {
+      code: 'InvalidSessionIssuer',
+      message: 'Not a valid sessionIssuer.',
+      referencedBy: 'environmentVariables',
+    },
+    { min: 1, max: undefined },
+  ),
 
   standardKey(['mollie', 'testApiKey'], {
     code: 'InvalidMollieTestApiKey',

@@ -1,5 +1,9 @@
+import {
+  getMethodConfigObjects,
+  getSingleMethodConfigObject,
+} from './../../src/commercetools/customObjects.commercetools';
 import { afterEach, beforeEach, describe, expect, it, jest, test } from '@jest/globals';
-import { CustomFields, Payment } from '@commercetools/platform-sdk';
+import { Cart, CustomFields, Payment } from '@commercetools/platform-sdk';
 import {
   getCreatePaymentUpdateAction,
   getPaymentCancelActions,
@@ -13,7 +17,12 @@ import {
   handlePaymentWebhook,
 } from '../../src/service/payment.service';
 import { ControllerResponseType } from '../../src/types/controller.types';
-import { CancelStatusText, ConnectorActions, CustomFields as CustomFieldName } from '../../src/utils/constant.utils';
+import {
+  CancelStatusText,
+  ConnectorActions,
+  CustomFields as CustomFieldName,
+  MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+} from '../../src/utils/constant.utils';
 import { Payment as molliePayment, PaymentStatus, Refund, RefundStatus } from '@mollie/api-client';
 import {
   ChangeTransactionState,
@@ -36,10 +45,13 @@ import { logger } from '../../src/utils/logger.utils';
 import { getPaymentByMolliePaymentId, updatePayment } from '../../src/commercetools/payment.commercetools';
 import { CreateParameters } from '@mollie/api-client/dist/types/src/binders/payments/refunds/parameters';
 import { getPaymentExtension } from '../../src/commercetools/extensions.commercetools';
-import { createMollieCreatePaymentParams } from '../../src/utils/map.utils';
+import { createCartUpdateActions, createMollieCreatePaymentParams } from '../../src/utils/map.utils';
 import { CustomPayment } from '../../src/types/mollie.types';
 import { changeTransactionState } from '../../src/commercetools/action.commercetools';
 import { makeCTMoney, shouldRefundStatusUpdate } from '../../src/utils/mollie.utils';
+import { getCartFromPayment, updateCart } from '../../src/commercetools/cart.commercetools';
+import { calculateTotalSurchargeAmount } from '../../src/utils/app.utils';
+import { removeCartMollieCustomLineItem } from '../../src/service/cart.service';
 
 const uuid = '5c8b0375-305a-4f19-ae8e-07806b101999';
 jest.mock('uuid', () => ({
@@ -53,6 +65,16 @@ jest.mock('../../src/commercetools/extensions.commercetools', () => ({
 jest.mock('../../src/commercetools/payment.commercetools', () => ({
   getPaymentByMolliePaymentId: jest.fn(),
   updatePayment: jest.fn(),
+}));
+
+jest.mock('../../src/commercetools/cart.commercetools', () => ({
+  getCartFromPayment: jest.fn(),
+  updateCart: jest.fn(),
+}));
+
+jest.mock('../../src/commercetools/customObjects.commercetools', () => ({
+  getMethodConfigObjects: jest.fn(),
+  getSingleMethodConfigObject: jest.fn(),
 }));
 
 jest.mock('../../src/service/payment.service.ts', () => ({
@@ -144,10 +166,306 @@ describe('Test listPaymentMethodsByPayment', () => {
           },
         },
       },
+      {
+        resource: 'method',
+        id: 'bancontact',
+        description: 'Bancontact',
+        minimumAmount: { value: '0.01', currency: 'EUR' },
+        maximumAmount: null,
+        image: {
+          size1x: 'https://www.mollie.com/external/icons/payment-methods/paypal.png',
+          size2x: 'https://www.mollie.com/external/icons/payment-methods/paypal%402x.png',
+          svg: 'https://www.mollie.com/external/icons/payment-methods/paypal.svg',
+        },
+        status: 'activated',
+        _links: {
+          self: {
+            href: 'https://api.mollie.com/v2/methods/paypal',
+            type: 'application/hal+json',
+          },
+        },
+      },
+      {
+        resource: 'method',
+        id: 'banktransfer',
+        description: 'banktransfer',
+        minimumAmount: { value: '0.01', currency: 'EUR' },
+        maximumAmount: null,
+        image: {
+          size1x: 'https://www.mollie.com/external/icons/payment-methods/paypal.png',
+          size2x: 'https://www.mollie.com/external/icons/payment-methods/paypal%402x.png',
+          svg: 'https://www.mollie.com/external/icons/payment-methods/paypal.svg',
+        },
+        status: 'activated',
+        _links: {
+          self: {
+            href: 'https://api.mollie.com/v2/methods/paypal',
+            type: 'application/hal+json',
+          },
+        },
+      },
+    ]);
+
+    (getMethodConfigObjects as jest.Mock).mockReturnValueOnce([
+      {
+        id: 'e561ae8b-5d55-4659-b4a7-3bf13a177eaf',
+        version: 2,
+        versionModifiedAt: '2024-10-15T10:04:28.910Z',
+        createdAt: '2024-10-15T04:32:39.858Z',
+        lastModifiedAt: '2024-10-15T10:04:28.910Z',
+        lastModifiedBy: '',
+        createdBy: '',
+        container: 'sctm-app-methods',
+        key: 'paypal',
+        value: {
+          id: 'paypal',
+          name: {
+            'en-GB': 'PayPal',
+          },
+          description: {
+            'en-GB': '',
+          },
+          imageUrl: 'https://www.mollie.com/external/icons/payment-methods/applepay.svg',
+          status: 'Active',
+          displayOrder: 0,
+          pricingConstraints: [
+            {
+              currencyCode: 'EUR',
+              countryCode: 'DE',
+              minAmount: 1000,
+              maxAmount: 3000,
+              surchargeCost: '2%',
+            },
+          ],
+        },
+      },
+      {
+        id: 'a8cfe2c6-c40e-4611-900d-faf3a0fc517c',
+        version: 1,
+        versionModifiedAt: '2024-10-15T04:32:39.962Z',
+        createdAt: '2024-10-15T04:32:39.962Z',
+        lastModifiedAt: '2024-10-15T04:32:39.962Z',
+        lastModifiedBy: '',
+        createdBy: '',
+        container: 'sctm-app-methods',
+        key: 'bancontact',
+        value: {
+          id: 'bancontact',
+          name: {
+            'en-GB': 'bancontact',
+          },
+          description: {
+            'en-GB': '',
+          },
+          imageUrl: 'https://www.mollie.com/external/icons/payment-methods/bancontact.svg',
+          status: 'Active',
+          displayOrder: 0,
+          pricingConstraints: [
+            {
+              currencyCode: 'EUR',
+              countryCode: 'DE',
+              minAmount: 1000,
+              maxAmount: 44000,
+              surchargeCost: '2%',
+            },
+          ],
+        },
+      },
+      {
+        id: '5ca6f09f-2e10-4d0e-8397-467925a28568',
+        version: 3,
+        versionModifiedAt: '2024-10-15T10:05:33.573Z',
+        createdAt: '2024-10-15T04:32:39.923Z',
+        lastModifiedAt: '2024-10-15T10:05:33.573Z',
+        lastModifiedBy: '',
+        createdBy: '',
+        container: 'sctm-app-methods',
+        key: 'banktransfer',
+        value: {
+          id: 'banktransfer',
+          name: {
+            'en-GB': 'Bank Transfer',
+          },
+          description: {
+            'en-GB': '',
+          },
+          imageUrl: 'https://www.mollie.com/external/icons/payment-methods/banktransfer.svg',
+          status: 'Active',
+          displayOrder: 0,
+          pricingConstraints: [
+            {
+              currencyCode: 'EUR',
+              countryCode: 'DE',
+              minAmount: 1000,
+              surchargeCost: '2%',
+            },
+          ],
+        },
+      },
     ]);
 
     mockResource = {
       id: 'RANDOMID_12345',
+      paymentMethodInfo: {
+        paymentInterface: 'mollie',
+        method: 'card',
+      },
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 500000,
+        fractionDigits: 2,
+      },
+      custom: {
+        fields: {
+          sctm_payment_methods_request: JSON.stringify({
+            locale: 'de_DE',
+            billingCountry: 'DE',
+          }),
+        },
+      } as unknown as CustomFields,
+    } as unknown as Payment;
+
+    const response = await handleListPaymentMethodsByPayment(mockResource);
+    expect(response).toBeDefined();
+    expect(response.statusCode).toBe(200);
+    expect(response?.actions?.length).toBeGreaterThan(0);
+    expect(response?.actions?.[0]?.action).toBe('setCustomField');
+    expect((response?.actions?.[1] as any)?.value).toBe(
+      JSON.stringify({
+        count: 2,
+        methods: [
+          {
+            id: 'bancontact',
+            name: {
+              'en-GB': 'bancontact',
+            },
+            description: {
+              'en-GB': '',
+            },
+            image: 'https://www.mollie.com/external/icons/payment-methods/bancontact.svg',
+            order: 0,
+          },
+          {
+            id: 'banktransfer',
+            name: {
+              'en-GB': 'Bank Transfer',
+            },
+            description: {
+              'en-GB': '',
+            },
+            image: 'https://www.mollie.com/external/icons/payment-methods/banktransfer.svg',
+            order: 0,
+          },
+        ],
+      }),
+    );
+  });
+
+  test('call listPaymentMethodsByPayment with no object reference', async () => {
+    (listPaymentMethods as jest.Mock).mockReturnValueOnce([]);
+
+    (getMethodConfigObjects as jest.Mock).mockReturnValueOnce([
+      {
+        id: 'e561ae8b-5d55-4659-b4a7-3bf13a177eaf',
+        version: 2,
+        versionModifiedAt: '2024-10-15T10:04:28.910Z',
+        createdAt: '2024-10-15T04:32:39.858Z',
+        lastModifiedAt: '2024-10-15T10:04:28.910Z',
+        lastModifiedBy: '',
+        createdBy: '',
+        container: 'sctm-app-methods',
+        key: 'paypal',
+        value: {
+          id: 'paypal',
+          name: {
+            'en-GB': 'PayPal',
+          },
+          description: {
+            'en-GB': '',
+          },
+          imageUrl: 'https://www.mollie.com/external/icons/payment-methods/applepay.svg',
+          status: 'Active',
+          displayOrder: 0,
+          pricingConstraints: [
+            {
+              currencyCode: 'EUR',
+              countryCode: 'DE',
+              minAmount: 1000,
+              maxAmount: 3000,
+              surchargeCost: '2%',
+            },
+          ],
+        },
+      },
+      {
+        id: 'a8cfe2c6-c40e-4611-900d-faf3a0fc517c',
+        version: 1,
+        versionModifiedAt: '2024-10-15T04:32:39.962Z',
+        createdAt: '2024-10-15T04:32:39.962Z',
+        lastModifiedAt: '2024-10-15T04:32:39.962Z',
+        lastModifiedBy: '',
+        createdBy: '',
+        container: 'sctm-app-methods',
+        key: 'bancontact',
+        value: {
+          id: 'bancontact',
+          name: {
+            'en-GB': 'bancontact',
+          },
+          description: {
+            'en-GB': '',
+          },
+          imageUrl: 'https://www.mollie.com/external/icons/payment-methods/bancontact.svg',
+          status: 'Active',
+          displayOrder: 0,
+          pricingConstraints: [
+            {
+              currencyCode: 'EUR',
+              countryCode: 'DE',
+              minAmount: 1000,
+              maxAmount: 44000,
+              surchargeCost: '2%',
+            },
+          ],
+        },
+      },
+      {
+        id: '5ca6f09f-2e10-4d0e-8397-467925a28568',
+        version: 3,
+        versionModifiedAt: '2024-10-15T10:05:33.573Z',
+        createdAt: '2024-10-15T04:32:39.923Z',
+        lastModifiedAt: '2024-10-15T10:05:33.573Z',
+        lastModifiedBy: '',
+        createdBy: '',
+        container: 'sctm-app-methods',
+        key: 'banktransfer',
+        value: {
+          id: 'banktransfer',
+          name: {
+            'en-GB': 'Bank Transfer',
+          },
+          description: {
+            'en-GB': '',
+          },
+          imageUrl: 'https://www.mollie.com/external/icons/payment-methods/banktransfer.svg',
+          status: 'Active',
+          displayOrder: 0,
+          pricingConstraints: [
+            {
+              currencyCode: 'EUR',
+              countryCode: 'DE',
+              minAmount: 1000,
+              maxAmount: 300000,
+              surchargeCost: '2%',
+            },
+          ],
+        },
+      },
+    ]);
+
+    mockResource = {
+      typeId: 'payment',
       paymentMethodInfo: {
         paymentInterface: 'mollie',
         method: 'card',
@@ -162,33 +480,10 @@ describe('Test listPaymentMethodsByPayment', () => {
         fields: {
           sctm_payment_methods_request: JSON.stringify({
             locale: 'de_DE',
+            billingCountry: 'DE',
           }),
         },
       } as unknown as CustomFields,
-    } as unknown as Payment;
-
-    const response = await handleListPaymentMethodsByPayment(mockResource);
-    expect(response).toBeDefined();
-    expect(response.statusCode).toBe(200);
-    expect(response?.actions?.length).toBeGreaterThan(0);
-    expect(response?.actions?.[0]?.action).toBe('setCustomField');
-  });
-
-  test('call listPaymentMethodsByPayment with no object reference', async () => {
-    (listPaymentMethods as jest.Mock).mockReturnValueOnce([]);
-
-    mockResource = {
-      typeId: 'payment',
-      paymentMethodInfo: {
-        paymentInterface: 'mollie',
-        method: 'card',
-      },
-      amountPlanned: {
-        type: 'centPrecision',
-        currencyCode: 'EUR',
-        centAmount: 1000,
-        fractionDigits: 2,
-      },
     } as unknown as Payment;
 
     const response: ControllerResponseType = await handleListPaymentMethodsByPayment(mockResource);
@@ -216,6 +511,7 @@ describe('Test listPaymentMethodsByPayment', () => {
         fields: {
           sctm_payment_methods_request: JSON.stringify({
             locale: 'de_DE',
+            billingCountry: 'DE',
           }),
         },
       } as unknown as CustomFields,
@@ -228,6 +524,37 @@ describe('Test listPaymentMethodsByPayment', () => {
     expect(response?.actions?.length).toEqual(0);
     expect(response?.actions?.[0]?.action).toBe(undefined);
     expect(JSON.stringify(response)).not.toContain('count');
+  });
+
+  test('call listPaymentMethodsByPayment with billingCountry', async () => {
+    mockResource = {
+      id: 'RANDOMID_12345',
+      paymentMethodInfo: {
+        paymentInterface: 'mollie',
+        method: 'card',
+      },
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'VND',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      custom: {
+        fields: {
+          sctm_payment_methods_request: JSON.stringify({
+            locale: 'de_DE',
+          }),
+        },
+      } as unknown as CustomFields,
+    } as unknown as Payment;
+
+    try {
+      await handleListPaymentMethodsByPayment(mockResource);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).message).toBe('billingCountry is not provided.');
+      expect((error as CustomError).statusCode).toBe(400);
+    }
   });
 
   test('call listPaymentMethodsByPayment with cardComponent deactivated', async () => {
@@ -272,6 +599,112 @@ describe('Test listPaymentMethodsByPayment', () => {
       },
     ]);
 
+    (getMethodConfigObjects as jest.Mock).mockReturnValueOnce([
+      {
+        id: 'e561ae8b-5d55-4659-b4a7-3bf13a177eaf',
+        version: 2,
+        versionModifiedAt: '2024-10-15T10:04:28.910Z',
+        createdAt: '2024-10-15T04:32:39.858Z',
+        lastModifiedAt: '2024-10-15T10:04:28.910Z',
+        lastModifiedBy: '',
+        createdBy: '',
+        container: 'sctm-app-methods',
+        key: 'paypal',
+        value: {
+          id: 'paypal',
+          name: {
+            'en-GB': 'PayPal',
+          },
+          description: {
+            'en-GB': '',
+          },
+          imageUrl: 'https://www.mollie.com/external/icons/payment-methods/applepay.svg',
+          status: 'Active',
+          displayOrder: 0,
+          pricingConstraints: [
+            {
+              currencyCode: 'EUR',
+              countryCode: 'DE',
+              minAmount: 1000,
+              maxAmount: 3000,
+              surchargeCost: '2%',
+            },
+          ],
+        },
+      },
+      {
+        id: 'a8cfe2c6-c40e-4611-900d-faf3a0fc517c',
+        version: 1,
+        versionModifiedAt: '2024-10-15T04:32:39.962Z',
+        createdAt: '2024-10-15T04:32:39.962Z',
+        lastModifiedAt: '2024-10-15T04:32:39.962Z',
+        lastModifiedBy: '',
+        createdBy: '',
+        container: 'sctm-app-methods',
+        key: 'creditcard',
+        value: {
+          id: 'creditcard',
+          name: {
+            'en-GB': 'creditcard',
+          },
+          description: {
+            'en-GB': '',
+          },
+          imageUrl: 'https://www.mollie.com/external/icons/payment-methods/bancontact.svg',
+          status: 'Active',
+          displayOrder: 0,
+          pricingConstraints: [
+            {
+              currencyCode: 'EUR',
+              countryCode: 'DE',
+              minAmount: 0,
+              maxAmount: 100000,
+              surchargeCost: '2%',
+            },
+          ],
+        },
+      },
+      {
+        id: '5ca6f09f-2e10-4d0e-8397-467925a28568',
+        version: 3,
+        versionModifiedAt: '2024-10-15T10:05:33.573Z',
+        createdAt: '2024-10-15T04:32:39.923Z',
+        lastModifiedAt: '2024-10-15T10:05:33.573Z',
+        lastModifiedBy: '',
+        createdBy: '',
+        container: 'sctm-app-methods',
+        key: 'banktransfer',
+        value: {
+          id: 'banktransfer',
+          name: {
+            'en-GB': 'Bank Transfer',
+          },
+          description: {
+            'en-GB': '',
+          },
+          imageUrl: 'https://www.mollie.com/external/icons/payment-methods/banktransfer.svg',
+          status: 'Active',
+          displayOrder: 0,
+          pricingConstraints: [
+            {
+              currencyCode: 'EUR',
+              countryCode: 'DE',
+              minAmount: 1000,
+              maxAmount: 300000,
+              surchargeCost: '2%',
+            },
+          ],
+        },
+      },
+    ]);
+
+    const cart = {
+      id: 'cart-id',
+      country: 'DE',
+    };
+
+    (getCartFromPayment as jest.Mock).mockReturnValue(cart);
+
     mockResource = {
       id: 'RANDOMID_12345',
       paymentMethodInfo: {
@@ -281,13 +714,14 @@ describe('Test listPaymentMethodsByPayment', () => {
       amountPlanned: {
         type: 'centPrecision',
         currencyCode: 'EUR',
-        centAmount: 1000,
+        centAmount: 200000,
         fractionDigits: 2,
       },
       custom: {
         fields: {
           sctm_payment_methods_request: JSON.stringify({
             locale: 'de_DE',
+            billingCountry: 'DE',
           }),
         },
       } as unknown as CustomFields,
@@ -348,6 +782,110 @@ describe('Test listPaymentMethodsByPayment', () => {
       },
     ]);
 
+    (getMethodConfigObjects as jest.Mock).mockReturnValueOnce([
+      {
+        id: 'e561ae8b-5d55-4659-b4a7-3bf13a177eaf',
+        version: 2,
+        versionModifiedAt: '2024-10-15T10:04:28.910Z',
+        createdAt: '2024-10-15T04:32:39.858Z',
+        lastModifiedAt: '2024-10-15T10:04:28.910Z',
+        lastModifiedBy: '',
+        createdBy: '',
+        container: 'sctm-app-methods',
+        key: 'creditcard',
+        value: {
+          id: 'creditcard',
+          name: {
+            'en-GB': 'creditcard',
+          },
+          description: {
+            'en-GB': '',
+          },
+          imageUrl: 'https://www.mollie.com/external/icons/payment-methods/applepay.svg',
+          status: 'Active',
+          displayOrder: 0,
+          pricingConstraints: [
+            {
+              currencyCode: 'EUR',
+              countryCode: 'DE',
+              minAmount: 0,
+              maxAmount: 3000,
+              surchargeCost: '2%',
+            },
+          ],
+        },
+      },
+      {
+        id: 'a8cfe2c6-c40e-4611-900d-faf3a0fc517c',
+        version: 1,
+        versionModifiedAt: '2024-10-15T04:32:39.962Z',
+        createdAt: '2024-10-15T04:32:39.962Z',
+        lastModifiedAt: '2024-10-15T04:32:39.962Z',
+        lastModifiedBy: '',
+        createdBy: '',
+        container: 'sctm-app-methods',
+        key: 'bancontact',
+        value: {
+          id: 'bancontact',
+          name: {
+            'en-GB': 'bancontact',
+          },
+          description: {
+            'en-GB': '',
+          },
+          imageUrl: 'https://www.mollie.com/external/icons/payment-methods/bancontact.svg',
+          status: 'Active',
+          displayOrder: 0,
+          pricingConstraints: [
+            {
+              currencyCode: 'EUR',
+              countryCode: 'DE',
+              minAmount: 1000,
+              maxAmount: 44000,
+              surchargeCost: '2%',
+            },
+          ],
+        },
+      },
+      {
+        id: '5ca6f09f-2e10-4d0e-8397-467925a28568',
+        version: 3,
+        versionModifiedAt: '2024-10-15T10:05:33.573Z',
+        createdAt: '2024-10-15T04:32:39.923Z',
+        lastModifiedAt: '2024-10-15T10:05:33.573Z',
+        lastModifiedBy: '',
+        createdBy: '',
+        container: 'sctm-app-methods',
+        key: 'banktransfer',
+        value: {
+          id: 'banktransfer',
+          name: {
+            'en-GB': 'Bank Transfer',
+          },
+          description: {
+            'en-GB': '',
+          },
+          imageUrl: 'https://www.mollie.com/external/icons/payment-methods/banktransfer.svg',
+          status: 'Active',
+          displayOrder: 0,
+          pricingConstraints: [
+            {
+              currencyCode: 'EUR',
+              countryCode: 'DE',
+              minAmount: 1000,
+              maxAmount: 300000,
+              surchargeCost: '2%',
+            },
+          ],
+        },
+      },
+    ]);
+
+    (getCartFromPayment as jest.Mock).mockReturnValue({
+      id: 'cart-id',
+      country: 'DE',
+    } as Cart);
+
     mockResource = {
       id: 'RANDOMID_12345',
       paymentMethodInfo: {
@@ -364,6 +902,7 @@ describe('Test listPaymentMethodsByPayment', () => {
         fields: {
           sctm_payment_methods_request: JSON.stringify({
             locale: 'de_DE',
+            billingCountry: 'DE',
           }),
         },
       } as unknown as CustomFields,
@@ -381,7 +920,7 @@ describe('Test listPaymentMethodsByPayment', () => {
       name: 'sctm_mollie_profile_id',
       value: process.env.MOLLIE_PROFILE_ID,
     });
-    expect(JSON.stringify(response)).not.toContain('creditcard');
+    expect(JSON.stringify(response)).toContain('creditcard');
   });
 });
 
@@ -444,11 +983,11 @@ describe('Test getCreatePaymentUpdateAction', () => {
     (getCreatePaymentUpdateAction as jest.Mock).mockImplementationOnce(() => {
       const paymentService = jest.requireActual(
         '../../src/service/payment.service.ts',
-      ) as typeof import('../../src/service/payment.service.ts');
-      return paymentService.getCreatePaymentUpdateAction(molliePayment, CTPayment);
+      ) as typeof import('../../src/service/payment.service');
+      return paymentService.getCreatePaymentUpdateAction(molliePayment, CTPayment, 0);
     });
 
-    getCreatePaymentUpdateAction(molliePayment, CTPayment).catch((error) => {
+    getCreatePaymentUpdateAction(molliePayment, CTPayment, 0).catch((error) => {
       expect(error).toEqual({
         status: 400,
         title: 'Cannot find original transaction',
@@ -509,8 +1048,8 @@ describe('Test getCreatePaymentUpdateAction', () => {
     (getCreatePaymentUpdateAction as jest.Mock).mockImplementationOnce(() => {
       const paymentService = jest.requireActual(
         '../../src/service/payment.service.ts',
-      ) as typeof import('../../src/service/payment.service.ts');
-      return paymentService.getCreatePaymentUpdateAction(molliePayment, CTPayment);
+      ) as typeof import('../../src/service/payment.service');
+      return paymentService.getCreatePaymentUpdateAction(molliePayment, CTPayment, 0);
     });
 
     (changeTransactionState as jest.Mock).mockReturnValueOnce({
@@ -519,7 +1058,7 @@ describe('Test getCreatePaymentUpdateAction', () => {
       transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
     });
 
-    const actual = await getCreatePaymentUpdateAction(molliePayment, CTPayment);
+    const actual = await getCreatePaymentUpdateAction(molliePayment, CTPayment, 0);
     expect(actual).toHaveLength(4);
 
     expect(actual[0]).toEqual({
@@ -561,6 +1100,120 @@ describe('Test getCreatePaymentUpdateAction', () => {
       state: CTTransactionState.Pending,
     });
   });
+
+  test('should return an array of actions included setTransactionCustomField when surcharge amount is not 0', async () => {
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [
+        {
+          id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          type: 'Authorization',
+          amount: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 1000,
+            fractionDigits: 2,
+          },
+          state: 'Initial',
+        },
+      ],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'creditcard',
+      },
+    };
+
+    const molliePayment: molliePayment = {
+      resource: 'payment',
+      id: 'tr_7UhSN1zuXS',
+      amount: { currency: 'USD', value: '10.00' },
+      createdAt: '2024-07-05T04:24:12+00:00',
+      _links: {
+        checkout: {
+          href: 'https://api.mollie.com/v2/payments/tr_7UhSN1zuXS',
+          type: 'https://api.mollie.com/v2/payments/tr_7UhSN1zuXS',
+        },
+        documentation: {
+          href: 'https://api.mollie.com/v2/payments/tr_7UhSN1zuXS',
+          type: 'https://api.mollie.com/v2/payments/tr_7UhSN1zuXS',
+        },
+      },
+    } as molliePayment;
+
+    (getCreatePaymentUpdateAction as jest.Mock).mockImplementationOnce(() => {
+      const paymentService = jest.requireActual(
+        '../../src/service/payment.service.ts',
+      ) as typeof import('../../src/service/payment.service');
+      return paymentService.getCreatePaymentUpdateAction(molliePayment, CTPayment, 1000);
+    });
+
+    (changeTransactionState as jest.Mock).mockReturnValueOnce({
+      action: 'changeTransactionState',
+      state: 'Pending',
+      transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+    });
+
+    const actual = await getCreatePaymentUpdateAction(molliePayment, CTPayment, 1000);
+    expect(actual).toHaveLength(5);
+
+    expect(actual[0]).toEqual({
+      action: 'addInterfaceInteraction',
+      type: {
+        key: 'sctm_interface_interaction_type',
+      },
+      fields: {
+        sctm_id: uuid,
+        sctm_action_type: ConnectorActions.CreatePayment,
+        sctm_created_at: molliePayment.createdAt,
+        sctm_request: JSON.stringify({
+          transactionId: CTPayment.transactions[0].id,
+          paymentMethod: CTPayment.paymentMethodInfo.method,
+        }),
+        sctm_response: JSON.stringify({
+          molliePaymentId: molliePayment.id,
+          checkoutUrl: molliePayment._links.checkout?.href,
+          transactionId: CTPayment.transactions[0].id,
+        }),
+      },
+    });
+
+    expect(actual[1]).toEqual({
+      action: 'changeTransactionInteractionId',
+      transactionId: CTPayment.transactions[0].id,
+      interactionId: molliePayment.id,
+    });
+
+    expect(actual[2]).toEqual({
+      action: 'changeTransactionTimestamp',
+      transactionId: CTPayment.transactions[0].id,
+      timestamp: molliePayment.createdAt,
+    });
+
+    expect(actual[3]).toEqual({
+      action: 'changeTransactionState',
+      transactionId: CTPayment.transactions[0].id,
+      state: CTTransactionState.Pending,
+    });
+
+    expect(actual[4]).toEqual({
+      action: 'setTransactionCustomField',
+      name: CustomFieldName.transactionSurchargeCost,
+      value: JSON.stringify({
+        surchargeAmountInCent: 1000,
+      }),
+      transactionId: CTPayment.transactions[0].id,
+    });
+  });
 });
 
 describe('Test handleCreatePayment', () => {
@@ -592,6 +1245,17 @@ describe('Test handleCreatePayment', () => {
     interfaceInteractions: [],
     paymentMethodInfo: {
       method: 'creditcard',
+    },
+    custom: {
+      type: {
+        typeId: 'type',
+        id: 'test',
+      },
+      fields: {
+        sctm_payment_methods_request: JSON.stringify({
+          billingCountry: 'DE',
+        }),
+      },
     },
   };
 
@@ -636,6 +1300,41 @@ describe('Test handleCreatePayment', () => {
       },
     } as molliePayment;
 
+    const customLineItem = {
+      id: 'custom-line',
+      key: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+    };
+
+    const mockedCart = {
+      id: 'mocked-cart',
+      customLineItems: [customLineItem],
+    } as Cart;
+
+    const methodConfig = {
+      value: {
+        pricingConstraints: [
+          {
+            currencyCode: CTPayment.amountPlanned.currencyCode,
+            countryCode: JSON.parse(CTPayment.custom?.fields?.sctm_payment_methods_request).billingCountry,
+            surchargeCost: {
+              percentageAmount: 2,
+              fixedAmount: 10,
+            },
+          },
+        ],
+      },
+    };
+
+    const appUtils = require('../../src/utils/app.utils');
+
+    jest.spyOn(appUtils, 'calculateTotalSurchargeAmount');
+
+    const mapUtils = require('../../src/utils/map.utils');
+
+    jest.spyOn(mapUtils, 'createCartUpdateActions');
+
+    (getCartFromPayment as jest.Mock).mockReturnValue(mockedCart);
+    (getSingleMethodConfigObject as jest.Mock).mockReturnValueOnce(methodConfig);
     (createMolliePayment as jest.Mock).mockReturnValueOnce(molliePayment);
     (getPaymentExtension as jest.Mock).mockReturnValueOnce({
       destination: {
@@ -653,7 +1352,45 @@ describe('Test handleCreatePayment', () => {
       transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
     });
 
+    (updateCart as jest.Mock).mockReturnValue(mockedCart);
+
+    const totalSurchargeAmount = 1020;
+
     const actual = await handleCreatePayment(CTPayment);
+
+    const expectedCartUpdateActions = [
+      {
+        action: 'removeCustomLineItem',
+        customLineItemId: customLineItem.id,
+      },
+      {
+        action: 'addCustomLineItem',
+        name: {
+          de: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+          en: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+        },
+        quantity: 1,
+        money: {
+          centAmount: totalSurchargeAmount,
+          currencyCode: CTPayment.amountPlanned.currencyCode,
+        },
+        slug: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+      },
+    ];
+
+    expect(getSingleMethodConfigObject).toHaveBeenCalledWith(CTPayment.paymentMethodInfo.method);
+    expect(calculateTotalSurchargeAmount).toHaveBeenCalledTimes(1);
+    expect(calculateTotalSurchargeAmount).toHaveBeenCalledWith(
+      CTPayment,
+      methodConfig.value.pricingConstraints[0].surchargeCost,
+    );
+    expect(calculateTotalSurchargeAmount).toHaveReturnedWith(
+      totalSurchargeAmount / Math.pow(10, CTPayment.amountPlanned.fractionDigits),
+    );
+
+    expect(createCartUpdateActions).toHaveBeenCalledTimes(1);
+    expect(createCartUpdateActions).toHaveBeenCalledWith(mockedCart, CTPayment, totalSurchargeAmount);
+    expect(createCartUpdateActions).toHaveReturnedWith(expectedCartUpdateActions);
 
     const ctActions = [
       {
@@ -682,6 +1419,14 @@ describe('Test handleCreatePayment', () => {
         action: 'changeTransactionState',
         transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
         state: 'Pending',
+      },
+      {
+        action: 'setTransactionCustomField',
+        name: 'sctm_transaction_surcharge_cost',
+        transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        value: JSON.stringify({
+          surchargeAmountInCent: totalSurchargeAmount,
+        }),
       },
     ];
 
@@ -725,6 +1470,41 @@ describe('Test handleCreatePayment', () => {
       },
     } as CustomPayment;
 
+    const customLineItem = {
+      id: 'custom-line',
+      key: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+    };
+
+    const cart = {
+      customLineItems: [customLineItem],
+    } as Cart;
+
+    const methodConfig = {
+      value: {
+        pricingConstraints: [
+          {
+            currencyCode: CTPayment.amountPlanned.currencyCode,
+            countryCode: JSON.parse(CTPayment.custom?.fields?.sctm_payment_methods_request).billingCountry,
+            surchargeCost: {
+              percentageAmount: 2,
+              fixedAmount: 10,
+            },
+          },
+        ],
+      },
+    };
+
+    const appUtils = require('../../src/utils/app.utils');
+
+    jest.spyOn(appUtils, 'calculateTotalSurchargeAmount');
+
+    const mapUtils = require('../../src/utils/map.utils');
+
+    jest.spyOn(mapUtils, 'createCartUpdateActions');
+
+    (getCartFromPayment as jest.Mock).mockReturnValueOnce(cart);
+    (getSingleMethodConfigObject as jest.Mock).mockReturnValueOnce(methodConfig);
+
     (createPaymentWithCustomMethod as jest.Mock).mockReturnValueOnce(molliePayment);
     (getPaymentExtension as jest.Mock).mockReturnValueOnce({
       destination: {
@@ -742,7 +1522,44 @@ describe('Test handleCreatePayment', () => {
       transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
     });
 
+    (updateCart as jest.Mock).mockReturnValueOnce(cart);
+
+    const totalSurchargeAmount = 1020;
+
     const actual = await handleCreatePayment(CTPayment);
+
+    const expectedCartUpdateActions = [
+      {
+        action: 'removeCustomLineItem',
+        customLineItemId: customLineItem.id,
+      },
+      {
+        action: 'addCustomLineItem',
+        name: {
+          de: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+          en: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+        },
+        quantity: 1,
+        money: {
+          centAmount: totalSurchargeAmount,
+          currencyCode: CTPayment.amountPlanned.currencyCode,
+        },
+        slug: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
+      },
+    ];
+
+    expect(calculateTotalSurchargeAmount).toHaveBeenCalledTimes(1);
+    expect(calculateTotalSurchargeAmount).toHaveBeenCalledWith(
+      CTPayment,
+      methodConfig.value.pricingConstraints[0].surchargeCost,
+    );
+    expect(calculateTotalSurchargeAmount).toHaveReturnedWith(
+      totalSurchargeAmount / Math.pow(10, CTPayment.amountPlanned.fractionDigits),
+    );
+
+    expect(createCartUpdateActions).toHaveBeenCalledTimes(1);
+    expect(createCartUpdateActions).toHaveBeenCalledWith(cart, CTPayment, totalSurchargeAmount);
+    expect(createCartUpdateActions).toHaveReturnedWith(expectedCartUpdateActions);
 
     const ctActions = [
       {
@@ -771,6 +1588,14 @@ describe('Test handleCreatePayment', () => {
         action: 'changeTransactionState',
         transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
         state: 'Pending',
+      },
+      {
+        action: 'setTransactionCustomField',
+        name: 'sctm_transaction_surcharge_cost',
+        transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+        value: JSON.stringify({
+          surchargeAmountInCent: totalSurchargeAmount,
+        }),
       },
     ];
 
@@ -1231,6 +2056,10 @@ describe('Test handlePaymentWebhook', () => {
   });
 
   it('should return true and perform update with specific actions if the targeted status is canceled', async () => {
+    const cartService = require('../../src/service/cart.service');
+
+    jest.spyOn(cartService, 'removeCartMollieCustomLineItem');
+
     const fakePaymentId = 'tr_XXXX';
     (getPaymentById as jest.Mock).mockReturnValue({
       id: fakePaymentId,
@@ -1299,6 +2128,8 @@ describe('Test handlePaymentWebhook', () => {
 
     expect(updatePayment).toBeCalledTimes(1);
     expect(updatePayment).toBeCalledWith(ctPayment, actions);
+
+    expect(removeCartMollieCustomLineItem).toBeCalledTimes(1);
   });
 
   it('should handle for manual capture payment', async () => {
@@ -1532,6 +2363,10 @@ describe('Test handleCancelPayment', () => {
   });
 
   it('should return status code and array of actions', async () => {
+    const cartService = require('../../src/service/cart.service');
+
+    jest.spyOn(cartService, 'removeCartMollieCustomLineItem');
+
     const molliePayment: molliePayment = {
       resource: 'payment',
       id: 'tr_7UhSN1zuXS',
@@ -1569,12 +2404,15 @@ describe('Test handleCancelPayment', () => {
     expect(cancelPayment).toBeCalledTimes(1);
     expect(cancelPayment).toBeCalledWith(molliePayment.id);
 
+    expect(removeCartMollieCustomLineItem).toBeCalledTimes(1);
+
     expect(actual).toEqual({
       statusCode: 200,
       actions: [],
     });
   });
 });
+
 describe('Test handleGetApplePaySession', () => {
   beforeEach(() => {
     jest.clearAllMocks();
