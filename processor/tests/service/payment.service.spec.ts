@@ -1,9 +1,12 @@
+<<<<<<< HEAD
 import {
   getMethodConfigObjects,
   getSingleMethodConfigObject,
 } from './../../src/commercetools/customObjects.commercetools';
+=======
+>>>>>>> main
 import { afterEach, beforeEach, describe, expect, it, jest, test } from '@jest/globals';
-import { Cart, CustomFields, Payment } from '@commercetools/platform-sdk';
+import { CustomFields, Payment } from '@commercetools/platform-sdk';
 import {
   getCreatePaymentUpdateAction,
   getPaymentCancelActions,
@@ -49,9 +52,12 @@ import { createCartUpdateActions, createMollieCreatePaymentParams } from '../../
 import { CustomPayment } from '../../src/types/mollie.types';
 import { changeTransactionState } from '../../src/commercetools/action.commercetools';
 import { makeCTMoney, shouldRefundStatusUpdate } from '../../src/utils/mollie.utils';
+<<<<<<< HEAD
 import { getCartFromPayment, updateCart } from '../../src/commercetools/cart.commercetools';
 import { calculateTotalSurchargeAmount } from '../../src/utils/app.utils';
 import { removeCartMollieCustomLineItem } from '../../src/service/cart.service';
+=======
+>>>>>>> main
 
 const uuid = '5c8b0375-305a-4f19-ae8e-07806b101999';
 jest.mock('uuid', () => ({
@@ -67,6 +73,7 @@ jest.mock('../../src/commercetools/payment.commercetools', () => ({
   updatePayment: jest.fn(),
 }));
 
+<<<<<<< HEAD
 jest.mock('../../src/commercetools/cart.commercetools', () => ({
   getCartFromPayment: jest.fn(),
   updateCart: jest.fn(),
@@ -77,6 +84,8 @@ jest.mock('../../src/commercetools/customObjects.commercetools', () => ({
   getSingleMethodConfigObject: jest.fn(),
 }));
 
+=======
+>>>>>>> main
 jest.mock('../../src/service/payment.service.ts', () => ({
   ...(jest.requireActual('../../src/service/payment.service.ts') as object),
   getCreatePaymentUpdateAction: jest.fn(),
@@ -166,46 +175,9 @@ describe('Test listPaymentMethodsByPayment', () => {
           },
         },
       },
-      {
-        resource: 'method',
-        id: 'bancontact',
-        description: 'Bancontact',
-        minimumAmount: { value: '0.01', currency: 'EUR' },
-        maximumAmount: null,
-        image: {
-          size1x: 'https://www.mollie.com/external/icons/payment-methods/paypal.png',
-          size2x: 'https://www.mollie.com/external/icons/payment-methods/paypal%402x.png',
-          svg: 'https://www.mollie.com/external/icons/payment-methods/paypal.svg',
-        },
-        status: 'activated',
-        _links: {
-          self: {
-            href: 'https://api.mollie.com/v2/methods/paypal',
-            type: 'application/hal+json',
-          },
-        },
-      },
-      {
-        resource: 'method',
-        id: 'banktransfer',
-        description: 'banktransfer',
-        minimumAmount: { value: '0.01', currency: 'EUR' },
-        maximumAmount: null,
-        image: {
-          size1x: 'https://www.mollie.com/external/icons/payment-methods/paypal.png',
-          size2x: 'https://www.mollie.com/external/icons/payment-methods/paypal%402x.png',
-          svg: 'https://www.mollie.com/external/icons/payment-methods/paypal.svg',
-        },
-        status: 'activated',
-        _links: {
-          self: {
-            href: 'https://api.mollie.com/v2/methods/paypal',
-            type: 'application/hal+json',
-          },
-        },
-      },
     ]);
 
+<<<<<<< HEAD
     (getMethodConfigObjects as jest.Mock).mockReturnValueOnce([
       {
         id: 'e561ae8b-5d55-4659-b4a7-3bf13a177eaf',
@@ -304,6 +276,8 @@ describe('Test listPaymentMethodsByPayment', () => {
       },
     ]);
 
+=======
+>>>>>>> main
     mockResource = {
       id: 'RANDOMID_12345',
       paymentMethodInfo: {
@@ -313,7 +287,7 @@ describe('Test listPaymentMethodsByPayment', () => {
       amountPlanned: {
         type: 'centPrecision',
         currencyCode: 'EUR',
-        centAmount: 500000,
+        centAmount: 1000,
         fractionDigits: 2,
       },
       custom: {
@@ -331,40 +305,12 @@ describe('Test listPaymentMethodsByPayment', () => {
     expect(response.statusCode).toBe(200);
     expect(response?.actions?.length).toBeGreaterThan(0);
     expect(response?.actions?.[0]?.action).toBe('setCustomField');
-    expect((response?.actions?.[1] as any)?.value).toBe(
-      JSON.stringify({
-        count: 2,
-        methods: [
-          {
-            id: 'bancontact',
-            name: {
-              'en-GB': 'bancontact',
-            },
-            description: {
-              'en-GB': '',
-            },
-            image: 'https://www.mollie.com/external/icons/payment-methods/bancontact.svg',
-            order: 0,
-          },
-          {
-            id: 'banktransfer',
-            name: {
-              'en-GB': 'Bank Transfer',
-            },
-            description: {
-              'en-GB': '',
-            },
-            image: 'https://www.mollie.com/external/icons/payment-methods/banktransfer.svg',
-            order: 0,
-          },
-        ],
-      }),
-    );
   });
 
   test('call listPaymentMethodsByPayment with no object reference', async () => {
     (listPaymentMethods as jest.Mock).mockReturnValueOnce([]);
 
+<<<<<<< HEAD
     (getMethodConfigObjects as jest.Mock).mockReturnValueOnce([
       {
         id: 'e561ae8b-5d55-4659-b4a7-3bf13a177eaf',
@@ -464,6 +410,8 @@ describe('Test listPaymentMethodsByPayment', () => {
       },
     ]);
 
+=======
+>>>>>>> main
     mockResource = {
       typeId: 'payment',
       paymentMethodInfo: {
@@ -599,6 +547,7 @@ describe('Test listPaymentMethodsByPayment', () => {
       },
     ]);
 
+<<<<<<< HEAD
     (getMethodConfigObjects as jest.Mock).mockReturnValueOnce([
       {
         id: 'e561ae8b-5d55-4659-b4a7-3bf13a177eaf',
@@ -705,6 +654,8 @@ describe('Test listPaymentMethodsByPayment', () => {
 
     (getCartFromPayment as jest.Mock).mockReturnValue(cart);
 
+=======
+>>>>>>> main
     mockResource = {
       id: 'RANDOMID_12345',
       paymentMethodInfo: {
@@ -714,7 +665,7 @@ describe('Test listPaymentMethodsByPayment', () => {
       amountPlanned: {
         type: 'centPrecision',
         currencyCode: 'EUR',
-        centAmount: 200000,
+        centAmount: 1000,
         fractionDigits: 2,
       },
       custom: {
@@ -782,6 +733,7 @@ describe('Test listPaymentMethodsByPayment', () => {
       },
     ]);
 
+<<<<<<< HEAD
     (getMethodConfigObjects as jest.Mock).mockReturnValueOnce([
       {
         id: 'e561ae8b-5d55-4659-b4a7-3bf13a177eaf',
@@ -886,6 +838,8 @@ describe('Test listPaymentMethodsByPayment', () => {
       country: 'DE',
     } as Cart);
 
+=======
+>>>>>>> main
     mockResource = {
       id: 'RANDOMID_12345',
       paymentMethodInfo: {
