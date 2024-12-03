@@ -4,6 +4,61 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## v1.2.0
+
+Added
+
+- Mollie custom application
+
+Updated
+
+- [getPaymentMethods](/docs/GetPaymentMethods.md) response has new returned format as follow
+
+  ```Typescript
+  {
+      id: string,
+      name: Record<string, string>
+      description: Record<string, string>
+      image: string;
+      order: number;
+  }
+
+  // e.g.
+  {
+    id: 'paypal',
+    name: {
+        'en-GB': 'PayPal',
+        'de-DE': 'PayPal',
+    },
+    description: {
+        'en-GB': '',
+        'de-DE': '',
+    },
+    image: 'https://example.img/paypal.svg',
+    order: 1
+  }
+  ```
+
+## v1.1.2
+
+Added
+
+- Add configuration to enable authorization mode
+- OAuth middleware for securing connector endpoint
+
+## v1.1.1
+
+Fixes
+
+- Type converting issue in payment method listing endpoint
+
+## v1.1.0
+
+Added
+
+- DockerImage for self hosting on AWS
+- Installation endpoint for required configurations
+
 ## v1.0.4
 
 Added
@@ -16,6 +71,7 @@ Added
 Added
 
 - Add docs for status checking endpoint
+- Endpoints for checking connector statuses
 
 ## v1.0.2
 
