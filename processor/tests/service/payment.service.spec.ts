@@ -2110,6 +2110,7 @@ describe('Test handleCreateRefund', () => {
       transactions: [
         {
           id: uuid,
+          timestamp: '2024-06-24T08:28:43.474Z',
           type: 'Charge',
           interactionId: 'tr_123123',
           amount: {
@@ -2122,6 +2123,7 @@ describe('Test handleCreateRefund', () => {
         },
         {
           id: 'test-123',
+          timestamp: '2024-06-24T08:30:43.474Z',
           type: 'Charge',
           interactionId: targetedMolliePaymentId,
           amount: {
@@ -2720,6 +2722,152 @@ describe('Test handlePaymentCancelRefund', () => {
     expect(cancelPaymentRefund).toBeCalledWith(CTPaymentMocked.transactions[3].interactionId, {
       paymentId: CTPaymentMocked.transactions[1].interactionId,
     });
+  });
+
+  it('should throw error if valid Success Charge transaction was not found (interactionId is defined in the Initial CancelAuthorization transaction)', async () => {
+    const CTPaymentMocked: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [
+        {
+          id: '5c8b0375-305a-4f19-ae8e-07806b101992',
+          type: 'Charge',
+          interactionId: 'tr_test123123',
+          amount: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 1000,
+            fractionDigits: 2,
+          },
+          state: 'Success',
+        },
+        {
+          id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          type: 'Charge',
+          interactionId: 'tr_dummy',
+          amount: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 1000,
+            fractionDigits: 2,
+          },
+          state: 'Success',
+        },
+        {
+          id: '5c8b0375-305a-4f19-ae8e-07806b102011',
+          type: 'Refund',
+          interactionId: 're_TEST',
+          amount: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 1000,
+            fractionDigits: 2,
+          },
+          state: 'Pending',
+        },
+        {
+          id: '5c8b0375-305a-4f19-ae8e-07806b102000',
+          type: 'Refund',
+          interactionId: 're_4qqhO89gsT',
+          amount: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 1000,
+            fractionDigits: 2,
+          },
+          state: 'Pending',
+          custom: {
+            type: {
+              typeId: 'type',
+              id: 'custom-type',
+            },
+            fields: {
+              [CustomFieldName.transactionRefundForMolliePayment]: 'tr_123123',
+            },
+          },
+        },
+        {
+          id: '5c8b0375-305a-4f19-ae8e-07806b102000',
+          type: 'CancelAuthorization',
+          interactionId: 're_4qqhO89gsT',
+          amount: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 1000,
+            fractionDigits: 2,
+          },
+          state: 'Initial',
+          custom: {
+            type: {
+              typeId: 'type',
+              id: 'sctm_payment_cancel_reason',
+            },
+            fields: {
+              reasonText: 'dummy reason',
+            },
+          },
+        },
+      ],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'creditcard',
+      },
+    };
+
+    const mollieRefund: Refund = {
+      resource: 'refund',
+      id: CTPaymentMocked.transactions[3].interactionId,
+      description: 'Order',
+      amount: {
+        currency: 'EUR',
+        value: '5.95',
+      },
+      status: 'pending',
+      metadata: '{"bookkeeping_id":12345}',
+      paymentId: 'tr_7UhSN1zuXS',
+      createdAt: '2023-03-14T17:09:02.0Z',
+      _links: {
+        self: {
+          href: '...',
+          type: 'application/hal+json',
+        },
+        payment: {
+          href: 'https://api.mollie.com/v2/payments/tr_7UhSN1zuXS',
+          type: 'application/hal+json',
+        },
+        documentation: {
+          href: '...',
+          type: 'text/html',
+        },
+      },
+    } as Refund;
+
+    (getPaymentRefund as jest.Mock).mockReturnValueOnce(mollieRefund);
+
+    (cancelPaymentRefund as jest.Mock).mockReturnValueOnce(true);
+
+    (getPaymentCancelActions as jest.Mock).mockReturnValueOnce([]);
+
+    try {
+      await handlePaymentCancelRefund(CTPaymentMocked);
+    } catch (error: any) {
+      expect(getPaymentRefund).toBeCalledTimes(0);
+      expect(cancelPaymentRefund).toBeCalledTimes(0);
+
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).message).toBe(
+        'SCTM - handlePaymentCancelRefund - Cannot find the valid Success Charge transaction.',
+      );
+    }
   });
 });
 
