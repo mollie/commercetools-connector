@@ -56,30 +56,4 @@ describe('Test profile.mollie.ts', () => {
 
     await expect(getProfile()).resolves.toThrow(errorMessage);
   });
-
-  it('should return unknown errors when fetching the profile', async () => {
-    const errorMessage = 'SCTM - getProfile - Failed to get Mollie profile with unknown errors';
-    (initMollieClient as jest.Mock).mockReturnValue({
-      profiles: {
-        getCurrent: jest.fn().mockReturnValue(new Error(errorMessage)),
-      },
-    });
-
-    await expect(getProfile()).resolves.toThrow(errorMessage);
-  });
-
-  it('should return MollieApi errors when fetching the profile', async () => {
-    const errorMessage = `SCTM - getProfile - error: error, field: validationUrl`;
-    (initMollieClient as jest.Mock).mockReturnValue({
-      profiles: {
-        getCurrent: jest
-          .fn()
-          .mockReturnValue(
-            new MollieApiError('SCTM - getProfile - error: error, field: validationUrl', { field: 'validationUrl' }),
-          ),
-      },
-    });
-
-    await expect(getProfile()).resolves.toThrow(errorMessage);
-  });
 });

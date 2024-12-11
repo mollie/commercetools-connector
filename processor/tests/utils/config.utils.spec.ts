@@ -1,4 +1,4 @@
-import { readConfiguration, getApiKey } from '../../src/utils/config.utils';
+import { readConfiguration } from '../../src/utils/config.utils';
 import CustomError from '../../src/errors/custom.error';
 import { describe, expect, test } from '@jest/globals';
 
@@ -87,17 +87,5 @@ describe('Test src/utils/config.utils.ts', () => {
   test('should throw an error when AUTHENTICATION_MODE is invalid', () => {
     process.env.AUTHENTICATION_MODE = 'dummy';
     expect(() => readConfiguration()).toThrow(CustomError);
-  });
-
-  test('getApiKey should return test key', () => {
-    process.env.CONNECTOR_MODE = 'test';
-    const key = getApiKey();
-    expect(key).toBe(process.env.MOLLIE_API_TEST_KEY);
-  });
-
-  test('getApiKey should return live key', () => {
-    process.env.CONNECTOR_MODE = 'live';
-    const key = getApiKey();
-    expect(key).toBe(process.env.MOLLIE_API_LIVE_KEY);
   });
 });

@@ -68,13 +68,13 @@ const determineAction = (groups: ReturnType<typeof getTransactionGroups>): Deter
     return ConnectorActions.CancelPayment;
   }
 
-  if (groups.successCharge.length >= 1 && groups.initialRefund.length) {
+  if (groups.successCharge.length === 1 && groups.initialRefund.length) {
     return ConnectorActions.CreateRefund;
   }
 
   if (
-    groups.successCharge.length >= 1 &&
-    groups.pendingRefund.length >= 1 &&
+    groups.successCharge.length === 1 &&
+    groups.pendingRefund.length === 1 &&
     groups.initialCancelAuthorization.length === 1
   ) {
     return ConnectorActions.CancelRefund;
