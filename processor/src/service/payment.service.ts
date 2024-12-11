@@ -71,7 +71,6 @@ import {
   convertCentToEUR,
   parseStringToJsonObject,
   roundSurchargeAmountToCent,
-  sortTransactionsByLatestCreationTime,
 } from '../utils/app.utils';
 import ApplePaySession from '@mollie/api-client/dist/types/src/data/applePaySession/ApplePaySession';
 import { getMethodConfigObjects, getSingleMethodConfigObject } from '../commercetools/customObjects.commercetools';
@@ -86,14 +85,6 @@ import { removeCartMollieCustomLineItem } from './cart.service';
  * @return {CustomMethod[]} - The validated and sorted payment methods.
  */
 const validateAndSortMethods = (methods: CustomMethod[], configObjects: CustomObject[]): CustomMethod[] => {
-  methods.push({
-    id: 'googlepay',
-    name: { 'en-GB': 'Google Pay' },
-    description: { 'en-GB': '' },
-    image: '',
-    order: 0,
-  });
-
   if (!configObjects.length) {
     return methods.filter(
       (method: CustomMethod) => SupportedPaymentMethods[method.id.toString() as SupportedPaymentMethods],
@@ -443,8 +434,6 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
 
   const ctActions = await getCreatePaymentUpdateAction(molliePayment, ctPayment, surchargeAmountInCent);
 
-  logger.debug('SCTM - handleCreatePayment - actionslogging', ctActions);
-
   return {
     statusCode: 201,
     actions: ctActions,
@@ -547,9 +536,9 @@ export const handleCreateRefund = async (ctPayment: Payment): Promise<Controller
   } else {
     logger.debug('SCTM - handleCreateRefund - creating a refund for the latest success charge transaction');
 
-    const latestTransactions = sortTransactionsByLatestCreationTime(ctPayment.transactions);
+    const reversedTransactions = Object.assign([], ctPayment.transactions).reverse() as Transaction[];
 
-    successChargeTransaction = latestTransactions.find(
+    successChargeTransaction = reversedTransactions.find(
       (transaction) =>
         transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Success,
     );
@@ -616,27 +605,20 @@ export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<Con
             pendingRefundTransaction?.custom?.fields[CustomFields.transactionRefundForMolliePayment],
       ) as Transaction;
     }
-
-    if (!successChargeTransaction) {
-      throw new CustomError(
-        400,
-        'SCTM - handlePaymentCancelRefund - Cannot find the valid Success Charge transaction.',
-      );
-    }
   }
 
   /**
    * @deprecated v1.2 - Will be remove in the next version
    */
   if (!pendingRefundTransaction || !successChargeTransaction) {
-    const latestTransactions = sortTransactionsByLatestCreationTime(ctPayment.transactions);
+    const reversedTransactions = Object.assign([], ctPayment.transactions).reverse() as Transaction[];
 
-    pendingRefundTransaction = latestTransactions.find(
+    pendingRefundTransaction = reversedTransactions.find(
       (transaction) =>
         transaction.type === CTTransactionType.Refund && transaction.state === CTTransactionState.Pending,
     );
 
-    successChargeTransaction = latestTransactions.find(
+    successChargeTransaction = reversedTransactions.find(
       (transaction) =>
         transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Success,
     );
