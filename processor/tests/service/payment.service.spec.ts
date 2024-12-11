@@ -1814,7 +1814,7 @@ describe('Test handleCreatePayment', () => {
       ],
       interfaceInteractions: [],
       paymentMethodInfo: {
-        method: 'googlepay',
+        method: 'ideal',
       },
       custom: {
         type: {
@@ -1904,7 +1904,7 @@ describe('Test handleCreatePayment', () => {
     });
 
     (createMollieCreatePaymentParams as jest.Mock).mockReturnValueOnce({
-      method: 'googlepay',
+      method: 'ideal',
     });
 
     (changeTransactionState as jest.Mock).mockReturnValueOnce({
@@ -1961,7 +1961,7 @@ describe('Test handleCreatePayment', () => {
           sctm_id: '5c8b0375-305a-4f19-ae8e-07806b101999',
           sctm_action_type: 'createPayment',
           sctm_created_at: '2024-03-20T09:13:37+00:00',
-          sctm_request: '{"transactionId":"5c8b0375-305a-4f19-ae8e-07806b101999","paymentMethod":"googlepay"}',
+          sctm_request: '{"transactionId":"5c8b0375-305a-4f19-ae8e-07806b101999","paymentMethod":"ideal"}',
           sctm_response:
             '{"molliePaymentId":"tr_7UhSN1zuXS","checkoutUrl":"https://www.mollie.com/checkout/select-method/7UhSN1zuXS","transactionId":"5c8b0375-305a-4f19-ae8e-07806b101999"}',
         },
@@ -2001,7 +2001,7 @@ describe('Test handleCreatePayment', () => {
 });
 
 describe('Test handleCreateRefund', () => {
-  it('should return status code and array of actions', async () => {
+  it('should return status code and array of actions (1 success charge transaction)', async () => {
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
       version: 1,
@@ -2458,7 +2458,6 @@ describe('Test handlePaymentCancelRefund', () => {
       {
         id: '5c8b0375-305a-4f19-ae8e-07806b102000',
         type: 'CancelAuthorization',
-        interactionId: 're_4qqhO89gsT',
         amount: {
           type: 'centPrecision',
           currencyCode: 'EUR',
@@ -2533,7 +2532,7 @@ describe('Test handlePaymentCancelRefund', () => {
     }
   });
 
-  it('should return status code and array of actions', async () => {
+  it('should return status code and array of actions (interactionId is not defined in the Initial CancelAuthorization transaction)', async () => {
     const mollieRefund: Refund = {
       resource: 'refund',
       id: CTPayment.transactions[1].interactionId,

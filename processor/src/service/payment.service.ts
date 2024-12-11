@@ -423,10 +423,6 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
 
   const paymentParams = createMollieCreatePaymentParams(ctPayment, extensionUrl, surchargeAmountInCent, cart);
 
-  if (method && method.toString() === 'googlepay') {
-    paymentParams.method = PaymentMethod.creditcard;
-  }
-
   let molliePayment;
   if (PaymentMethod[paymentParams.method as PaymentMethod]) {
     logger.debug('SCTM - handleCreatePayment - Attempt creating a payment with method defined in Mollie NodeJS Client');
@@ -531,9 +527,8 @@ export const getCreatePaymentUpdateAction = async (
 };
 
 export const handleCreateRefund = async (ctPayment: Payment): Promise<ControllerResponseType> => {
-  const successChargeTransaction = ctPayment.transactions.find(
-    (transaction) => transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Success,
-  );
+  let successChargeTransaction;
+  const updateActions = [] as UpdateAction[];
 
   const initialRefundTransaction = ctPayment.transactions.find(
     (transaction) => transaction.type === CTTransactionType.Refund && transaction.state === CTTransactionState.Initial,
@@ -577,12 +572,14 @@ export const handleCreateRefund = async (ctPayment: Payment): Promise<Controller
 
   const refund = await createPaymentRefund(paymentCreateRefundParams);
 
+  updateActions.push(
+    changeTransactionInteractionId(initialRefundTransaction?.id as string, refund.id),
+    changeTransactionState(initialRefundTransaction?.id as string, CTTransactionState.Pending),
+  );
+
   return {
     statusCode: 201,
-    actions: [
-      changeTransactionInteractionId(initialRefundTransaction?.id as string, refund.id),
-      changeTransactionState(initialRefundTransaction?.id as string, CTTransactionState.Pending),
-    ],
+    actions: updateActions,
   };
 };
 
@@ -594,13 +591,8 @@ export const handleCreateRefund = async (ctPayment: Payment): Promise<Controller
  * @throws {CustomError} If there is an error in the process.
  */
 export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<ControllerResponseType> => {
-  const successChargeTransaction = ctPayment.transactions.find(
-    (transaction) => transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Success,
-  );
-
-  const pendingRefundTransaction = ctPayment.transactions.find(
-    (transaction) => transaction.type === CTTransactionType.Refund && transaction.state === CTTransactionState.Pending,
-  );
+  let pendingRefundTransaction: any;
+  let successChargeTransaction: any;
 
   const initialCancelAuthorization = ctPayment.transactions.find(
     (transaction) =>
