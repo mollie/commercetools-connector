@@ -71,6 +71,7 @@ import {
   convertCentToEUR,
   parseStringToJsonObject,
   roundSurchargeAmountToCent,
+  sortTransactionsByLatestCreationTime,
 } from '../utils/app.utils';
 import ApplePaySession from '@mollie/api-client/dist/types/src/data/applePaySession/ApplePaySession';
 import { getMethodConfigObjects, getSingleMethodConfigObject } from '../commercetools/customObjects.commercetools';
@@ -536,9 +537,9 @@ export const handleCreateRefund = async (ctPayment: Payment): Promise<Controller
   } else {
     logger.debug('SCTM - handleCreateRefund - creating a refund for the latest success charge transaction');
 
-    const reversedTransactions = Object.assign([], ctPayment.transactions).reverse() as Transaction[];
+    const latestTransactions = sortTransactionsByLatestCreationTime(ctPayment.transactions);
 
-    successChargeTransaction = reversedTransactions.find(
+    successChargeTransaction = latestTransactions.find(
       (transaction) =>
         transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Success,
     );
@@ -605,20 +606,27 @@ export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<Con
             pendingRefundTransaction?.custom?.fields[CustomFields.transactionRefundForMolliePayment],
       ) as Transaction;
     }
+
+    if (!successChargeTransaction) {
+      throw new CustomError(
+        400,
+        'SCTM - handlePaymentCancelRefund - Cannot find the valid Success Charge transaction.',
+      );
+    }
   }
 
   /**
    * @deprecated v1.2 - Will be remove in the next version
    */
   if (!pendingRefundTransaction || !successChargeTransaction) {
-    const reversedTransactions = Object.assign([], ctPayment.transactions).reverse() as Transaction[];
+    const latestTransactions = sortTransactionsByLatestCreationTime(ctPayment.transactions);
 
-    pendingRefundTransaction = reversedTransactions.find(
+    pendingRefundTransaction = latestTransactions.find(
       (transaction) =>
         transaction.type === CTTransactionType.Refund && transaction.state === CTTransactionState.Pending,
     );
 
-    successChargeTransaction = reversedTransactions.find(
+    successChargeTransaction = latestTransactions.find(
       (transaction) =>
         transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Success,
     );
