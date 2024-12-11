@@ -71,6 +71,7 @@ import {
   convertCentToEUR,
   parseStringToJsonObject,
   roundSurchargeAmountToCent,
+  sortTransactionsByLatestCreationTime,
 } from '../utils/app.utils';
 import ApplePaySession from '@mollie/api-client/dist/types/src/data/applePaySession/ApplePaySession';
 import { getMethodConfigObjects, getSingleMethodConfigObject } from '../commercetools/customObjects.commercetools';
@@ -538,6 +539,37 @@ export const handleCreateRefund = async (ctPayment: Payment): Promise<Controller
     (transaction) => transaction.type === CTTransactionType.Refund && transaction.state === CTTransactionState.Initial,
   );
 
+  if (initialRefundTransaction?.custom?.fields[CustomFields.transactionRefundForMolliePayment]) {
+    logger.debug('SCTM - handleCreateRefund - creating a refund with specific payment id');
+
+    successChargeTransaction = ctPayment.transactions.find(
+      (transaction) =>
+        transaction.type === CTTransactionType.Charge &&
+        transaction.state === CTTransactionState.Success &&
+        transaction.interactionId ===
+          initialRefundTransaction?.custom?.fields[CustomFields.transactionRefundForMolliePayment],
+    );
+  } else {
+    logger.debug('SCTM - handleCreateRefund - creating a refund for the latest success charge transaction');
+
+    const latestTransactions = sortTransactionsByLatestCreationTime(ctPayment.transactions);
+
+    successChargeTransaction = latestTransactions.find(
+      (transaction) =>
+        transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Success,
+    );
+
+    updateActions.push(
+      setTransactionCustomType(initialRefundTransaction?.id as string, CustomFields.transactionRefundForMolliePayment, {
+        [CustomFields.transactionRefundForMolliePayment]: successChargeTransaction?.interactionId,
+      }),
+    );
+  }
+
+  if (!successChargeTransaction) {
+    throw new CustomError(400, 'SCTM - handleCreateRefund - Cannot find valid success charge transaction');
+  }
+
   const paymentCreateRefundParams: CreateParameters = {
     paymentId: successChargeTransaction?.interactionId as string,
     amount: makeMollieAmount(initialRefundTransaction?.amount as CentPrecisionMoney),
@@ -574,6 +606,52 @@ export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<Con
     (transaction) =>
       transaction.type === CTTransactionType.CancelAuthorization && transaction.state === CTTransactionState.Initial,
   );
+
+  if (initialCancelAuthorization?.interactionId) {
+    pendingRefundTransaction = ctPayment.transactions.find(
+      (transaction) =>
+        transaction.type === CTTransactionType.Refund &&
+        transaction.state === CTTransactionState.Pending &&
+        transaction?.interactionId === initialCancelAuthorization.interactionId,
+    ) as Transaction;
+
+    if (pendingRefundTransaction) {
+      successChargeTransaction = ctPayment.transactions.find(
+        (transaction) =>
+          transaction.type === CTTransactionType.Charge &&
+          transaction.state === CTTransactionState.Success &&
+          transaction.interactionId ===
+            pendingRefundTransaction?.custom?.fields[CustomFields.transactionRefundForMolliePayment],
+      ) as Transaction;
+    }
+
+    if (!successChargeTransaction) {
+      throw new CustomError(
+        400,
+        'SCTM - handlePaymentCancelRefund - Cannot find the valid Success Charge transaction.',
+      );
+    }
+  }
+
+  /**
+   * @deprecated v1.2 - Will be remove in the next version
+   */
+  if (!pendingRefundTransaction || !successChargeTransaction) {
+    const latestTransactions = sortTransactionsByLatestCreationTime(ctPayment.transactions);
+
+    pendingRefundTransaction = latestTransactions.find(
+      (transaction) =>
+        transaction.type === CTTransactionType.Refund && transaction.state === CTTransactionState.Pending,
+    );
+
+    successChargeTransaction = latestTransactions.find(
+      (transaction) =>
+        transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Success,
+    );
+  }
+  /**
+   * end deprecated
+   */
 
   const paymentGetRefundParams: CancelParameters = {
     paymentId: successChargeTransaction?.interactionId as string,
