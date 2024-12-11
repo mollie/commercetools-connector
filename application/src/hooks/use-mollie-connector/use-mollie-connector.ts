@@ -15,6 +15,7 @@ import {
   CustomMethodObject,
   MollieResult,
   SupportedPaymentMethods,
+  GooglePay,
 } from '../../types/app';
 
 /**
@@ -45,6 +46,8 @@ const convertMollieMethodToCustomMethod = (
       method.status === 'activated' &&
       SupportedPaymentMethods[method.id as SupportedPaymentMethods]
   );
+
+  availableMethods.push(GooglePay);
   return availableMethods.map((method: MollieMethod) => ({
     id: method.id,
     technicalName: method.description,
