@@ -38,6 +38,7 @@ export const CustomFields = {
       response: 'sctm_apple_pay_session_response',
     },
   },
+  transactionRefundForMolliePayment: 'sctm_transaction_refund_for_mollie_payment',
 };
 
 export enum ConnectorActions {

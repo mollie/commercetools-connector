@@ -3,6 +3,7 @@
   * [Parameters map](#parameters-map)
   * [Representation: CT Payment](#representation-ct-payment)
   * [Creating CommerceTools actions from Mollie's response](#creating-commercetools-actions-from-mollies-response)
+  * [Update per version](#update-per-version)
 
 ## Overview
 This functionality is used to cancel the pending refund which means it is created but not complete yet.
@@ -155,3 +156,8 @@ When order is successfully cancelled on Mollie, we update commercetools payment 
 | `changeTransactionState`         | `transactionId: <pendingRefundTransactionId>, state: 'Failure'`            |
 | `changeTransactionState`         | `transactionId: <initialCancelAuthorizationTransactionId>, state: 'Success'`            |
 | `setTransactionCustomType`     | `transactionId: <pendingRefundTransactionId>, type.key:sctm_payment_cancel_reason, fields: {reasonText: "cancellation reason", statusText: "cancelled from shop side"}`                                   |
+
+## Update per version
+
+The function was updated at:
+- [v1.1.3](../CHANGELOG.md#v113)

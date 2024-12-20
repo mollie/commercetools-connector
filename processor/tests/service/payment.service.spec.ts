@@ -784,7 +784,7 @@ describe('Test handleCreatePayment', () => {
 });
 
 describe('Test handleCreateRefund', () => {
-  it('should return status code and array of actions', async () => {
+  it('should return status code and array of actions (1 success charge transaction)', async () => {
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
       version: 1,
@@ -840,6 +840,227 @@ describe('Test handleCreateRefund', () => {
 
     const paymentCreateRefundParams: CreateParameters = {
       paymentId: 'tr_123123',
+      amount: {
+        value: '10.00',
+        currency: 'EUR',
+      },
+    };
+
+    const result = await handleCreateRefund(CTPayment);
+
+    expect(createPaymentRefund).toBeCalledTimes(1);
+    expect(createPaymentRefund).toBeCalledWith(paymentCreateRefundParams);
+    expect(result.statusCode).toBe(201);
+    expect(result.actions).toStrictEqual([
+      {
+        action: 'setTransactionCustomType',
+        type: {
+          key: CustomFieldName.transactionRefundForMolliePayment,
+        },
+        transactionId: 'test_refund',
+        fields: {
+          [CustomFieldName.transactionRefundForMolliePayment]: 'tr_123123',
+        },
+      },
+      {
+        action: 'changeTransactionInteractionId',
+        transactionId: 'test_refund',
+        interactionId: 'fake_refund_id',
+      },
+      {
+        action: 'changeTransactionState',
+        transactionId: 'test_refund',
+        state: 'Pending',
+      },
+    ]);
+  });
+
+  it('should return status code and array of actions (more than 1 success charge transaction, with Mollie payment that need to be refunded is not specified)', async () => {
+    const targetedMolliePaymentId = 'tr_123456';
+
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [
+        {
+          id: uuid,
+          timestamp: '2024-06-24T08:28:43.474Z',
+          type: 'Charge',
+          interactionId: 'tr_123123',
+          amount: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 1000,
+            fractionDigits: 2,
+          },
+          state: 'Success',
+        },
+        {
+          id: 'test-123',
+          timestamp: '2024-06-24T08:30:43.474Z',
+          type: 'Charge',
+          interactionId: targetedMolliePaymentId,
+          amount: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 1000,
+            fractionDigits: 2,
+          },
+          state: 'Success',
+        },
+        {
+          id: 'test_refund',
+          type: 'Refund',
+          amount: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 1000,
+            fractionDigits: 2,
+          },
+          state: 'Initial',
+        },
+      ],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'creditcard',
+      },
+    };
+
+    (changeTransactionState as jest.Mock).mockReturnValueOnce({
+      action: 'changeTransactionState',
+      state: 'Pending',
+      transactionId: 'test_refund',
+    });
+
+    (createPaymentRefund as jest.Mock).mockReturnValue({
+      id: 'fake_refund_id',
+    });
+
+    const paymentCreateRefundParams: CreateParameters = {
+      paymentId: targetedMolliePaymentId,
+      amount: {
+        value: '10.00',
+        currency: 'EUR',
+      },
+    };
+
+    const result = await handleCreateRefund(CTPayment);
+
+    expect(createPaymentRefund).toBeCalledTimes(1);
+    expect(createPaymentRefund).toBeCalledWith(paymentCreateRefundParams);
+    expect(result.statusCode).toBe(201);
+    expect(result.actions).toStrictEqual([
+      {
+        action: 'setTransactionCustomType',
+        type: {
+          key: CustomFieldName.transactionRefundForMolliePayment,
+        },
+        transactionId: 'test_refund',
+        fields: {
+          [CustomFieldName.transactionRefundForMolliePayment]: targetedMolliePaymentId,
+        },
+      },
+      {
+        action: 'changeTransactionInteractionId',
+        transactionId: 'test_refund',
+        interactionId: 'fake_refund_id',
+      },
+      {
+        action: 'changeTransactionState',
+        transactionId: 'test_refund',
+        state: 'Pending',
+      },
+    ]);
+  });
+
+  it('should return status code and array of actions (more than 1 success charge transaction, with Mollie payment that need to be refunded is specified)', async () => {
+    const targetedMolliePaymentId = 'tr_123123';
+
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [
+        {
+          id: uuid,
+          type: 'Charge',
+          interactionId: targetedMolliePaymentId,
+          amount: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 1000,
+            fractionDigits: 2,
+          },
+          state: 'Success',
+        },
+        {
+          id: 'test-123',
+          type: 'Charge',
+          interactionId: 'tr_123456',
+          amount: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 1000,
+            fractionDigits: 2,
+          },
+          state: 'Success',
+        },
+        {
+          id: 'test_refund',
+          type: 'Refund',
+          amount: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 1000,
+            fractionDigits: 2,
+          },
+          state: 'Initial',
+          custom: {
+            type: {
+              typeId: 'type',
+              id: 'custom-type-id',
+            },
+            fields: {
+              [CustomFieldName.transactionRefundForMolliePayment]: targetedMolliePaymentId,
+            },
+          },
+        },
+      ],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: 'creditcard',
+      },
+    };
+
+    (changeTransactionState as jest.Mock).mockReturnValueOnce({
+      action: 'changeTransactionState',
+      state: 'Pending',
+      transactionId: 'test_refund',
+    });
+
+    (createPaymentRefund as jest.Mock).mockReturnValue({
+      id: 'fake_refund_id',
+    });
+
+    const paymentCreateRefundParams: CreateParameters = {
+      paymentId: targetedMolliePaymentId,
       amount: {
         value: '10.00',
         currency: 'EUR',

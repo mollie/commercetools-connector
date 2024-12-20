@@ -56,7 +56,7 @@ import { getPaymentExtension } from '../commercetools/extensions.commercetools';
 import { HttpDestination } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/extension';
 import { cancelPaymentRefund, createPaymentRefund, getPaymentRefund } from '../mollie/refund.mollie';
 import { ApplePaySessionRequest, CustomPayment, SupportedPaymentMethods } from '../types/mollie.types';
-import { parseStringToJsonObject } from '../utils/app.utils';
+import { parseStringToJsonObject, sortTransactionsByLatestCreationTime } from '../utils/app.utils';
 import ApplePaySession from '@mollie/api-client/dist/types/src/data/applePaySession/ApplePaySession';
 
 /**
@@ -334,13 +334,46 @@ export const getCreatePaymentUpdateAction = async (molliePayment: MPayment | Cus
 };
 
 export const handleCreateRefund = async (ctPayment: Payment): Promise<ControllerResponseType> => {
-  const successChargeTransaction = ctPayment.transactions.find(
-    (transaction) => transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Success,
-  );
+  let successChargeTransaction;
+  const updateActions = [] as UpdateAction[];
 
   const initialRefundTransaction = ctPayment.transactions.find(
     (transaction) => transaction.type === CTTransactionType.Refund && transaction.state === CTTransactionState.Initial,
   );
+
+  if (initialRefundTransaction?.custom?.fields[CustomFields.transactionRefundForMolliePayment]) {
+    logger.debug('SCTM - handleCreateRefund - creating a refund with specific payment id');
+
+    successChargeTransaction = ctPayment.transactions.find(
+      (transaction) =>
+        transaction.type === CTTransactionType.Charge &&
+        transaction.state === CTTransactionState.Success &&
+        transaction.interactionId ===
+          initialRefundTransaction?.custom?.fields[CustomFields.transactionRefundForMolliePayment],
+    );
+  } else {
+    logger.debug('SCTM - handleCreateRefund - creating a refund for the latest success charge transaction');
+
+    const hasTransactionWithoutTimestamp = ctPayment.transactions.filter((transaction) => !transaction.timestamp);
+    const latestTransactions = hasTransactionWithoutTimestamp
+      ? ctPayment.transactions.reverse()
+      : sortTransactionsByLatestCreationTime(ctPayment.transactions);
+
+    successChargeTransaction = latestTransactions.find(
+      (transaction) =>
+        transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Success,
+    );
+
+    updateActions.push(
+      setTransactionCustomType(initialRefundTransaction?.id as string, CustomFields.transactionRefundForMolliePayment, {
+        [CustomFields.transactionRefundForMolliePayment]: successChargeTransaction?.interactionId,
+      }),
+    );
+  }
+
+  if (!successChargeTransaction) {
+    throw new CustomError(400, 'SCTM - handleCreateRefund - Cannot find valid success charge transaction');
+  }
 
   const paymentCreateRefundParams: CreateParameters = {
     paymentId: successChargeTransaction?.interactionId as string,
@@ -349,12 +382,14 @@ export const handleCreateRefund = async (ctPayment: Payment): Promise<Controller
 
   const refund = await createPaymentRefund(paymentCreateRefundParams);
 
+  updateActions.push(
+    changeTransactionInteractionId(initialRefundTransaction?.id as string, refund.id),
+    changeTransactionState(initialRefundTransaction?.id as string, CTTransactionState.Pending),
+  );
+
   return {
     statusCode: 201,
-    actions: [
-      changeTransactionInteractionId(initialRefundTransaction?.id as string, refund.id),
-      changeTransactionState(initialRefundTransaction?.id as string, CTTransactionState.Pending),
-    ],
+    actions: updateActions,
   };
 };
 
