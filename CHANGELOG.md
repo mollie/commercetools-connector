@@ -4,7 +4,42 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## v1.2.1
+## v1.2.0
+
+Added
+
+- Mollie custom application
+
+Updated
+
+- [getPaymentMethods](/docs/GetPaymentMethods.md) response has new returned format as follow
+
+  ```Typescript
+  {
+      id: string,
+      name: Record<string, string>
+      description: Record<string, string>
+      image: string;
+      order: number;
+  }
+
+  // e.g.
+  {
+    id: 'paypal',
+    name: {
+        'en-GB': 'PayPal',
+        'de-DE': 'PayPal',
+    },
+    description: {
+        'en-GB': '',
+        'de-DE': '',
+    },
+    image: 'https://example.img/paypal.svg',
+    order: 1
+  }
+  ```
+
+## v1.1.3
 
 Added
 
@@ -16,6 +51,7 @@ Fixes
 - Handling the Refund Creation for the case that the Payment has more than one Success Charge transaction
   - Changing the way to determine the Create Refund action:
     - Before
+
     ```Typescript
       // processor/src/utils/paymentAction.utils.ts
 
@@ -25,6 +61,7 @@ Fixes
     ```
 
     - After
+
     ```Typescript
       // processor/src/utils/paymentAction.utils.ts
 
@@ -35,6 +72,7 @@ Fixes
 
   - We are supporting to create the refund for the payment which has more than one Success Charge transactions
   - By default, we will create the Refund for the latest Success Charge transaction. For example:
+
     ```Typescript
     // CommerceTools Payment
     {
@@ -95,6 +133,7 @@ Fixes
 - Following the changes for creating refund, we also updated the handler for Refund Cancellation to match with the above changes
   - Changing the way to determine the Cancel Refund action:
     - Before
+
     ```Typescript
       // processor/src/utils/paymentAction.utils.ts
 
@@ -108,6 +147,7 @@ Fixes
     ```
 
     - After
+
     ```Typescript
       // processor/src/utils/paymentAction.utils.ts
 
@@ -121,6 +161,7 @@ Fixes
     ```
 
   - To support the old versions, we will create the cancellation for the latest Pending Refund transaction (which is a pending refund for the latest Success Charge transaction in that payment). For example:
+
     ```Typescript
     // CommerceTools Payment
     {
@@ -158,9 +199,11 @@ Fixes
 
     // In this case, this will be considered as a Cancellation request for the Pending Refund with id: refund-transaction-2
     ```
+
     __*Note:* The above solution is just for supporting the old versions and will be remove in the near future (in next versions). From this version, please follow the below solution.__
 
   - However, to do it in a correct way, from this version, you should specify the Mollie Refund ID (which stored in the `interactionId` of the Pending Refund transaction) that you want to cancel by putting it in the `interactionId` of the Initial CancelAuthorization. For example:
+
     ```Typescript
     // CommerceTools Payment
     {
@@ -198,41 +241,6 @@ Fixes
 
     // In this case, this will be considered as a Cancellation request for the Pending Refund with id: refund-transaction-1 
     ```
-
-## v1.2.0
-
-Added
-
-- Mollie custom application
-
-Updated
-
-- [getPaymentMethods](/docs/GetPaymentMethods.md) response has new returned format as follow
-
-  ```Typescript
-  {
-      id: string,
-      name: Record<string, string>
-      description: Record<string, string>
-      image: string;
-      order: number;
-  }
-
-  // e.g.
-  {
-    id: 'paypal',
-    name: {
-        'en-GB': 'PayPal',
-        'de-DE': 'PayPal',
-    },
-    description: {
-        'en-GB': '',
-        'de-DE': '',
-    },
-    image: 'https://example.img/paypal.svg',
-    order: 1
-  }
-  ```
 
 ## v1.1.2
 
