@@ -537,7 +537,10 @@ export const handleCreateRefund = async (ctPayment: Payment): Promise<Controller
   } else {
     logger.debug('SCTM - handleCreateRefund - creating a refund for the latest success charge transaction');
 
-    const latestTransactions = sortTransactionsByLatestCreationTime(ctPayment.transactions);
+    const hasTransactionWithoutTimestamp = ctPayment.transactions.filter((transaction) => !transaction.timestamp);
+    const latestTransactions = hasTransactionWithoutTimestamp
+      ? ctPayment.transactions.reverse()
+      : sortTransactionsByLatestCreationTime(ctPayment.transactions);
 
     successChargeTransaction = latestTransactions.find(
       (transaction) =>

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { post } from '../controllers/processor.controller';
 import { install, healthCheck, uninstall, mollieStatus } from '../controllers/connector.controller';
 import { readConfiguration } from '../utils/config.utils';
-import { oauthMiddleware } from '../middleware/oauth2.middleware';
+import { oauthMiddleware } from '../middleware/oauth.middleware';
 
 const serviceRouter = Router();
 const AUTH_MODE = readConfiguration().commerceTools.authMode === '1';
