@@ -1,4 +1,4 @@
-import { ConnectorActions, MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM } from '../../src/utils/constant.utils';
+import { ConnectorActions, CustomFields, MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM } from '../../src/utils/constant.utils';
 import { describe, test, expect, jest } from '@jest/globals';
 import {
   addCustomLineItem,
@@ -193,6 +193,21 @@ describe('Test actions.utils.ts', () => {
       action: 'setTransactionCustomField',
       name,
       value,
+      transactionId,
+    });
+  });
+
+  test('should be able to return the correct setTransactionCustomField action', () => {
+    const name = CustomFields.transactionSurchargeCost;
+    const surchargeInCentAmount = {
+      surchargeInCentAmount: 12345,
+    };
+    const transactionId = 'test';
+
+    expect(setTransactionCustomField(name, JSON.stringify(surchargeInCentAmount), transactionId)).toStrictEqual({
+      action: 'setTransactionCustomField',
+      name,
+      value: JSON.stringify(surchargeInCentAmount),
       transactionId,
     });
   });

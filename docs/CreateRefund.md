@@ -100,4 +100,4 @@ When the refund is completed, this transaction's state will be updated by the no
 ## Update per version
 
 The function was updated at:
-- [v1.2.1](../CHANGELOG.md#v121)
+- [v1.1.3](../CHANGELOG.md#v113)
