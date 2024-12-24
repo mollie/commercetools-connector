@@ -622,7 +622,10 @@ export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<Con
    * @deprecated v1.2 - Will be remove in the next version
    */
   if (!pendingRefundTransaction || !successChargeTransaction) {
-    const latestTransactions = sortTransactionsByLatestCreationTime(ctPayment.transactions);
+    const hasTransactionWithoutTimestamp = ctPayment.transactions.filter((transaction) => !transaction.timestamp);
+    const latestTransactions = hasTransactionWithoutTimestamp
+      ? ctPayment.transactions.reverse()
+      : sortTransactionsByLatestCreationTime(ctPayment.transactions);
 
     pendingRefundTransaction = latestTransactions.find(
       (transaction) =>
