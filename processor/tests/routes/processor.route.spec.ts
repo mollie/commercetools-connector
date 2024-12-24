@@ -7,6 +7,8 @@ import {
   createCustomPaymentType,
   createCustomPaymentInterfaceInteractionType,
   createCustomPaymentTransactionCancelReasonType,
+  createTransactionSurchargeCustomType,
+  createTransactionRefundForMolliePaymentCustomType,
 } from '../../src/commercetools/customFields.commercetools';
 
 jest.mock('../../src/commercetools/extensions.commercetools', () => ({
@@ -18,6 +20,8 @@ jest.mock('../../src/commercetools/customFields.commercetools', () => ({
   createCustomPaymentType: jest.fn(),
   createCustomPaymentInterfaceInteractionType: jest.fn(),
   createCustomPaymentTransactionCancelReasonType: jest.fn(),
+  createTransactionSurchargeCustomType: jest.fn(),
+  createTransactionRefundForMolliePaymentCustomType: jest.fn(),
 }));
 
 describe('Test src/route/processor.route.ts', () => {
@@ -109,6 +113,8 @@ describe('Test src/route/processor.route.ts', () => {
       (createCustomPaymentType as jest.Mock).mockReturnValueOnce(Promise.resolve());
       (createCustomPaymentInterfaceInteractionType as jest.Mock).mockReturnValueOnce(Promise.resolve());
       (createCustomPaymentTransactionCancelReasonType as jest.Mock).mockReturnValueOnce(Promise.resolve());
+      (createTransactionSurchargeCustomType as jest.Mock).mockReturnValueOnce(Promise.resolve());
+      (createTransactionRefundForMolliePaymentCustomType as jest.Mock).mockReturnValueOnce(Promise.resolve());
 
       req = {
         hostname: 'test.com',

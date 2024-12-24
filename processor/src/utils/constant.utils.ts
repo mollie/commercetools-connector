@@ -39,6 +39,7 @@ export const CustomFields = {
     },
   },
   transactionSurchargeCost: 'sctm_transaction_surcharge_cost',
+  transactionRefundForMolliePayment: 'sctm_transaction_refund_for_mollie_payment',
 };
 
 export enum ConnectorActions {

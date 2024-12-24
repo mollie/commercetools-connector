@@ -6,11 +6,12 @@ import {
   parseStringToJsonObject,
   removeEmptyProperties,
   roundSurchargeAmountToCent,
+  sortTransactionsByLatestCreationTime,
   validateEmail,
 } from '../../src/utils/app.utils';
 import { logger } from '../../src/utils/logger.utils';
 import CustomError from '../../src/errors/custom.error';
-import { Payment } from '@commercetools/platform-sdk';
+import { Payment, Transaction } from '@commercetools/platform-sdk';
 import { SurchargeCost } from '../../src/types/commercetools.types';
 
 describe('Test createDateNowString', () => {
@@ -143,5 +144,65 @@ describe('Test roundSurchargeAmountToCent', () => {
     const fractionDigits = 2;
 
     expect(roundSurchargeAmountToCent(surchargeAmountInEur, fractionDigits)).toBe(30100);
+  });
+});
+
+describe('Test sortTransactionsByLatestCreationTime', () => {
+  it('should return the correct order', () => {
+    const data = [
+      {
+        id: '39c1eae1-e9b4-45f0-ac18-7d83ec429cc8',
+        timestamp: '2024-06-24T08:28:43.474Z',
+        type: 'Authorization',
+        amount: {
+          type: 'centPrecision',
+          currencyCode: 'GBP',
+          centAmount: 61879,
+          fractionDigits: 2,
+        },
+        interactionId: '12789fae-d6d6-4b66-9739-3a420dbda2a8',
+        state: 'Failure',
+      },
+      {
+        id: '39c1eae1-e9b4-45f0-ac18-7d83ec429cde',
+        timestamp: '2024-06-24T08:29:43.474Z',
+        type: 'Authorization',
+        amount: {
+          type: 'centPrecision',
+          currencyCode: 'GBP',
+          centAmount: 61879,
+          fractionDigits: 2,
+        },
+        interactionId: '12789fae-d6d6-4b66-9739-3a420dbda2a8',
+        state: 'Failure',
+      },
+      {
+        id: '39c1eae1-e9b4-45f0-ac18-7d83ec429cd9',
+        timestamp: '2024-06-24T08:30:43.474Z',
+        type: 'Authorization',
+        amount: {
+          type: 'centPrecision',
+          currencyCode: 'GBP',
+          centAmount: 61879,
+          fractionDigits: 2,
+        },
+        interactionId: '12789fae-d6d6-4b66-9739-3a420dbda2a8',
+        state: 'Failure',
+      },
+      {
+        id: '39c1eae1-e9b4-45f0-ac18-7d83ec429111',
+        type: 'Authorization',
+        amount: {
+          type: 'centPrecision',
+          currencyCode: 'GBP',
+          centAmount: 61879,
+          fractionDigits: 2,
+        },
+        interactionId: '12789fae-d6d6-4b66-9739-3a420dbda2a8',
+        state: 'Failure',
+      },
+    ] as Transaction[];
+
+    expect(sortTransactionsByLatestCreationTime(data)).toStrictEqual([data[2], data[1], data[0], data[3]]);
   });
 });
