@@ -401,18 +401,62 @@ export const handleCreateRefund = async (ctPayment: Payment): Promise<Controller
  * @throws {CustomError} If there is an error in the process.
  */
 export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<ControllerResponseType> => {
-  const successChargeTransaction = ctPayment.transactions.find(
-    (transaction) => transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Success,
-  );
-
-  const pendingRefundTransaction = ctPayment.transactions.find(
-    (transaction) => transaction.type === CTTransactionType.Refund && transaction.state === CTTransactionState.Pending,
-  );
+  let pendingRefundTransaction: any;
+  let successChargeTransaction: any;
 
   const initialCancelAuthorization = ctPayment.transactions.find(
     (transaction) =>
       transaction.type === CTTransactionType.CancelAuthorization && transaction.state === CTTransactionState.Initial,
   );
+
+  if (initialCancelAuthorization?.interactionId) {
+    pendingRefundTransaction = ctPayment.transactions.find(
+      (transaction) =>
+        transaction.type === CTTransactionType.Refund &&
+        transaction.state === CTTransactionState.Pending &&
+        transaction?.interactionId === initialCancelAuthorization.interactionId,
+    ) as Transaction;
+
+    if (pendingRefundTransaction) {
+      successChargeTransaction = ctPayment.transactions.find(
+        (transaction) =>
+          transaction.type === CTTransactionType.Charge &&
+          transaction.state === CTTransactionState.Success &&
+          transaction.interactionId ===
+            pendingRefundTransaction?.custom?.fields[CustomFields.transactionRefundForMolliePayment],
+      ) as Transaction;
+    }
+
+    if (!successChargeTransaction) {
+      throw new CustomError(
+        400,
+        'SCTM - handlePaymentCancelRefund - Cannot find the valid Success Charge transaction.',
+      );
+    }
+  }
+
+  /**
+   * @deprecated v1.2 - Will be remove in the next version
+   */
+  if (!pendingRefundTransaction || !successChargeTransaction) {
+    const hasTransactionWithoutTimestamp = ctPayment.transactions.filter((transaction) => !transaction.timestamp);
+    const latestTransactions = hasTransactionWithoutTimestamp
+      ? ctPayment.transactions.reverse()
+      : sortTransactionsByLatestCreationTime(ctPayment.transactions);
+
+    pendingRefundTransaction = latestTransactions.find(
+      (transaction) =>
+        transaction.type === CTTransactionType.Refund && transaction.state === CTTransactionState.Pending,
+    );
+
+    successChargeTransaction = latestTransactions.find(
+      (transaction) =>
+        transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Success,
+    );
+  }
+  /**
+   * end deprecated
+   */
 
   const paymentGetRefundParams: CancelParameters = {
     paymentId: successChargeTransaction?.interactionId as string,
