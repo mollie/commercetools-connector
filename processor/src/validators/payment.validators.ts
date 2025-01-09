@@ -57,12 +57,20 @@ const validateBlik = (paymentCustomFields: any, ctPayment: CTPayment): void => {
     throwError('validateBlik', 'Currency Code must be PLN for payment method BLIK.', ctPayment);
   }
 
-  if (!paymentCustomFields?.billingEmail) {
-    throwError('validateBlik', 'billingEmail is required for payment method BLIK.', ctPayment);
-  }
+  if (paymentCustomFields?.billingAddress?.email) {
+    if (validateEmail(paymentCustomFields.billingAddress.email)) {
+      return;
+    }
 
-  if (!validateEmail(paymentCustomFields.billingEmail)) {
+    throwError('validateBlik', 'billingAddress.email must be a valid email address.', ctPayment);
+  } else if (paymentCustomFields?.billingEmail) {
+    if (validateEmail(paymentCustomFields?.billingEmail)) {
+      return;
+    }
+
     throwError('validateBlik', 'billingEmail must be a valid email address.', ctPayment);
+  } else {
+    throwError('validateBlik', 'billingAddress.email must be a valid email address.', ctPayment);
   }
 };
 

@@ -87,8 +87,6 @@ const getSpecificPaymentParams = (method: PaymentMethod | CustomPaymentMethod, p
       return {
         dueDate: calculateDueDate(readConfiguration().mollie.bankTransferDueDate),
       };
-    case PaymentMethod.przelewy24:
-      return { billingEmail: paymentRequest.billingEmail ?? '' };
     case PaymentMethod.paypal:
       return {
         sessionId: paymentRequest.sessionId ?? '',
@@ -101,10 +99,6 @@ const getSpecificPaymentParams = (method: PaymentMethod | CustomPaymentMethod, p
       };
     case PaymentMethod.creditcard:
       return { cardToken: paymentRequest.cardToken ?? '' };
-    case CustomPaymentMethod.blik:
-      return {
-        billingEmail: paymentRequest.billingEmail ?? '',
-      };
     default:
       return {};
   }
@@ -154,12 +148,24 @@ export const createMollieCreatePaymentParams = (
 
   const defaultWebhookEndpoint = new URL(extensionUrl).origin + '/webhook';
 
+  let billingAddress = paymentRequest.billingAddress;
+  if (
+    (method === CustomPaymentMethod.blik || method === PaymentMethod.przelewy24) &&
+    !billingAddress?.email &&
+    paymentRequest.billingEmail
+  ) {
+    billingAddress = {
+      ...paymentRequest.billingAddress,
+      email: paymentRequest.billingEmail,
+    };
+  }
+
   const createPaymentParams = {
     amount: makeMollieAmount(amountPlanned, surchargeAmountInCent),
     description: paymentRequest.description ?? '',
     redirectUrl: paymentRequest.redirectUrl ?? null,
     webhookUrl: defaultWebhookEndpoint,
-    billingAddress: paymentRequest.billingAddress ?? {},
+    billingAddress: billingAddress ?? {},
     shippingAddress: paymentRequest.shippingAddress ?? {},
     locale: paymentRequest.locale ?? null,
     method: method as PaymentMethod,
