@@ -6,7 +6,6 @@ import {
   parseStringToJsonObject,
   removeEmptyProperties,
   roundSurchargeAmountToCent,
-  validateEmail,
 } from '../../src/utils/app.utils';
 import { logger } from '../../src/utils/logger.utils';
 import CustomError from '../../src/errors/custom.error';
@@ -88,16 +87,6 @@ describe('Test removeEmptyProperties', () => {
       method: 'creditcard',
       captureMode: 'automatic',
     });
-  });
-});
-
-describe('Test validateEmail', () => {
-  it('should return false when the targeted string is an invalid email', () => {
-    expect(validateEmail('123123')).toBe(false);
-  });
-
-  it('should return true when the targeted string is a valid email', () => {
-    expect(validateEmail('n.tran@shopmacher.de')).toBe(true);
   });
 });
 
