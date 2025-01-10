@@ -11,7 +11,6 @@ import { Cart, CartUpdateAction, Payment, TaxCategoryResourceIdentifier } from '
 import CustomError from '../errors/custom.error';
 import { MethodsListParams, PaymentCreateParams, PaymentMethod } from '@mollie/api-client';
 import { convertCentToEUR, parseStringToJsonObject, removeEmptyProperties } from './app.utils';
-import { readConfiguration } from './config.utils';
 import { addCustomLineItem, removeCustomLineItem } from '../commercetools/action.commercetools';
 
 const extractMethodsRequest = (ctPayment: Payment): ParsedMethodsRequestType | undefined => {
@@ -77,7 +76,11 @@ export const mapCommercetoolsPaymentCustomFieldsToMollieListParams = async (
   }
 };
 
-const getSpecificPaymentParams = (method: PaymentMethod | CustomPaymentMethod, paymentRequest: any) => {
+const getSpecificPaymentParams = (
+  method: PaymentMethod | CustomPaymentMethod,
+  paymentRequest: any,
+  banktransferDueDate: string,
+) => {
   switch (method) {
     case PaymentMethod.applepay:
       return paymentRequest.applePayPaymentToken
@@ -85,7 +88,7 @@ const getSpecificPaymentParams = (method: PaymentMethod | CustomPaymentMethod, p
         : {};
     case PaymentMethod.banktransfer:
       return {
-        dueDate: calculateDueDate(readConfiguration().mollie.bankTransferDueDate),
+        dueDate: calculateDueDate(banktransferDueDate),
       };
     case PaymentMethod.przelewy24:
       return { billingEmail: paymentRequest.billingEmail ?? '' };
@@ -115,6 +118,7 @@ export const createMollieCreatePaymentParams = (
   extensionUrl: string,
   surchargeAmountInCent: number,
   cart: Cart,
+  banktransferDueDate?: string,
 ): PaymentCreateParams => {
   const { amountPlanned, paymentMethodInfo } = payment;
 
@@ -170,7 +174,7 @@ export const createMollieCreatePaymentParams = (
     include: paymentRequest.include ?? '',
     captureMode: paymentRequest.captureMode ?? '',
     lines: mollieLines,
-    ...getSpecificPaymentParams(method as PaymentMethod, paymentRequest),
+    ...getSpecificPaymentParams(method as PaymentMethod, paymentRequest, banktransferDueDate ?? ''),
   };
 
   return removeEmptyProperties(createPaymentParams) as PaymentCreateParams;

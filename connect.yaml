@@ -15,10 +15,6 @@ deployAs:
           description: Commercetools Auth URL
           default: https://auth.europe-west1.gcp.commercetools.com
           required: true
-        - key: MOLLIE_CARD_COMPONENT
-          description: Enable Mollie cart component (0 or 1)
-          required: false
-          default: "0"
         - key: CONNECTOR_MODE
           description: Either test or live
           required: true
@@ -27,9 +23,6 @@ deployAs:
           description: Debug mode (0 or 1)
           required: false
           default: "0"
-        - key: MOLLIE_BANK_TRANSFER_DUE_DATE
-          description: Payment method Bank Transfer due date (1d -> 100d)
-          default: "14d"
         - key: AUTHENTICATION_MODE
           description: To enable secure mode for connector requests using OAuth authentication (0 or 1)
           required: true
