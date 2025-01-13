@@ -7,7 +7,6 @@ import {
   removeEmptyProperties,
   roundSurchargeAmountToCent,
   sortTransactionsByLatestCreationTime,
-  validateEmail,
 } from '../../src/utils/app.utils';
 import { logger } from '../../src/utils/logger.utils';
 import CustomError from '../../src/errors/custom.error';
