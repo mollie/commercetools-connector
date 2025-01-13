@@ -92,16 +92,6 @@ describe('Test removeEmptyProperties', () => {
   });
 });
 
-describe('Test validateEmail', () => {
-  it('should return false when the targeted string is an invalid email', () => {
-    expect(validateEmail('123123')).toBe(false);
-  });
-
-  it('should return true when the targeted string is a valid email', () => {
-    expect(validateEmail('n.tran@shopmacher.de')).toBe(true);
-  });
-});
-
 describe('Test convertCentToEUR', () => {
   it('should return correct result', () => {
     expect(convertCentToEUR(100, 2)).toBe(1);

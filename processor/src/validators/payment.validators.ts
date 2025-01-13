@@ -6,7 +6,7 @@ import { logger } from '../utils/logger.utils';
 import { ConnectorActions, CustomFields } from '../utils/constant.utils';
 import { DeterminePaymentActionType } from '../types/controller.types';
 import { CTTransactionState, CTTransactionType } from '../types/commercetools.types';
-import { parseStringToJsonObject, validateEmail } from '../utils/app.utils';
+import { parseStringToJsonObject } from '../utils/app.utils';
 import { readConfiguration } from '../utils/config.utils';
 import { toBoolean } from 'validator';
 import { CustomPaymentMethod, SupportedPaymentMethods } from '../types/mollie.types';
@@ -46,23 +46,11 @@ export const validateBanktransfer = (paymentCustomFields: any, ctPayment: CTPaym
       ctPayment,
     );
   }
-
-  if (!validateEmail(paymentCustomFields.billingAddress.email)) {
-    throwError('validateBanktransfer', 'email must be a valid email address.', ctPayment);
-  }
 };
 
 const validateBlik = (paymentCustomFields: any, ctPayment: CTPayment): void => {
   if (ctPayment.amountPlanned.currencyCode.toLowerCase() !== 'pln') {
     throwError('validateBlik', 'Currency Code must be PLN for payment method BLIK.', ctPayment);
-  }
-
-  if (!paymentCustomFields?.billingEmail) {
-    throwError('validateBlik', 'billingEmail is required for payment method BLIK.', ctPayment);
-  }
-
-  if (!validateEmail(paymentCustomFields.billingEmail)) {
-    throwError('validateBlik', 'billingEmail must be a valid email address.', ctPayment);
   }
 };
 
