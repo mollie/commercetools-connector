@@ -19,6 +19,7 @@ import { describe, it, expect, jest, afterEach, test } from '@jest/globals';
 import CustomError from '../../src/errors/custom.error';
 import SkipError from '../../src/errors/skip.error';
 import { logger } from '../../src/utils/logger.utils';
+import { getSingleMethodConfigObject } from '../../src/commercetools/customObjects.commercetools';
 
 jest.mock('@mollie/api-client', () => ({
   PaymentMethod: {
@@ -29,6 +30,70 @@ jest.mock('@mollie/api-client', () => ({
     giftcard: 'giftcard',
     banktransfer: 'banktransfer',
   },
+}));
+
+jest.mock('../../src/commercetools/customObjects.commercetools', () => ({
+  getMethodConfigObjects: jest.fn().mockReturnValue([
+    {
+      id: 'f15d2887-8f42-49b4-92db-4ca2b75f243c',
+      version: 10,
+      versionModifiedAt: '2025-01-13T07:25:41.708Z',
+      createdAt: '2025-01-09T06:57:32.504Z',
+      lastModifiedAt: '2025-01-13T07:25:41.708Z',
+      lastModifiedBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      createdBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      container: 'sctm-app-methods',
+      key: 'creditcard',
+      value: {
+        id: 'creditcard',
+        technicalName: 'Card',
+        name: { 'en-GB': 'Card', 'de-DE': 'Card', 'en-US': 'Card' },
+        description: { 'en-GB': '', 'de-DE': '', 'en-US': '' },
+        imageUrl: 'https://www.mollie.com/external/icons/payment-methods/creditcard.svg',
+        status: 'Active',
+        displayOrder: 20,
+        displayCardComponent: true,
+      },
+    },
+    {
+      id: '3838910f-6570-40a8-aee7-bf71dc3a4066',
+      version: 27,
+      versionModifiedAt: '2025-01-13T09:46:54.989Z',
+      createdAt: '2025-01-09T06:57:32.599Z',
+      lastModifiedAt: '2025-01-13T09:46:54.989Z',
+      lastModifiedBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      createdBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      container: 'sctm-app-methods',
+      key: 'banktransfer',
+      value: {
+        id: 'banktransfer',
+        technicalName: 'Bank transfer',
+        name: {
+          'en-GB': 'Bank transfer',
+          'de-DE': 'Bank transfer',
+          'en-US': 'Bank transfer',
+        },
+        description: { 'en-GB': '', 'de-DE': '', 'en-US': '' },
+        imageUrl: 'https://www.mollie.com/external/icons/payment-methods/banktransfer.svg',
+        status: 'Active',
+        displayOrder: 0,
+        banktransferDueDate: '1d',
+      },
+    },
+  ]),
+  getSingleMethodConfigObject: jest.fn(),
 }));
 
 describe('checkExtensionAction', () => {
@@ -248,6 +313,34 @@ describe('checkPaymentMethodInput', () => {
   it('should call checkPaymentMethodSpecificParameters if the payment method is "creditcard', () => {
     const paymentValidators = require('../../src/validators/payment.validators');
 
+    (getSingleMethodConfigObject as jest.Mock).mockReturnValue({
+      id: 'f15d2887-8f42-49b4-92db-4ca2b75f243c',
+      version: 10,
+      versionModifiedAt: '2025-01-13T07:25:41.708Z',
+      createdAt: '2025-01-09T06:57:32.504Z',
+      lastModifiedAt: '2025-01-13T07:25:41.708Z',
+      lastModifiedBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      createdBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      container: 'sctm-app-methods',
+      key: 'creditcard',
+      value: {
+        id: 'creditcard',
+        technicalName: 'Card',
+        name: { 'en-GB': 'Card', 'de-DE': 'Card', 'en-US': 'Card' },
+        description: { 'en-GB': '', 'de-DE': '', 'en-US': '' },
+        imageUrl: 'https://www.mollie.com/external/icons/payment-methods/creditcard.svg',
+        status: 'Active',
+        displayOrder: 20,
+        displayCardComponent: true,
+      },
+    });
+
     jest.spyOn(paymentValidators, 'checkPaymentMethodSpecificParameters');
 
     const CTPayment: Payment = {
@@ -287,6 +380,38 @@ describe('checkPaymentMethodInput', () => {
   it('should validate the billing email for banktransfer method', () => {
     const paymentValidators = require('../../src/validators/payment.validators');
 
+    (getSingleMethodConfigObject as jest.Mock).mockReturnValue({
+      id: '3838910f-6570-40a8-aee7-bf71dc3a4066',
+      version: 27,
+      versionModifiedAt: '2025-01-13T09:46:54.989Z',
+      createdAt: '2025-01-09T06:57:32.599Z',
+      lastModifiedAt: '2025-01-13T09:46:54.989Z',
+      lastModifiedBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      createdBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      container: 'sctm-app-methods',
+      key: 'banktransfer',
+      value: {
+        id: 'banktransfer',
+        technicalName: 'Bank transfer',
+        name: {
+          'en-GB': 'Bank transfer',
+          'de-DE': 'Bank transfer',
+          'en-US': 'Bank transfer',
+        },
+        description: { 'en-GB': '', 'de-DE': '', 'en-US': '' },
+        imageUrl: 'https://www.mollie.com/external/icons/payment-methods/banktransfer.svg',
+        status: 'Active',
+        displayOrder: 0,
+        banktransferDueDate: '1d',
+      },
+    });
+
     jest.spyOn(paymentValidators, 'checkPaymentMethodSpecificParameters');
     jest.spyOn(paymentValidators, 'validateBanktransfer');
 
@@ -314,7 +439,7 @@ describe('checkPaymentMethodInput', () => {
         },
         fields: {
           sctm_create_payment_request:
-            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/","cardToken":"token_12345"}',
+            '{"description":"Test","locale":"en_GB","redirectUrl":"https://www.google.com/","cardToken":"token_12345","billingAddress":{"email":"test@test.com"}}',
         },
       },
     };
@@ -344,6 +469,34 @@ describe('checkPaymentMethodInput', () => {
 describe('checkPaymentMethodSpecificParameters', () => {
   it('should throw an error if the payment method is creditcard and card component is enabled and cardToken is not defined in Custom Field', () => {
     process.env.MOLLIE_CARD_COMPONENT = '1';
+
+    (getSingleMethodConfigObject as jest.Mock).mockReturnValue({
+      id: 'f15d2887-8f42-49b4-92db-4ca2b75f243c',
+      version: 10,
+      versionModifiedAt: '2025-01-13T07:25:41.708Z',
+      createdAt: '2025-01-09T06:57:32.504Z',
+      lastModifiedAt: '2025-01-13T07:25:41.708Z',
+      lastModifiedBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      createdBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      container: 'sctm-app-methods',
+      key: 'creditcard',
+      value: {
+        id: 'creditcard',
+        technicalName: 'Card',
+        name: { 'en-GB': 'Card', 'de-DE': 'Card', 'en-US': 'Card' },
+        description: { 'en-GB': '', 'de-DE': '', 'en-US': '' },
+        imageUrl: 'https://www.mollie.com/external/icons/payment-methods/creditcard.svg',
+        status: 'Active',
+        displayOrder: 20,
+        displayCardComponent: true,
+      },
+    });
 
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
@@ -411,6 +564,34 @@ describe('checkPaymentMethodSpecificParameters', () => {
       },
     };
 
+    (getSingleMethodConfigObject as jest.Mock).mockReturnValue({
+      id: 'f15d2887-8f42-49b4-92db-4ca2b75f243c',
+      version: 10,
+      versionModifiedAt: '2025-01-13T07:25:41.708Z',
+      createdAt: '2025-01-09T06:57:32.504Z',
+      lastModifiedAt: '2025-01-13T07:25:41.708Z',
+      lastModifiedBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      createdBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      container: 'sctm-app-methods',
+      key: 'creditcard',
+      value: {
+        id: 'creditcard',
+        technicalName: 'Card',
+        name: { 'en-GB': 'Card', 'de-DE': 'Card', 'en-US': 'Card' },
+        description: { 'en-GB': '', 'de-DE': '', 'en-US': '' },
+        imageUrl: 'https://www.mollie.com/external/icons/payment-methods/creditcard.svg',
+        status: 'Active',
+        displayOrder: 20,
+        displayCardComponent: true,
+      },
+    });
+
     try {
       checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
     } catch (error: unknown) {
@@ -428,7 +609,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
     }
   });
 
-  it('should throw CustomError if the payment method is creditcard and the custom field sctm_create_payment_request is not a JSON string', () => {
+  it('should throw CustomError if the payment method is creditcard and the custom field sctm_create_payment_request is not a JSON string', async () => {
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
       version: 1,
@@ -457,8 +638,36 @@ describe('checkPaymentMethodSpecificParameters', () => {
       },
     };
 
+    (getSingleMethodConfigObject as jest.Mock).mockReturnValue({
+      id: 'f15d2887-8f42-49b4-92db-4ca2b75f243c',
+      version: 10,
+      versionModifiedAt: '2025-01-13T07:25:41.708Z',
+      createdAt: '2025-01-09T06:57:32.504Z',
+      lastModifiedAt: '2025-01-13T07:25:41.708Z',
+      lastModifiedBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      createdBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      container: 'sctm-app-methods',
+      key: 'creditcard',
+      value: {
+        id: 'creditcard',
+        technicalName: 'Card',
+        name: { 'en-GB': 'Card', 'de-DE': 'Card', 'en-US': 'Card' },
+        description: { 'en-GB': '', 'de-DE': '', 'en-US': '' },
+        imageUrl: 'https://www.mollie.com/external/icons/payment-methods/creditcard.svg',
+        status: 'Active',
+        displayOrder: 20,
+        displayCardComponent: true,
+      },
+    });
+
     try {
-      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
+      await checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect(logger.error).toBeCalledTimes(1);
@@ -471,7 +680,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
     }
   });
 
-  it('should return true if the payment method is creditcard and cardToken is defined and not an empty string in the Payment custom fields', () => {
+  it('should return true if the payment method is creditcard and cardToken is defined and not an empty string in the Payment custom fields', async () => {
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
       version: 1,
@@ -501,15 +710,75 @@ describe('checkPaymentMethodSpecificParameters', () => {
       },
     };
 
-    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(
+    (getSingleMethodConfigObject as jest.Mock).mockReturnValue({
+      id: 'f15d2887-8f42-49b4-92db-4ca2b75f243c',
+      version: 10,
+      versionModifiedAt: '2025-01-13T07:25:41.708Z',
+      createdAt: '2025-01-09T06:57:32.504Z',
+      lastModifiedAt: '2025-01-13T07:25:41.708Z',
+      lastModifiedBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      createdBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      container: 'sctm-app-methods',
+      key: 'creditcard',
+      value: {
+        id: 'creditcard',
+        technicalName: 'Card',
+        name: { 'en-GB': 'Card', 'de-DE': 'Card', 'en-US': 'Card' },
+        description: { 'en-GB': '', 'de-DE': '', 'en-US': '' },
+        imageUrl: 'https://www.mollie.com/external/icons/payment-methods/creditcard.svg',
+        status: 'Active',
+        displayOrder: 20,
+        displayCardComponent: true,
+      },
+    });
+
+    expect(await checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(
       undefined,
     );
   });
 
-  it('should throw an error if the payment method is banktransfer and the billingAddress is not specified', () => {
+  it('should throw an error if the payment method is banktransfer and the billingAddress is not specified', async () => {
     const paymentRequest = {
       description: 'Test',
     };
+
+    (getSingleMethodConfigObject as jest.Mock).mockReturnValue({
+      id: '3838910f-6570-40a8-aee7-bf71dc3a4066',
+      version: 27,
+      versionModifiedAt: '2025-01-13T09:46:54.989Z',
+      createdAt: '2025-01-09T06:57:32.599Z',
+      lastModifiedAt: '2025-01-13T09:46:54.989Z',
+      lastModifiedBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      createdBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      container: 'sctm-app-methods',
+      key: 'banktransfer',
+      value: {
+        id: 'banktransfer',
+        technicalName: 'Bank transfer',
+        name: {
+          'en-GB': 'Bank transfer',
+          'de-DE': 'Bank transfer',
+          'en-US': 'Bank transfer',
+        },
+        description: { 'en-GB': '', 'de-DE': '', 'en-US': '' },
+        imageUrl: 'https://www.mollie.com/external/icons/payment-methods/banktransfer.svg',
+        status: 'Active',
+        displayOrder: 0,
+        banktransferDueDate: '1d',
+      },
+    });
 
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
@@ -540,7 +809,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
     };
 
     try {
-      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
+      await checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect((error as CustomError).message).toBe(
@@ -556,7 +825,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
     }
   });
 
-  it('should throw an error if the payment method is banktransfer and the billingAddress is specified but does not provide email', () => {
+  it('should throw an error if the payment method is banktransfer and the billingAddress is specified but does not provide email', async () => {
     const paymentRequest = {
       description: 'Test',
       billingAddress: {
@@ -564,6 +833,38 @@ describe('checkPaymentMethodSpecificParameters', () => {
       },
     };
 
+    (getSingleMethodConfigObject as jest.Mock).mockReturnValue({
+      id: '3838910f-6570-40a8-aee7-bf71dc3a4066',
+      version: 27,
+      versionModifiedAt: '2025-01-13T09:46:54.989Z',
+      createdAt: '2025-01-09T06:57:32.599Z',
+      lastModifiedAt: '2025-01-13T09:46:54.989Z',
+      lastModifiedBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      createdBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      container: 'sctm-app-methods',
+      key: 'banktransfer',
+      value: {
+        id: 'banktransfer',
+        technicalName: 'Bank transfer',
+        name: {
+          'en-GB': 'Bank transfer',
+          'de-DE': 'Bank transfer',
+          'en-US': 'Bank transfer',
+        },
+        description: { 'en-GB': '', 'de-DE': '', 'en-US': '' },
+        imageUrl: 'https://www.mollie.com/external/icons/payment-methods/banktransfer.svg',
+        status: 'Active',
+        displayOrder: 0,
+        banktransferDueDate: '1d',
+      },
+    });
+
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
       version: 1,
@@ -593,7 +894,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
     };
 
     try {
-      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
+      await checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect((error as CustomError).message).toBe(
@@ -609,7 +910,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
     }
   });
 
-  it('should throw an error if the payment method is banktransfer and the email is not valid', () => {
+  it('should throw an error if the payment method is banktransfer and the email is not valid', async () => {
     const paymentRequest = {
       description: 'Test',
       billingAddress: {
@@ -618,6 +919,38 @@ describe('checkPaymentMethodSpecificParameters', () => {
       },
     };
 
+    (getSingleMethodConfigObject as jest.Mock).mockReturnValue({
+      id: '3838910f-6570-40a8-aee7-bf71dc3a4066',
+      version: 27,
+      versionModifiedAt: '2025-01-13T09:46:54.989Z',
+      createdAt: '2025-01-09T06:57:32.599Z',
+      lastModifiedAt: '2025-01-13T09:46:54.989Z',
+      lastModifiedBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      createdBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      container: 'sctm-app-methods',
+      key: 'banktransfer',
+      value: {
+        id: 'banktransfer',
+        technicalName: 'Bank transfer',
+        name: {
+          'en-GB': 'Bank transfer',
+          'de-DE': 'Bank transfer',
+          'en-US': 'Bank transfer',
+        },
+        description: { 'en-GB': '', 'de-DE': '', 'en-US': '' },
+        imageUrl: 'https://www.mollie.com/external/icons/payment-methods/banktransfer.svg',
+        status: 'Active',
+        displayOrder: 0,
+        banktransferDueDate: '1d',
+      },
+    });
+
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
       version: 1,
@@ -647,7 +980,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
     };
 
     try {
-      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
+      await checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect((error as CustomError).message).toBe('SCTM - validateBanktransfer - email must be a valid email address.');
@@ -658,7 +991,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
     }
   });
 
-  it('should should not throw any error or terminate the process if the payment method is banktransfer and the email is provided correctly', () => {
+  it('should should not throw any error or terminate the process if the payment method is banktransfer and the email is provided correctly', async () => {
     const paymentRequest = {
       description: 'Test',
       billingAddress: {
@@ -666,6 +999,38 @@ describe('checkPaymentMethodSpecificParameters', () => {
         email: 'test@gmail.com',
       },
     };
+
+    (getSingleMethodConfigObject as jest.Mock).mockReturnValue({
+      id: '3838910f-6570-40a8-aee7-bf71dc3a4066',
+      version: 27,
+      versionModifiedAt: '2025-01-13T09:46:54.989Z',
+      createdAt: '2025-01-09T06:57:32.599Z',
+      lastModifiedAt: '2025-01-13T09:46:54.989Z',
+      lastModifiedBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      createdBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      container: 'sctm-app-methods',
+      key: 'banktransfer',
+      value: {
+        id: 'banktransfer',
+        technicalName: 'Bank transfer',
+        name: {
+          'en-GB': 'Bank transfer',
+          'de-DE': 'Bank transfer',
+          'en-US': 'Bank transfer',
+        },
+        description: { 'en-GB': '', 'de-DE': '', 'en-US': '' },
+        imageUrl: 'https://www.mollie.com/external/icons/payment-methods/banktransfer.svg',
+        status: 'Active',
+        displayOrder: 0,
+        banktransferDueDate: '1d',
+      },
+    });
 
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
@@ -695,13 +1060,13 @@ describe('checkPaymentMethodSpecificParameters', () => {
       },
     };
 
-    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(
+    expect(await checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(
       undefined,
     );
     expect(logger.error).toBeCalledTimes(0);
   });
 
-  it('should throw an error if the payment method is blik and the currency code is not PLN', () => {
+  it('should throw an error if the payment method is blik and the currency code is not PLN', async () => {
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
       version: 1,
@@ -731,8 +1096,40 @@ describe('checkPaymentMethodSpecificParameters', () => {
       },
     };
 
+    (getSingleMethodConfigObject as jest.Mock).mockReturnValue({
+      id: '3838910f-6aa0-40a8-aee7-bf71dc3a4066',
+      version: 15,
+      versionModifiedAt: '2025-01-13T09:46:54.989Z',
+      createdAt: '2025-01-09T06:57:32.599Z',
+      lastModifiedAt: '2025-01-13T09:46:54.989Z',
+      lastModifiedBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      createdBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      container: 'sctm-app-methods',
+      key: 'blik',
+      value: {
+        id: 'blik',
+        technicalName: 'BLIK',
+        name: {
+          'en-GB': 'BLIK',
+          'de-DE': 'BLIK',
+          'en-US': 'BLIK',
+        },
+        description: { 'en-GB': '', 'de-DE': '', 'en-US': '' },
+        imageUrl: 'https://www.mollie.com/external/icons/payment-methods/banktransfer.svg',
+        status: 'Active',
+        displayOrder: 0,
+        banktransferDueDate: '1d',
+      },
+    });
+
     try {
-      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
+      await checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect((error as CustomError).message).toBe(
@@ -745,7 +1142,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
     }
   });
 
-  it('should throw an error if the payment method is blik and the billing email is not provided', () => {
+  it('should throw an error if the payment method is blik and the billing email is not provided', async () => {
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
       version: 1,
@@ -775,8 +1172,40 @@ describe('checkPaymentMethodSpecificParameters', () => {
       },
     };
 
+    (getSingleMethodConfigObject as jest.Mock).mockReturnValue({
+      id: '3838910f-6aa0-40a8-aee7-bf71dc3a4066',
+      version: 15,
+      versionModifiedAt: '2025-01-13T09:46:54.989Z',
+      createdAt: '2025-01-09T06:57:32.599Z',
+      lastModifiedAt: '2025-01-13T09:46:54.989Z',
+      lastModifiedBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      createdBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      container: 'sctm-app-methods',
+      key: 'blik',
+      value: {
+        id: 'blik',
+        technicalName: 'BLIK',
+        name: {
+          'en-GB': 'BLIK',
+          'de-DE': 'BLIK',
+          'en-US': 'BLIK',
+        },
+        description: { 'en-GB': '', 'de-DE': '', 'en-US': '' },
+        imageUrl: 'https://www.mollie.com/external/icons/payment-methods/banktransfer.svg',
+        status: 'Active',
+        displayOrder: 0,
+        banktransferDueDate: '1d',
+      },
+    });
+
     try {
-      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
+      await checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect((error as CustomError).message).toBe(
@@ -789,7 +1218,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
     }
   });
 
-  it('should throw an error if the payment method is blik and the billing email is provided incorrectly', () => {
+  it('should throw an error if the payment method is blik and the billing email is provided incorrectly', async () => {
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
       version: 1,
@@ -819,8 +1248,40 @@ describe('checkPaymentMethodSpecificParameters', () => {
       },
     };
 
+    (getSingleMethodConfigObject as jest.Mock).mockReturnValue({
+      id: '3838910f-6aa0-40a8-aee7-bf71dc3a4066',
+      version: 15,
+      versionModifiedAt: '2025-01-13T09:46:54.989Z',
+      createdAt: '2025-01-09T06:57:32.599Z',
+      lastModifiedAt: '2025-01-13T09:46:54.989Z',
+      lastModifiedBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      createdBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      container: 'sctm-app-methods',
+      key: 'blik',
+      value: {
+        id: 'blik',
+        technicalName: 'BLIK',
+        name: {
+          'en-GB': 'BLIK',
+          'de-DE': 'BLIK',
+          'en-US': 'BLIK',
+        },
+        description: { 'en-GB': '', 'de-DE': '', 'en-US': '' },
+        imageUrl: 'https://www.mollie.com/external/icons/payment-methods/banktransfer.svg',
+        status: 'Active',
+        displayOrder: 0,
+        banktransferDueDate: '1d',
+      },
+    });
+
     try {
-      checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
+      await checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string);
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(CustomError);
       expect((error as CustomError).message).toBe('SCTM - validateBlik - billingEmail must be a valid email address.');
@@ -831,7 +1292,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
     }
   });
 
-  it('should should not throw any error or terminate the process if the payment method is blik and the currency code is PLN and the billing email is provided correctly', () => {
+  it('should should not throw any error or terminate the process if the payment method is blik and the currency code is PLN and the billing email is provided correctly', async () => {
     const CTPayment: Payment = {
       id: '5c8b0375-305a-4f19-ae8e-07806b101999',
       version: 1,
@@ -861,7 +1322,39 @@ describe('checkPaymentMethodSpecificParameters', () => {
       },
     };
 
-    expect(checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(
+    (getSingleMethodConfigObject as jest.Mock).mockReturnValue({
+      id: '3838910f-6aa0-40a8-aee7-bf71dc3a4066',
+      version: 15,
+      versionModifiedAt: '2025-01-13T09:46:54.989Z',
+      createdAt: '2025-01-09T06:57:32.599Z',
+      lastModifiedAt: '2025-01-13T09:46:54.989Z',
+      lastModifiedBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      createdBy: {
+        isPlatformClient: true,
+        user: { typeId: 'user', id: '36c6f34a-44bf-421a-8c1f-0b6aa2be2749' },
+      },
+      container: 'sctm-app-methods',
+      key: 'blik',
+      value: {
+        id: 'blik',
+        technicalName: 'BLIK',
+        name: {
+          'en-GB': 'BLIK',
+          'de-DE': 'BLIK',
+          'en-US': 'BLIK',
+        },
+        description: { 'en-GB': '', 'de-DE': '', 'en-US': '' },
+        imageUrl: 'https://www.mollie.com/external/icons/payment-methods/banktransfer.svg',
+        status: 'Active',
+        displayOrder: 0,
+        banktransferDueDate: '1d',
+      },
+    });
+
+    expect(await checkPaymentMethodSpecificParameters(CTPayment, CTPayment.paymentMethodInfo.method as string)).toBe(
       undefined,
     );
     expect(logger.error).toBeCalledTimes(0);
