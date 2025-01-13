@@ -70,18 +70,6 @@ export function removeEmptyProperties(obj: object) {
   return clonedObject;
 }
 
-/**
- * Validates an email address using a regular expression.
- *
- * @param {string} email - The email address to validate.
- * @return {boolean} Returns true if the email is valid, false otherwise.
- */
-export function validateEmail(email: string): boolean {
-  const emailRegex: RegExp = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
-
-  return emailRegex.test(email);
-}
-
 export const convertCentToEUR = (amount: number, fractionDigits: number): number => {
   return amount / Math.pow(10, fractionDigits);
 };
