@@ -1,5 +1,5 @@
 import { SurchargeCost } from './../types/commercetools.types';
-import { Payment } from '@commercetools/platform-sdk';
+import { Payment, Transaction } from '@commercetools/platform-sdk';
 import CustomError from '../errors/custom.error';
 import { logger } from './logger.utils';
 /**
@@ -88,4 +88,23 @@ export const calculateTotalSurchargeAmount = (ctPayment: Payment, surcharges?: S
 
 export const roundSurchargeAmountToCent = (surchargeAmountInEur: number, fractionDigits: number): number => {
   return Math.round(surchargeAmountInEur * Math.pow(10, fractionDigits));
+};
+
+export const sortTransactionsByLatestCreationTime = (transactions: Transaction[]): Transaction[] => {
+  const clonedTransactions = Object.assign([], transactions);
+
+  return clonedTransactions.sort((a: Transaction, b: Transaction) => {
+    const timeA = a.timestamp as string;
+    const timeB = b.timestamp as string;
+
+    if (timeA < timeB) {
+      return 1;
+    }
+
+    if (timeA > timeB) {
+      return -1;
+    }
+
+    return 0;
+  });
 };
