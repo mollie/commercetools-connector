@@ -11,7 +11,7 @@
     "build": "rimraf ./build && tsc",
     "watch": "nodemon -q --ignore '**/*.spec.ts' src/index.ts",
     "lint": "eslint . --ext .ts",
-    "prettier": "prettier --write '**/*.{js,ts}'",
+    "prettier:check": "prettier --check '**/*.{js,ts}'",
     "fix": "eslint . --ext .ts --fix && prettier --write '**/*.{js,ts}'",
     "test": "jest --detectOpenHandles --clearMocks --colors --config jest.config.cjs --ci --ci --reporters=default --coverage",
     "test:watch": "jest --watch"
