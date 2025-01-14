@@ -842,6 +842,74 @@ describe('createMollieCreatePaymentParams', () => {
   //   });
   // });
 
+  it('should be able to create mollie payment params including billing email address with payment przelewy24', async () => {
+    const cart = {
+      id: 'cart-test-id',
+      shippingInfo: {},
+    } as Cart;
+
+    const customFieldObject = {
+      description: 'Test payment',
+      locale: 'en_GB',
+      redirectUrl: 'https://example.com/success',
+      webhookUrl: 'https://example.com/webhook',
+      billingEmail: 'dummy@gmail.com',
+    };
+
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 2000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: PaymentMethod.przelewy24,
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm_payment',
+        },
+        fields: {
+          sctm_create_payment_request: JSON.stringify(customFieldObject),
+        },
+      },
+    };
+
+    const extensionUrl = 'https://example.com/webhook';
+
+    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(
+      CTPayment,
+      extensionUrl,
+      0,
+      cart,
+    );
+
+    expect(mollieCreatePaymentParams).toEqual({
+      method: PaymentMethod.przelewy24,
+      amount: {
+        currency: 'EUR',
+        value: '20.00',
+      },
+      locale: customFieldObject.locale,
+      redirectUrl: customFieldObject.redirectUrl,
+      webhookUrl: extensionUrl,
+      description: customFieldObject.description,
+      billingAddress: {
+        email: customFieldObject.billingEmail,
+      },
+      lines: [],
+    });
+  });
+
   it('should able to create a mollie payment params from CommerceTools payment object including a line item for shipping amount', async () => {
     const cart = {
       id: 'cart-test-id',
