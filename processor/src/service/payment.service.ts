@@ -286,6 +286,12 @@ export const handlePaymentWebhook = async (paymentId: string): Promise<boolean> 
     return false;
   }
 
+  logger.debug('SCTM - handlePaymentWebhook - debugging', {
+    mollieStatus: molliePayment.status,
+    ctPaymentId: ctPayment.id,
+    ctPaymentTransactions: JSON.stringify(ctPayment.transactions),
+  });
+
   const action = getPaymentStatusUpdateAction(ctPayment.transactions as CTTransaction[], molliePayment);
 
   // If refunds are present, update their status
