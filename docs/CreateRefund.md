@@ -96,4 +96,9 @@ transactions: [
 ]
 ```
 
-When the refund is completed, this transaction's state will be updated by the notifications module to "Success" or "Failure". 
+When the refund is completed, this transaction's state will be updated by the notifications module to "Success" or "Failure".
+
+## Update per version
+
+The function was updated at:
+- [v1.1.3](../CHANGELOG.md#v113)

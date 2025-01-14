@@ -155,3 +155,8 @@ When order is successfully cancelled on Mollie, we update commercetools payment 
 | `changeTransactionState`         | `transactionId: <pendingRefundTransactionId>, state: 'Failure'`            |
 | `changeTransactionState`         | `transactionId: <initialCancelAuthorizationTransactionId>, state: 'Success'`            |
 | `setTransactionCustomType`     | `transactionId: <pendingRefundTransactionId>, type.key:sctm_payment_cancel_reason, fields: {reasonText: "cancellation reason", statusText: "cancelled from shop side"}`                                   |
+
+## Update per version
+
+The function was updated at:
+- [v1.1.3](../CHANGELOG.md#v113)

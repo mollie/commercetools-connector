@@ -1,419 +1,400 @@
 {
   "data": {
     "project": {
-      "key": "shopm-adv-dev",
+      "key": "shopm-adv-windev",
       "version": 16,
-      "name": "shopm-adv-dev",
-      "countries": [
-          "GB",
-          "DE",
-          "US",
-          "IT",
-          "AT",
-          "PL"
-      ],
-      "currencies": [
-          "EUR",
-          "GBP",
-          "USD",
-          "PLN"
-      ],
-      "languages": [
-          "en-GB",
-          "de-DE",
-          "en-US",
-          "de-AT",
-          "it-IT",
-          "pl-PL"
-      ],
+      "name": "shopm-adv-windev",
+      "countries": ["GB", "DE", "US", "IT", "AT", "PL"],
+      "currencies": ["EUR", "GBP", "USD", "PLN"],
+      "languages": ["en-GB", "de-DE", "en-US", "de-AT", "it-IT", "pl-PL"],
       "initialized": true,
       "expiry": {
-          "isActive": false,
-          "daysLeft": 29,
-          "__typename": "ProjectExpiry"
+        "isActive": false,
+        "daysLeft": 29,
+        "__typename": "ProjectExpiry"
       },
       "suspension": {
-          "isActive": false,
-          "reason": null,
-          "__typename": "ProjectSuspension"
+        "isActive": false,
+        "reason": null,
+        "__typename": "ProjectSuspension"
       },
       "isProductionProject": false,
       "allAppliedPermissions": [
-          {
-              "name": "canViewMollie",
-              "value": true,
-              "__typename": "AppliedPermission"
-          },
-          {
-              "name": "canManageMollie",
-              "value": true,
-              "__typename": "AppliedPermission"
-          }
+        {
+          "name": "canViewMollie",
+          "value": true,
+          "__typename": "AppliedPermission"
+        },
+        {
+          "name": "canManageMollie",
+          "value": true,
+          "__typename": "AppliedPermission"
+        }
       ],
       "allAppliedActionRights": [
-          {
-              "group": "products",
-              "name": "canAddPrices",
-              "value": false,
-              "__typename": "AppliedActionRight"
-          },
-          {
-              "group": "products",
-              "name": "canAddProducts",
-              "value": false,
-              "__typename": "AppliedActionRight"
-          },
-          {
-              "group": "products",
-              "name": "canDeletePrices",
-              "value": false,
-              "__typename": "AppliedActionRight"
-          },
-          {
-              "group": "products",
-              "name": "canDeleteProducts",
-              "value": false,
-              "__typename": "AppliedActionRight"
-          },
-          {
-              "group": "products",
-              "name": "canEditPrices",
-              "value": false,
-              "__typename": "AppliedActionRight"
-          },
-          {
-              "group": "products",
-              "name": "canPublishProducts",
-              "value": false,
-              "__typename": "AppliedActionRight"
-          },
-          {
-              "group": "products",
-              "name": "canUnpublishProducts",
-              "value": false,
-              "__typename": "AppliedActionRight"
-          },
-          {
-              "group": "products",
-              "name": "canEditAttributes:all",
-              "value": false,
-              "__typename": "AppliedActionRight"
-          },
-          {
-              "group": "orders",
-              "name": "canAddOrders",
-              "value": false,
-              "__typename": "AppliedActionRight"
-          },
-          {
-              "group": "orders",
-              "name": "canAddDiscountCodes",
-              "value": false,
-              "__typename": "AppliedActionRight"
-          },
-          {
-              "group": "orders",
-              "name": "canCreateReturns",
-              "value": false,
-              "__typename": "AppliedActionRight"
-          },
-          {
-              "group": "quotes",
-              "name": "canSendQuote",
-              "value": false,
-              "__typename": "AppliedActionRight"
-          },
-          {
-              "group": "quotes",
-              "name": "canCreateDraftQuote",
-              "value": false,
-              "__typename": "AppliedActionRight"
-          },
-          {
-              "group": "standalonePrices",
-              "name": "canAddPrices",
-              "value": false,
-              "__typename": "AppliedActionRight"
-          },
-          {
-              "group": "standalonePrices",
-              "name": "canDeletePrices",
-              "value": false,
-              "__typename": "AppliedActionRight"
-          },
-          {
-              "group": "standalonePrices",
-              "name": "canEditPrices",
-              "value": false,
-              "__typename": "AppliedActionRight"
-          }
+        {
+          "group": "products",
+          "name": "canAddPrices",
+          "value": false,
+          "__typename": "AppliedActionRight"
+        },
+        {
+          "group": "products",
+          "name": "canAddProducts",
+          "value": false,
+          "__typename": "AppliedActionRight"
+        },
+        {
+          "group": "products",
+          "name": "canDeletePrices",
+          "value": false,
+          "__typename": "AppliedActionRight"
+        },
+        {
+          "group": "products",
+          "name": "canDeleteProducts",
+          "value": false,
+          "__typename": "AppliedActionRight"
+        },
+        {
+          "group": "products",
+          "name": "canEditPrices",
+          "value": false,
+          "__typename": "AppliedActionRight"
+        },
+        {
+          "group": "products",
+          "name": "canPublishProducts",
+          "value": false,
+          "__typename": "AppliedActionRight"
+        },
+        {
+          "group": "products",
+          "name": "canUnpublishProducts",
+          "value": false,
+          "__typename": "AppliedActionRight"
+        },
+        {
+          "group": "products",
+          "name": "canEditAttributes:all",
+          "value": false,
+          "__typename": "AppliedActionRight"
+        },
+        {
+          "group": "orders",
+          "name": "canAddOrders",
+          "value": false,
+          "__typename": "AppliedActionRight"
+        },
+        {
+          "group": "orders",
+          "name": "canAddDiscountCodes",
+          "value": false,
+          "__typename": "AppliedActionRight"
+        },
+        {
+          "group": "orders",
+          "name": "canCreateReturns",
+          "value": false,
+          "__typename": "AppliedActionRight"
+        },
+        {
+          "group": "quotes",
+          "name": "canSendQuote",
+          "value": false,
+          "__typename": "AppliedActionRight"
+        },
+        {
+          "group": "quotes",
+          "name": "canCreateDraftQuote",
+          "value": false,
+          "__typename": "AppliedActionRight"
+        },
+        {
+          "group": "standalonePrices",
+          "name": "canAddPrices",
+          "value": false,
+          "__typename": "AppliedActionRight"
+        },
+        {
+          "group": "standalonePrices",
+          "name": "canDeletePrices",
+          "value": false,
+          "__typename": "AppliedActionRight"
+        },
+        {
+          "group": "standalonePrices",
+          "name": "canEditPrices",
+          "value": false,
+          "__typename": "AppliedActionRight"
+        }
       ],
       "allAppliedDataFences": [],
       "allPermissionsForAllApplications": {
-          "allAppliedPermissions": [
-              {
-                  "name": "canViewMollie",
-                  "value": true,
-                  "__typename": "AppliedPermission"
-              },
-              {
-                  "name": "canManageMollie",
-                  "value": true,
-                  "__typename": "AppliedPermission"
-              }
-          ],
-          "allAppliedActionRights": [
-              {
-                  "group": "products",
-                  "name": "canAddPrices",
-                  "value": false,
-                  "__typename": "AppliedActionRight"
-              },
-              {
-                  "group": "products",
-                  "name": "canAddProducts",
-                  "value": false,
-                  "__typename": "AppliedActionRight"
-              },
-              {
-                  "group": "products",
-                  "name": "canDeletePrices",
-                  "value": false,
-                  "__typename": "AppliedActionRight"
-              },
-              {
-                  "group": "products",
-                  "name": "canDeleteProducts",
-                  "value": false,
-                  "__typename": "AppliedActionRight"
-              },
-              {
-                  "group": "products",
-                  "name": "canEditPrices",
-                  "value": false,
-                  "__typename": "AppliedActionRight"
-              },
-              {
-                  "group": "products",
-                  "name": "canPublishProducts",
-                  "value": false,
-                  "__typename": "AppliedActionRight"
-              },
-              {
-                  "group": "products",
-                  "name": "canUnpublishProducts",
-                  "value": false,
-                  "__typename": "AppliedActionRight"
-              },
-              {
-                  "group": "products",
-                  "name": "canEditAttributes:all",
-                  "value": false,
-                  "__typename": "AppliedActionRight"
-              },
-              {
-                  "group": "orders",
-                  "name": "canAddOrders",
-                  "value": false,
-                  "__typename": "AppliedActionRight"
-              },
-              {
-                  "group": "orders",
-                  "name": "canAddDiscountCodes",
-                  "value": false,
-                  "__typename": "AppliedActionRight"
-              },
-              {
-                  "group": "orders",
-                  "name": "canCreateReturns",
-                  "value": false,
-                  "__typename": "AppliedActionRight"
-              },
-              {
-                  "group": "quotes",
-                  "name": "canSendQuote",
-                  "value": false,
-                  "__typename": "AppliedActionRight"
-              },
-              {
-                  "group": "quotes",
-                  "name": "canCreateDraftQuote",
-                  "value": false,
-                  "__typename": "AppliedActionRight"
-              },
-              {
-                  "group": "standalonePrices",
-                  "name": "canAddPrices",
-                  "value": false,
-                  "__typename": "AppliedActionRight"
-              },
-              {
-                  "group": "standalonePrices",
-                  "name": "canDeletePrices",
-                  "value": false,
-                  "__typename": "AppliedActionRight"
-              },
-              {
-                  "group": "standalonePrices",
-                  "name": "canEditPrices",
-                  "value": false,
-                  "__typename": "AppliedActionRight"
-              }
-          ],
-          "allAppliedMenuVisibilities": [
-              {
-                  "name": "hideDashboard",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideProductsList",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideModifiedProducts",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideAddProduct",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideProductSelectionsList",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideAddProductSelection",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideDirectAccess",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideCategoriesList",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideCategoriesSearch",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideAddCategory",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideCustomersList",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideAddCustomer",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideCustomerGroupsList",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideAddCustomerGroup",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideBusinessUnitsList",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideAddBusinessUnit",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideOrdersList",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideAddOrder",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideQuotes",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideProductDiscountsList",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideCartDiscountsList",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideDiscountCodesList",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideAddDiscounts",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideGenerateDiscountCodes",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideProjectSettings",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideProductTypes",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideDeveloperSettings",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideStandalonePriceList",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              },
-              {
-                  "name": "hideAddStandalonePrice",
-                  "value": false,
-                  "__typename": "AppliedMenuVisibilities"
-              }
-          ],
-          "allAppliedDataFences": [],
-          "__typename": "AllPermissionsForAllApplications"
+        "allAppliedPermissions": [
+          {
+            "name": "canViewMollie",
+            "value": true,
+            "__typename": "AppliedPermission"
+          },
+          {
+            "name": "canManageMollie",
+            "value": true,
+            "__typename": "AppliedPermission"
+          }
+        ],
+        "allAppliedActionRights": [
+          {
+            "group": "products",
+            "name": "canAddPrices",
+            "value": false,
+            "__typename": "AppliedActionRight"
+          },
+          {
+            "group": "products",
+            "name": "canAddProducts",
+            "value": false,
+            "__typename": "AppliedActionRight"
+          },
+          {
+            "group": "products",
+            "name": "canDeletePrices",
+            "value": false,
+            "__typename": "AppliedActionRight"
+          },
+          {
+            "group": "products",
+            "name": "canDeleteProducts",
+            "value": false,
+            "__typename": "AppliedActionRight"
+          },
+          {
+            "group": "products",
+            "name": "canEditPrices",
+            "value": false,
+            "__typename": "AppliedActionRight"
+          },
+          {
+            "group": "products",
+            "name": "canPublishProducts",
+            "value": false,
+            "__typename": "AppliedActionRight"
+          },
+          {
+            "group": "products",
+            "name": "canUnpublishProducts",
+            "value": false,
+            "__typename": "AppliedActionRight"
+          },
+          {
+            "group": "products",
+            "name": "canEditAttributes:all",
+            "value": false,
+            "__typename": "AppliedActionRight"
+          },
+          {
+            "group": "orders",
+            "name": "canAddOrders",
+            "value": false,
+            "__typename": "AppliedActionRight"
+          },
+          {
+            "group": "orders",
+            "name": "canAddDiscountCodes",
+            "value": false,
+            "__typename": "AppliedActionRight"
+          },
+          {
+            "group": "orders",
+            "name": "canCreateReturns",
+            "value": false,
+            "__typename": "AppliedActionRight"
+          },
+          {
+            "group": "quotes",
+            "name": "canSendQuote",
+            "value": false,
+            "__typename": "AppliedActionRight"
+          },
+          {
+            "group": "quotes",
+            "name": "canCreateDraftQuote",
+            "value": false,
+            "__typename": "AppliedActionRight"
+          },
+          {
+            "group": "standalonePrices",
+            "name": "canAddPrices",
+            "value": false,
+            "__typename": "AppliedActionRight"
+          },
+          {
+            "group": "standalonePrices",
+            "name": "canDeletePrices",
+            "value": false,
+            "__typename": "AppliedActionRight"
+          },
+          {
+            "group": "standalonePrices",
+            "name": "canEditPrices",
+            "value": false,
+            "__typename": "AppliedActionRight"
+          }
+        ],
+        "allAppliedMenuVisibilities": [
+          {
+            "name": "hideDashboard",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideProductsList",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideModifiedProducts",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideAddProduct",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideProductSelectionsList",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideAddProductSelection",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideDirectAccess",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideCategoriesList",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideCategoriesSearch",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideAddCategory",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideCustomersList",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideAddCustomer",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideCustomerGroupsList",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideAddCustomerGroup",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideBusinessUnitsList",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideAddBusinessUnit",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideOrdersList",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideAddOrder",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideQuotes",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideProductDiscountsList",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideCartDiscountsList",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideDiscountCodesList",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideAddDiscounts",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideGenerateDiscountCodes",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideProjectSettings",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideProductTypes",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideDeveloperSettings",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideStandalonePriceList",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          },
+          {
+            "name": "hideAddStandalonePrice",
+            "value": false,
+            "__typename": "AppliedMenuVisibilities"
+          }
+        ],
+        "allAppliedDataFences": [],
+        "__typename": "AllPermissionsForAllApplications"
       },
       "owner": {
-          "id": "9adf9042-7177-4ea0-a928-a8e194c63009",
-          "name": "Shopmacher",
-          "__typename": "Organization"
+        "id": "9adf9042-7177-4ea0-a928-a8e194c63009",
+        "name": "Shopmacher",
+        "__typename": "Organization"
       },
       "sampleDataImportDataset": "B2CLIFESTYLE",
       "isUserAdminOfCurrentProject": true,
