@@ -1,9 +1,6 @@
 import { Request, Response } from 'express';
-
 import CustomError from '../errors/custom.error';
-import { getAccessToken } from '../commercetools/auth.commercetools';
-import { updatePaymentExtension } from '../commercetools/extensions.commercetools';
-import { logger } from '../utils/logger.utils';
+import { updatePaymentExtensionAccessToken } from '../service/job.service';
 
 /**
  * Exposed job endpoint.
@@ -14,12 +11,7 @@ import { logger } from '../utils/logger.utils';
  */
 export const post = async (_request: Request, response: Response) => {
   try {
-    logger.info('SCTM - job - starting updating access token process');
-
-    const accessToken = await getAccessToken();
-    await updatePaymentExtension(accessToken?.access_token as string);
-
-    logger.info('SCTM - job - end process');
+    await updatePaymentExtensionAccessToken();
 
     response.status(200).send();
   } catch (error) {

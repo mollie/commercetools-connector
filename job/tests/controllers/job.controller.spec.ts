@@ -1,3 +1,4 @@
+import { updatePaymentExtensionAccessToken } from './../../src/service/job.service';
 import {
   describe,
   jest,
@@ -8,21 +9,14 @@ import {
 } from '@jest/globals';
 import { Request, Response } from 'express';
 import { post } from '../../src/controllers/job.controller';
-import { logger } from '../../src/utils/logger.utils';
-import { getAccessToken } from '../../src/commercetools/auth.commercetools';
-import { updatePaymentExtension } from '../../src/commercetools/extensions.commercetools';
 
-jest.mock('../../src/commercetools/auth.commercetools', () => ({
-  getAccessToken: jest.fn(),
-}));
-
-jest.mock('../../src/commercetools/extensions.commercetools', () => ({
-  updatePaymentExtension: jest.fn(),
+jest.mock('../../src/service/job.service', () => ({
+  updatePaymentExtensionAccessToken: jest.fn(),
 }));
 
 jest.mock('../../src/utils/logger.utils');
 
-describe('Test connector.controller.ts', () => {
+describe('Test job.controller.ts', () => {
   let req: Partial<Request>;
   let res: Partial<Response>;
 
@@ -44,9 +38,7 @@ describe('Test connector.controller.ts', () => {
   it('should return status code 200 with a successful health check response', async () => {
     req = {};
     await post(req as Request, res as Response);
-    expect(getAccessToken).toBeCalledTimes(1);
-    expect(updatePaymentExtension).toBeCalledTimes(1);
-    expect(logger.info).toBeCalledTimes(2);
+    expect(updatePaymentExtensionAccessToken).toBeCalledTimes(1);
     expect(res.status).toBeCalledWith(200);
   });
 });
