@@ -2417,6 +2417,19 @@
     prop-types "15.8.1"
     react "17.0.2"
 
+"@commercetools-uikit/design-system@19.20.1":
+  version "19.20.1"
+  resolved "https://registry.yarnpkg.com/@commercetools-uikit/design-system/-/design-system-19.20.1.tgz#b0a2f3b9fdf68cb335c12b670941e7ac12457a1e"
+  integrity sha512-AVtdulOkX+mQKZynRNfOOZSkNcGOaC668pWjXWwM1bH4T+kqnMqnAAMgxHd3P6/Xi5cQy6+ul+lJ1HkJWywcyA==
+  dependencies:
+    "@babel/runtime" "^7.20.13"
+    "@babel/runtime-corejs3" "^7.20.13"
+    "@commercetools-uikit/hooks" "19.20.1"
+    "@emotion/react" "^11.10.5"
+    lodash "4.17.21"
+    prop-types "15.8.1"
+    react "17.0.2"
+
 "@commercetools-uikit/dropdown-menu@19.13.0":
   version "19.13.0"
   resolved "https://registry.yarnpkg.com/@commercetools-uikit/dropdown-menu/-/dropdown-menu-19.13.0.tgz#fc59495a756b4c1999aab11a8c74bce6e6266b20"
@@ -2524,6 +2537,18 @@
     lodash "4.17.21"
     raf-schd "^4.0.3"
 
+"@commercetools-uikit/hooks@19.20.1":
+  version "19.20.1"
+  resolved "https://registry.yarnpkg.com/@commercetools-uikit/hooks/-/hooks-19.20.1.tgz#d40f99af7ce06a84174f5d6529741fb23bed5f62"
+  integrity sha512-A4sfyW2Sj3RFjhIf/4yz2hh0JUPT2mKQ50pJx/XV4wpIFxsL5i4v8iPIlO20m806EVUVIjT31u2zV++ICUHs/w==
+  dependencies:
+    "@babel/runtime" "^7.20.13"
+    "@babel/runtime-corejs3" "^7.20.13"
+    "@commercetools-uikit/utils" "19.20.1"
+    "@types/raf-schd" "^4.0.1"
+    lodash "4.17.21"
+    raf-schd "^4.0.3"
+
 "@commercetools-uikit/i18n@^19.9.0":
   version "19.13.0"
   resolved "https://registry.yarnpkg.com/@commercetools-uikit/i18n/-/i18n-19.13.0.tgz#c02dbe1584aea6d556bb2db1d5d241c4f2d49569"
@@ -2591,6 +2616,20 @@
     "@commercetools-uikit/design-system" "19.13.0"
     "@commercetools-uikit/text" "19.13.0"
     "@commercetools-uikit/utils" "19.13.0"
+    "@emotion/react" "^11.10.5"
+    "@emotion/styled" "^11.10.5"
+    prop-types "15.8.1"
+
+"@commercetools-uikit/label@^19.20.1":
+  version "19.20.1"
+  resolved "https://registry.yarnpkg.com/@commercetools-uikit/label/-/label-19.20.1.tgz#7e94ab2a30fc76d3ea5c82c62bb9ad50e5bba15f"
+  integrity sha512-sX4rixFzUjt/RMBkvP50ZgDQ6Q727QRVjVNg8HNsT9VxsYao38YozF22LO3o1Hj4BukL+vepK1+gtyfk9b/cWg==
+  dependencies:
+    "@babel/runtime" "^7.20.13"
+    "@babel/runtime-corejs3" "^7.20.13"
+    "@commercetools-uikit/design-system" "19.20.1"
+    "@commercetools-uikit/text" "19.20.1"
+    "@commercetools-uikit/utils" "19.20.1"
     "@emotion/react" "^11.10.5"
     "@emotion/styled" "^11.10.5"
     prop-types "15.8.1"
@@ -3083,6 +3122,20 @@
     prop-types "15.8.1"
     warning "4.0.3"
 
+"@commercetools-uikit/text@19.20.1":
+  version "19.20.1"
+  resolved "https://registry.yarnpkg.com/@commercetools-uikit/text/-/text-19.20.1.tgz#4b3a549dbbb1e5a2d72574701e75ca63f9d17a47"
+  integrity sha512-G2rYV5q0nT2cNFjE2t6hyiI3G/fdYL8FUL8E22bp1RzokotCGTpmQIzETiCW29qc+ZpmXYjl57xxE6B0FCcEQg==
+  dependencies:
+    "@babel/runtime" "^7.20.13"
+    "@babel/runtime-corejs3" "^7.20.13"
+    "@commercetools-uikit/design-system" "19.20.1"
+    "@commercetools-uikit/utils" "19.20.1"
+    "@emotion/react" "^11.10.5"
+    lodash "4.17.21"
+    prop-types "15.8.1"
+    warning "4.0.3"
+
 "@commercetools-uikit/toggle-input@^19.11.0":
   version "19.13.0"
   resolved "https://registry.yarnpkg.com/@commercetools-uikit/toggle-input/-/toggle-input-19.13.0.tgz#01e8efe46d5b774511dbb0de0877ce71108a4fb6"
@@ -3120,6 +3173,15 @@
   version "19.13.0"
   resolved "https://registry.yarnpkg.com/@commercetools-uikit/utils/-/utils-19.13.0.tgz#49d873f55a3672269c000c7f6702be8a1ae9377c"
   integrity sha512-GDNBXCAZs/gYPxnDT/lHohV1HZmBFqPdCNmiGAIecP4zzcw0XSjz0iwjyTQSBNbNvbh5Z2T5u0z3SwWzwgyg9g==
+  dependencies:
+    "@babel/runtime" "^7.20.13"
+    "@babel/runtime-corejs3" "^7.20.13"
+    "@emotion/is-prop-valid" "1.3.1"
+
+"@commercetools-uikit/utils@19.20.1":
+  version "19.20.1"
+  resolved "https://registry.yarnpkg.com/@commercetools-uikit/utils/-/utils-19.20.1.tgz#2691045a826eaebbc230478bf5964aaad799181a"
+  integrity sha512-8nYmB4BD4dFXzP2zxyj6BcrMgo6LCyus9i+bLX9Y2vtqybWsipH6N87wpM6R+IATA8C4k76QLz5J2wwVWYOqeQ==
   dependencies:
     "@babel/runtime" "^7.20.13"
     "@babel/runtime-corejs3" "^7.20.13"

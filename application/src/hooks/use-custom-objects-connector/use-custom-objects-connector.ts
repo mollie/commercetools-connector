@@ -21,7 +21,7 @@ import FetchCustomObjectsQuery from './fetch-custom-objects.ctp.graphql';
 import FetchCustomObjectDetailsQuery from './fetch-custom-object-details.ctp.graphql';
 import UpdateCustomObjectDetailsMutation from './update-custom-object-details.ctp.graphql';
 import RemoveCustomObjectDetailsMutation from './remove-custom-object-details.ctp.graphql';
-import { ApolloError, ApolloQueryResult } from '@apollo/client';
+import { ApolloError } from '@apollo/client';
 import { extractErrorFromGraphQlResponse } from '../../helpers';
 
 type PaginationAndSortingProps = {
@@ -37,7 +37,6 @@ type TUseCustomObjectsFetcher = (
   customObjectsPaginatedResult?: TFetchCustomObjectsQuery['customObjects'];
   error?: ApolloError;
   loading: boolean;
-  refetch: () => Promise<ApolloQueryResult<TFetchCustomObjectsQuery>>;
 };
 
 export const useCustomObjectsFetcher: TUseCustomObjectsFetcher = ({
@@ -46,7 +45,7 @@ export const useCustomObjectsFetcher: TUseCustomObjectsFetcher = ({
   tableSorting,
   container,
 }) => {
-  const { data, error, loading, refetch } = useMcQuery<
+  const { data, error, loading } = useMcQuery<
     TFetchCustomObjectsQuery,
     TFetchCustomObjectsQueryVariables
   >(FetchCustomObjectsQuery, {
@@ -65,7 +64,6 @@ export const useCustomObjectsFetcher: TUseCustomObjectsFetcher = ({
     customObjectsPaginatedResult: data?.customObjects,
     error,
     loading,
-    refetch,
   };
 };
 type TUseCustomObjectDetailsFetcher = (id: string) => {

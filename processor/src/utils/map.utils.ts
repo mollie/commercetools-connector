@@ -11,7 +11,6 @@ import { Cart, CartUpdateAction, Payment, TaxCategoryResourceIdentifier } from '
 import CustomError from '../errors/custom.error';
 import { MethodsListParams, PaymentCreateParams, PaymentMethod } from '@mollie/api-client';
 import { convertCentToEUR, parseStringToJsonObject, removeEmptyProperties } from './app.utils';
-import { readConfiguration } from './config.utils';
 import { addCustomLineItem, removeCustomLineItem } from '../commercetools/action.commercetools';
 
 const extractMethodsRequest = (ctPayment: Payment): ParsedMethodsRequestType | undefined => {
@@ -77,7 +76,11 @@ export const mapCommercetoolsPaymentCustomFieldsToMollieListParams = async (
   }
 };
 
-const getSpecificPaymentParams = (method: PaymentMethod | CustomPaymentMethod, paymentRequest: any) => {
+const getSpecificPaymentParams = (
+  method: PaymentMethod | CustomPaymentMethod,
+  paymentRequest: any,
+  banktransferDueDate: string,
+) => {
   switch (method) {
     case PaymentMethod.applepay:
       return paymentRequest.applePayPaymentToken
@@ -85,10 +88,8 @@ const getSpecificPaymentParams = (method: PaymentMethod | CustomPaymentMethod, p
         : {};
     case PaymentMethod.banktransfer:
       return {
-        dueDate: calculateDueDate(readConfiguration().mollie.bankTransferDueDate),
+        dueDate: calculateDueDate(banktransferDueDate),
       };
-    case PaymentMethod.przelewy24:
-      return { billingEmail: paymentRequest.billingEmail ?? '' };
     case PaymentMethod.paypal:
       return {
         sessionId: paymentRequest.sessionId ?? '',
@@ -101,10 +102,6 @@ const getSpecificPaymentParams = (method: PaymentMethod | CustomPaymentMethod, p
       };
     case PaymentMethod.creditcard:
       return { cardToken: paymentRequest.cardToken ?? '' };
-    case CustomPaymentMethod.blik:
-      return {
-        billingEmail: paymentRequest.billingEmail ?? '',
-      };
     default:
       return {};
   }
@@ -115,6 +112,7 @@ export const createMollieCreatePaymentParams = (
   extensionUrl: string,
   surchargeAmountInCent: number,
   cart: Cart,
+  banktransferDueDate?: string,
 ): PaymentCreateParams => {
   const { amountPlanned, paymentMethodInfo } = payment;
 
@@ -154,12 +152,24 @@ export const createMollieCreatePaymentParams = (
 
   const defaultWebhookEndpoint = new URL(extensionUrl).origin + '/webhook';
 
+  let billingAddress = paymentRequest.billingAddress;
+  if (
+    (method === CustomPaymentMethod.blik || method === PaymentMethod.przelewy24) &&
+    !billingAddress?.email &&
+    paymentRequest.billingEmail
+  ) {
+    billingAddress = {
+      ...paymentRequest.billingAddress,
+      email: paymentRequest.billingEmail,
+    };
+  }
+
   const createPaymentParams = {
     amount: makeMollieAmount(amountPlanned, surchargeAmountInCent),
     description: paymentRequest.description ?? '',
     redirectUrl: paymentRequest.redirectUrl ?? null,
     webhookUrl: defaultWebhookEndpoint,
-    billingAddress: paymentRequest.billingAddress ?? {},
+    billingAddress: billingAddress ?? {},
     shippingAddress: paymentRequest.shippingAddress ?? {},
     locale: paymentRequest.locale ?? null,
     method: method as PaymentMethod,
@@ -170,7 +180,7 @@ export const createMollieCreatePaymentParams = (
     include: paymentRequest.include ?? '',
     captureMode: paymentRequest.captureMode ?? '',
     lines: mollieLines,
-    ...getSpecificPaymentParams(method as PaymentMethod, paymentRequest),
+    ...getSpecificPaymentParams(method as PaymentMethod, paymentRequest, banktransferDueDate ?? ''),
   };
 
   return removeEmptyProperties(createPaymentParams) as PaymentCreateParams;

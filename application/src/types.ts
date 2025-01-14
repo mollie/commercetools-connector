@@ -30,6 +30,8 @@ export type TMethodObjectValueFormValues = {
   status: string;
   displayOrder: number;
   pricingConstraints?: TPricingConstraintItem[];
+  displayCardComponent?: boolean;
+  banktransferDueDate?: string;
 };
 
 export type TAvailabilityObjectValueFormValues = {

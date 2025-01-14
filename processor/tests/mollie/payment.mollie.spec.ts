@@ -6,9 +6,8 @@ import {
   getPaymentById,
   listPaymentMethods,
   getApplePaySession,
-  getAllPaymentMethods,
 } from '../../src/mollie/payment.mollie';
-import { Locale, MethodInclude, MethodsListParams, MollieApiError, PaymentCreateParams } from '@mollie/api-client';
+import { MollieApiError, PaymentCreateParams } from '@mollie/api-client';
 import { logger } from '../../src/utils/logger.utils';
 import CustomError from '../../src/errors/custom.error';
 import { MOLLIE_VERSION_STRINGS } from '../../src/utils/constant.utils';
@@ -539,66 +538,6 @@ describe('getApplePaySession', () => {
         'SCTM - getApplePaySession - Failed to get ApplePay session with unknown errors',
         {
           error: unexpectedError,
-        },
-      );
-    }
-  });
-});
-
-describe('getAllPaymentMethods', () => {
-  it('should call getAllPaymentMethods with the correct parameters', async () => {
-    const options: MethodsListParams = {
-      locale: Locale.de_DE,
-      include: MethodInclude.pricing,
-    };
-
-    const queryParams = new URLSearchParams(options as any).toString();
-
-    const getAllPaymentMethodsEndpoint = `https://api.mollie.com/v2/methods/all?${queryParams as any}`;
-    const headers = {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${getApiKey()}`,
-      versionStrings: MOLLIE_VERSION_STRINGS,
-    };
-
-    (fetch as unknown as jest.Mock).mockImplementation(async () =>
-      Promise.resolve({
-        json: () => Promise.resolve({ data: [] }),
-        headers: new Headers(),
-        ok: true,
-        redirected: false,
-        status: 201,
-        statusText: 'OK',
-        url: '',
-      }),
-    );
-
-    await getAllPaymentMethods(options);
-
-    expect(fetch).toHaveBeenCalledTimes(1);
-    expect(fetch).toHaveBeenCalledWith(getAllPaymentMethodsEndpoint, {
-      method: 'GET',
-      headers,
-    });
-  });
-
-  it('should be able to return a proper error message when error which is an instance of MollieApiError occurred', async () => {
-    const errorMessage = 'Something wrong happened';
-    const mollieApiError = new MollieApiError(errorMessage, { field: 'validationUrl' });
-
-    (fetch as unknown as jest.Mock).mockImplementation(async () => {
-      throw mollieApiError;
-    });
-
-    try {
-      await getAllPaymentMethods({});
-    } catch (error: unknown) {
-      expect(error).toBeInstanceOf(CustomError);
-      expect(logger.error).toBeCalledTimes(1);
-      expect(logger.error).toBeCalledWith(
-        `SCTM - getAllPaymentMethods - Failed to get all payment methods with unknown errors`,
-        {
-          error: mollieApiError,
         },
       );
     }

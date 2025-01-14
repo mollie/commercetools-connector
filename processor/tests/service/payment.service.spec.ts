@@ -428,6 +428,7 @@ describe('Test listPaymentMethodsByPayment', () => {
               surchargeCost: '2%',
             },
           ],
+          banktransferDueDate: '14d',
         },
       },
       {
@@ -813,6 +814,7 @@ describe('Test listPaymentMethodsByPayment', () => {
               surchargeCost: '2%',
             },
           ],
+          displayCardComponent: true,
         },
       },
       {

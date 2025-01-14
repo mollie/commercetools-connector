@@ -35,5 +35,4 @@ export enum SupportedPaymentMethods {
   applepay = 'applepay',
   paypal = 'paypal',
   giftcard = 'giftcard',
-  googlepay = 'googlepay',
 }
