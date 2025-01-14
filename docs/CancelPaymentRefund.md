@@ -3,6 +3,7 @@
   * [Parameters map](#parameters-map)
   * [Representation: CT Payment](#representation-ct-payment)
   * [Creating CommerceTools actions from Mollie's response](#creating-commercetools-actions-from-mollies-response)
+  * [Update per version](#update-per-version)
 
 ## Overview
 This functionality is used to cancel the pending refund which means it is created but not complete yet.

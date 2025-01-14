@@ -54,6 +54,7 @@
     "@commercetools-uikit/grid": "^19.9.0",
     "@commercetools-uikit/hooks": "^19.9.0",
     "@commercetools-uikit/icons": "^19.9.0",
+    "@commercetools-uikit/label": "^19.20.1",
     "@commercetools-uikit/link": "^19.9.0",
     "@commercetools-uikit/loading-spinner": "^19.9.0",
     "@commercetools-uikit/localized-text-field": "^19.9.0",

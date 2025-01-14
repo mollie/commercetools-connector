@@ -13,6 +13,10 @@ import {
 } from '@commercetools-frontend/application-components';
 import Text from '@commercetools-uikit/text';
 import validate from './validate';
+import ToggleInput from '@commercetools-uikit/toggle-input';
+import Constraints from '@commercetools-uikit/constraints';
+import { SupportedPaymentMethods } from '../../types/app';
+import FieldLabel from '@commercetools-uikit/field-label';
 
 type Formik = ReturnType<typeof useFormik>;
 type FormProps = {
@@ -170,6 +174,55 @@ const MethodDetailsForm = (props: TCustomObjectDetailsFormProps) => {
           </Text.Wrap>
         </Spacings.Stack>
       </InfoDialog>
+      {formik.values.id === SupportedPaymentMethods.creditcard && (
+        <Constraints.Horizontal>
+          <FieldLabel
+            title={intl.formatMessage(messages.fieldDisplayCardComponenet)}
+            description={intl.formatMessage(
+              messages.fieldDisplayCardComponenetDescription
+            )}
+            htmlFor="displayCardComponent"
+          />
+          <ToggleInput
+            id="displayCardComponent"
+            name="displayCardComponent"
+            isChecked={formik.values.displayCardComponent}
+            onChange={formik.handleChange}
+            size="small"
+            data-testid="display-card-component"
+          />
+        </Constraints.Horizontal>
+      )}
+
+      {formik.values.id === SupportedPaymentMethods.banktransfer && (
+        <TextField
+          name="banktransferDueDate"
+          maxLength={4}
+          title={intl.formatMessage(messages.fieldBanktransaferDueDate)}
+          description={intl.formatMessage(
+            messages.fieldBanktransaferDueDateDescription
+          )}
+          value={formik.values.banktransferDueDate || ''}
+          errors={
+            TextField.toFieldErrors<TMethodObjectValueFormValues>(formik.errors)
+              .banktransferDueDate
+          }
+          touched={Boolean(formik.touched.banktransferDueDate)}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          isReadOnly={props.isReadOnly}
+          horizontalConstraint={13}
+          renderError={(errorKey) => {
+            if (errorKey === 'IsNotAString') {
+              return intl.formatMessage(
+                messages.fieldBanktransaferDueDateIsNotAString
+              );
+            }
+            return null;
+          }}
+          data-testid="banktransfer-due-date"
+        ></TextField>
+      )}
     </Spacings.Stack>
   );
 
@@ -190,19 +243,11 @@ const MethodDetailsForm = (props: TCustomObjectDetailsFormProps) => {
           TextField.toFieldErrors<TMethodObjectValueFormValues>(formik.errors)
             .imageUrl
         }
-        touched={Boolean(formik.touched.displayOrder)}
+        touched={Boolean(formik.touched.imageUrl)}
         onChange={formik.handleChange}
         onBlur={formik.handleBlur}
         isReadOnly={props.isReadOnly}
         horizontalConstraint={13}
-        renderError={(errorKey) => {
-          if (errorKey === 'isNotInteger') {
-            return intl.formatMessage(
-              messages.fieldMethodDisplayOrderIsNotInteger
-            );
-          }
-          return null;
-        }}
         data-testid="image-url-input"
       ></TextField>
     </Spacings.Inline>
