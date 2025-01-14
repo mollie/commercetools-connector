@@ -1,5 +1,4 @@
 import {
-  standardDueDate,
   array,
   standardEmail,
   standardNaturalNumber,
@@ -10,8 +9,8 @@ import {
   optional,
   region,
 } from './../../src/validators/helpers.validators';
-import { describe, test, expect, jest, it } from '@jest/globals';
-import { ConnectorEnvVars, Message } from '../../src/types/index.types';
+import { describe, test, expect, jest } from '@jest/globals';
+import { Message } from '../../src/types/index.types';
 import envValidators from '../../src/validators/env.validators';
 
 const mockObject = {
