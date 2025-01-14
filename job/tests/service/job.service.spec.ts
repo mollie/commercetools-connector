@@ -1,10 +1,4 @@
-import {
-  describe,
-  jest,
-  afterEach,
-  it,
-  expect,
-} from '@jest/globals';
+import { describe, jest, afterEach, it, expect } from '@jest/globals';
 import { logger } from '../../src/utils/logger.utils';
 import { updatePaymentExtensionAccessToken } from '../../src/service/job.service';
 import { getAccessToken } from '../../src/commercetools/auth.commercetools';
@@ -29,5 +23,5 @@ describe('Test job.service.ts', () => {
     expect(getAccessToken).toBeCalledTimes(1);
     expect(updatePaymentExtension).toBeCalledTimes(1);
     expect(logger.info).toBeCalledTimes(2);
-  })  
-})
+  });
+});

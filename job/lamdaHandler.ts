@@ -7,12 +7,12 @@ exports.handler = async (event: APIGatewayProxyEvent) => {
     await updatePaymentExtensionAccessToken();
 
     return {
-      statusCode: 200
-    }
+      statusCode: 200,
+    };
   } catch (error: any) {
     return {
       statusCode: 400,
-      error: error
-    }
+      error: error,
+    };
   }
 };
