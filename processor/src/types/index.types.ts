@@ -32,7 +32,5 @@ export type ConnectorEnvVars = {
     mode: string;
     profileId: string;
     debug: string;
-    cardComponent: string;
-    bankTransferDueDate: string;
   };
 };

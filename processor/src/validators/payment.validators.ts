@@ -7,9 +7,8 @@ import { ConnectorActions, CustomFields } from '../utils/constant.utils';
 import { DeterminePaymentActionType } from '../types/controller.types';
 import { CTTransactionState, CTTransactionType } from '../types/commercetools.types';
 import { parseStringToJsonObject } from '../utils/app.utils';
-import { readConfiguration } from '../utils/config.utils';
-import { toBoolean } from 'validator';
 import { CustomPaymentMethod, SupportedPaymentMethods } from '../types/mollie.types';
+import { getSingleMethodConfigObject } from '../commercetools/customObjects.commercetools';
 
 const throwError = (process: string, errorMessage: string, ctPayment?: CTPayment): void => {
   logger.error(`SCTM - ${process} - ${errorMessage}`, {
@@ -242,7 +241,7 @@ export const checkValidSuccessAuthorizationTransaction = (ctPayment: CTPayment):
  * The `isInvalid` property indicates if the payment method input is invalid.
  * The `errorMessage` property contains the error message if the input is invalid.
  */
-export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, method: string): void => {
+export const checkPaymentMethodSpecificParameters = async (ctPayment: CTPayment, method: string): Promise<void> => {
   const paymentCustomFields = parseStringToJsonObject(
     ctPayment.custom?.fields?.[CustomFields.createPayment.request],
     CustomFields.createPayment.request,
@@ -250,8 +249,10 @@ export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, metho
     ctPayment.id,
   );
 
+  const paymentMethodConfig = await getSingleMethodConfigObject(method as string);
+
   if (method === MolliePaymentMethods.creditcard) {
-    const cardComponentEnabled = toBoolean(readConfiguration().mollie.cardComponent, true);
+    const cardComponentEnabled = paymentMethodConfig.value.banktransferDueDate;
 
     if (cardComponentEnabled) {
       validateCardToken(paymentCustomFields?.cardToken, ctPayment);

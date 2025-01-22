@@ -57,7 +57,6 @@ import {
   setTransactionCustomType,
 } from '../commercetools/action.commercetools';
 import { readConfiguration } from '../utils/config.utils';
-import { toBoolean } from 'validator';
 import {
   CancelParameters,
   CreateParameters,
@@ -135,13 +134,16 @@ const mapMethodToCustomMethod = (method: CustomMethod, configObjects: CustomObje
  * Determines if the card component should be enabled.
  *
  * @param {CustomMethod[]} validatedMethods - The validated payment methods.
+ * @param {CustomObject[]} configObjects - The configuration objects.
  * @return {boolean} - True if the card component should be enabled, false otherwise.
  */
-const shouldEnableCardComponent = (validatedMethods: CustomMethod[]): boolean => {
-  return (
-    toBoolean(readConfiguration().mollie.cardComponent, true) &&
-    validatedMethods.some((method) => method.id === PaymentMethod.creditcard)
-  );
+const shouldEnableCardComponent = (validatedMethods: CustomMethod[], configObjects: CustomObject[]): boolean => {
+  if (!configObjects || !configObjects.length) {
+    return false;
+  }
+
+  const creditCardConfig = configObjects.find((config) => config.key === PaymentMethod.creditcard);
+  return creditCardConfig?.value.displayCardComponent?.valueOf() ?? false;
 };
 
 const mapMollieMethodToCustomMethod = (method: Method) => ({
@@ -215,7 +217,7 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
 
     const validatedMethods = validateAndSortMethods(customMethods, configObjects);
 
-    const enableCardComponent = shouldEnableCardComponent(validatedMethods);
+    const enableCardComponent = shouldEnableCardComponent(validatedMethods, configObjects);
 
     if (billingCountry) {
       filterMethodsByPricingConstraints(validatedMethods, configObjects, ctPayment, billingCountry);
@@ -398,6 +400,7 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
   logger.debug(`SCTM - handleCreatePayment - Getting customized configuration for payment method: ${method}`);
   const paymentMethodConfig = await getSingleMethodConfigObject(method as string);
   const billingCountry = getBillingCountry(ctPayment);
+  const banktransferDueDate = paymentMethodConfig.value.banktransferDueDate;
 
   const pricingConstraint = paymentMethodConfig.value.pricingConstraints?.find((constraint: PricingConstraintItem) => {
     return (
@@ -413,7 +416,13 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
       )
     : 0;
 
-  const paymentParams = createMollieCreatePaymentParams(ctPayment, extensionUrl, surchargeAmountInCent, cart);
+  const paymentParams = createMollieCreatePaymentParams(
+    ctPayment,
+    extensionUrl,
+    surchargeAmountInCent,
+    cart,
+    banktransferDueDate,
+  );
 
   let molliePayment;
   if (PaymentMethod[paymentParams.method as PaymentMethod]) {

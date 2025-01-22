@@ -27,8 +27,6 @@ export const readConfiguration = () => {
       mode: process.env.CONNECTOR_MODE as string,
       debug: process.env.DEBUG as string,
       profileId: process.env.MOLLIE_PROFILE_ID as string,
-      cardComponent: process.env.MOLLIE_CARD_COMPONENT as string,
-      bankTransferDueDate: process.env.MOLLIE_BANK_TRANSFER_DUE_DATE as string,
     },
   };
 
