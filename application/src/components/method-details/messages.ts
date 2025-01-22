@@ -86,4 +86,25 @@ export default defineMessages({
     id: 'MethodDetails.fieldMustBeEqualOrGreaterThanZero',
     defaultMessage: 'The amount must be equal or greater than 0',
   },
+  fieldDisplayCardComponenet: {
+    id: 'MethodDetails.fieldDisplayCardComponent',
+    defaultMessage: 'Display card component',
+  },
+  fieldDisplayCardComponenetDescription: {
+    id: 'MethodDetails.fieldDisplayCardComponenetDescription',
+    defaultMessage:
+      'Enable Mollie card components (0 = disabled or 1 = enabled)',
+  },
+  fieldBanktransaferDueDate: {
+    id: 'MethodDetails.fieldBanktransaferDueDate',
+    defaultMessage: 'Banktransfer due date',
+  },
+  fieldBanktransaferDueDateDescription: {
+    id: 'MethodDetails.fieldBankDueDateDescription',
+    defaultMessage: 'Set due date between (1d -> 100d)',
+  },
+  fieldBanktransaferDueDateIsNotAString: {
+    id: 'MethodDetails.fieldBanktransaferDueDateIsNotAString',
+    defaultMessage: 'Due date must be a string e.g. 25d, 9d',
+  },
 });

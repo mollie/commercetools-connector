@@ -48,7 +48,7 @@ describe('Test method-details.tsx', () => {
       method: {
         id: '43c3f945-c429-4719-878f-008cd507c581',
         container: 'sctm-app-methods',
-        key: 'paypal',
+        key: 'creditcard',
         value: {
           id: 'creditcard',
           technicalName: 'Card',
@@ -72,6 +72,7 @@ describe('Test method-details.tsx', () => {
             'https://www.mollie.com/external/icons/payment-methods/creditcard.svg',
           status: 'Inactive',
           displayOrder: 0,
+          displayCardComponent: false,
         },
         __typename: 'CustomObject',
       },

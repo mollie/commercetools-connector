@@ -1,11 +1,12 @@
 import omitEmpty from 'omit-empty-es';
-import type { FormikErrors } from 'formik';
+import { type FormikErrors } from 'formik';
 import type { TMethodObjectValueFormValues } from '../../types';
 
 type TMethodObjectErrors = {
   name: { invalidLength?: boolean };
   description: { invalidLength?: boolean };
   displayOrder: { isNotInteger?: boolean };
+  banktransferDueDate: { IsNotAString?: boolean };
 };
 
 const validate = (
@@ -15,6 +16,7 @@ const validate = (
     name: {},
     description: {},
     displayOrder: {},
+    banktransferDueDate: {},
   };
 
   if (
@@ -37,6 +39,17 @@ const validate = (
     formikValues.displayOrder > 100
   ) {
     errors.displayOrder.isNotInteger = true;
+  }
+  if (formikValues.banktransferDueDate) {
+    const dateValue = formikValues.banktransferDueDate.replace('d', '');
+    if (
+      !formikValues.banktransferDueDate.includes('d') ||
+      isNaN(parseInt(dateValue)) ||
+      parseInt(dateValue) < 0 ||
+      parseInt(dateValue) > 100
+    ) {
+      errors.banktransferDueDate.IsNotAString = true;
+    }
   }
 
   return omitEmpty(errors);

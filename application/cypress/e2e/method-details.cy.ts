@@ -57,4 +57,22 @@ describe('Test welcome.cy.ts', () => {
       20
     );
   });
+
+  it('credit card component visibility config should exist', () => {
+    const paymentMethodIds = ['creditcard'];
+
+    cy.findByTestId(`display-order-column-${paymentMethodIds[0]}`).click();
+    cy.url().should('contain', 'general');
+
+    cy.findByTestId(`display-card-component`).should('exist');
+  });
+
+  it('banktransfer due date config should exist', () => {
+    const paymentMethodIds = ['banktransfer'];
+
+    cy.findByTestId(`display-order-column-${paymentMethodIds[0]}`).click();
+    cy.url().should('contain', 'general');
+
+    cy.findByTestId(`banktransfer-due-date`).should('exist');
+  });
 });
