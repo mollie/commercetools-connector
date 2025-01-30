@@ -3,10 +3,18 @@ import { CancelStatusText, ConnectorActions, CustomFields, PAY_LATER_ENUMS } fro
 import { List, Method, Payment as MPayment, PaymentMethod, PaymentStatus, Refund } from '@mollie/api-client';
 import { logger } from '../utils/logger.utils';
 import {
+  createCartUpdateActions,
   createMollieCreatePaymentParams,
   mapCommercetoolsPaymentCustomFieldsToMollieListParams,
 } from '../utils/map.utils';
-import { CentPrecisionMoney, Extension, Payment, UpdateAction } from '@commercetools/platform-sdk';
+import {
+  CartUpdateAction,
+  CentPrecisionMoney,
+  CustomObject,
+  Extension,
+  Payment,
+  UpdateAction,
+} from '@commercetools/platform-sdk';
 import CustomError from '../errors/custom.error';
 import {
   cancelPayment,
@@ -22,8 +30,10 @@ import {
   CTTransaction,
   CTTransactionState,
   CTTransactionType,
+  CustomMethod,
   molliePaymentToCTStatusMap,
   mollieRefundToCTStatusMap,
+  PricingConstraintItem,
   UpdateActionKey,
 } from '../types/commercetools.types';
 import {
@@ -47,7 +57,6 @@ import {
   setTransactionCustomType,
 } from '../commercetools/action.commercetools';
 import { readConfiguration } from '../utils/config.utils';
-import { toBoolean } from 'validator';
 import {
   CancelParameters,
   CreateParameters,
@@ -56,8 +65,131 @@ import { getPaymentExtension } from '../commercetools/extensions.commercetools';
 import { HttpDestination } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/extension';
 import { cancelPaymentRefund, createPaymentRefund, getPaymentRefund } from '../mollie/refund.mollie';
 import { ApplePaySessionRequest, CustomPayment, SupportedPaymentMethods } from '../types/mollie.types';
-import { parseStringToJsonObject } from '../utils/app.utils';
+import {
+  calculateTotalSurchargeAmount,
+  convertCentToEUR,
+  parseStringToJsonObject,
+  roundSurchargeAmountToCent,
+  sortTransactionsByLatestCreationTime,
+} from '../utils/app.utils';
 import ApplePaySession from '@mollie/api-client/dist/types/src/data/applePaySession/ApplePaySession';
+import { getMethodConfigObjects, getSingleMethodConfigObject } from '../commercetools/customObjects.commercetools';
+import { getCartFromPayment, updateCart } from '../commercetools/cart.commercetools';
+import { removeCartMollieCustomLineItem } from './cart.service';
+
+/**
+ * Validates and sorts the payment methods.
+ *
+ * @param {CustomMethod[]} methods - The list of payment methods.
+ * @param {CustomObject[]} configObjects - The configuration objects.
+ * @return {CustomMethod[]} - The validated and sorted payment methods.
+ */
+const validateAndSortMethods = (methods: CustomMethod[], configObjects: CustomObject[]): CustomMethod[] => {
+  if (!configObjects.length) {
+    return methods.filter(
+      (method: CustomMethod) => SupportedPaymentMethods[method.id.toString() as SupportedPaymentMethods],
+    );
+  }
+
+  return methods
+    .filter((method) => isValidMethod(method, configObjects))
+    .map((method) => mapMethodToCustomMethod(method, configObjects))
+    .sort((a, b) => b.order - a.order); // Descending order sort
+};
+
+/**
+ * Checks if a method is valid based on the configuration objects.
+ *
+ * @param {CustomMethod} method - The payment method.
+ * @param {CustomObject[]} configObjects - The configuration objects.
+ * @return {boolean} - True if the method is valid, false otherwise.
+ */
+const isValidMethod = (method: CustomMethod, configObjects: CustomObject[]): boolean => {
+  return (
+    !!configObjects.find((config) => config.key === method.id && config.value.status === 'Active') &&
+    !!SupportedPaymentMethods[method.id.toString() as SupportedPaymentMethods]
+  );
+};
+
+/**
+ * Maps a payment method to a custom method.
+ *
+ * @param {CustomMethod} method - The payment method.
+ * @param {CustomObject[]} configObjects - The configuration objects.
+ * @return {CustomMethod} - The custom method.
+ */
+const mapMethodToCustomMethod = (method: CustomMethod, configObjects: CustomObject[]): CustomMethod => {
+  const config = configObjects.find((config) => config.key === method.id);
+
+  return {
+    id: method.id,
+    name: config?.value?.name,
+    description: config?.value?.description,
+    image: config?.value?.imageUrl,
+    order: config?.value?.displayOrder || 0,
+  };
+};
+
+/**
+ * Determines if the card component should be enabled.
+ *
+ * @param {CustomMethod[]} validatedMethods - The validated payment methods.
+ * @param {CustomObject[]} configObjects - The configuration objects.
+ * @return {boolean} - True if the card component should be enabled, false otherwise.
+ */
+const shouldEnableCardComponent = (validatedMethods: CustomMethod[], configObjects: CustomObject[]): boolean => {
+  if (!configObjects || !configObjects.length) {
+    return false;
+  }
+
+  const creditCardConfig = configObjects.find((config) => config.key === PaymentMethod.creditcard);
+  return creditCardConfig?.value.displayCardComponent?.valueOf() ?? false;
+};
+
+const mapMollieMethodToCustomMethod = (method: Method) => ({
+  id: method.id,
+  name: { 'en-GB': method.description },
+  description: { 'en-GB': '' },
+  image: method.image.svg,
+  order: 0,
+});
+
+const getBillingCountry = (ctPayment: Payment): string | undefined => {
+  const requestField = ctPayment.custom?.fields[CustomFields.payment.request];
+  return requestField ? JSON.parse(requestField).billingCountry : undefined;
+};
+
+const filterMethodsByPricingConstraints = (
+  methods: CustomMethod[],
+  configObjects: CustomObject[],
+  ctPayment: Payment,
+  billingCountry: string,
+) => {
+  const currencyCode = ctPayment.amountPlanned.currencyCode;
+  const amount = convertCentToEUR(ctPayment.amountPlanned.centAmount, ctPayment.amountPlanned.fractionDigits);
+
+  configObjects.forEach((item: CustomObject) => {
+    const pricingConstraint = item.value.pricingConstraints?.find((constraint: PricingConstraintItem) => {
+      return constraint.countryCode === billingCountry && constraint.currencyCode === currencyCode;
+    }) as PricingConstraintItem;
+
+    if (pricingConstraint) {
+      const surchargeAmount = calculateTotalSurchargeAmount(ctPayment, pricingConstraint.surchargeCost);
+      const amountIncludedSurcharge = amount + surchargeAmount;
+
+      if (
+        (pricingConstraint.minAmount && amount < pricingConstraint.minAmount) ||
+        (pricingConstraint.maxAmount && amount > pricingConstraint.maxAmount) ||
+        (pricingConstraint.maxAmount && amountIncludedSurcharge > pricingConstraint.maxAmount)
+      ) {
+        const index = methods.findIndex((method) => method.id === item.value.id);
+        if (index !== -1) {
+          methods.splice(index, 1);
+        }
+      }
+    }
+  });
+};
 
 /**
  * Handles listing payment methods by payment.
@@ -70,29 +202,36 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
   try {
     const mollieOptions = await mapCommercetoolsPaymentCustomFieldsToMollieListParams(ctPayment);
     const methods: List<Method> = await listPaymentMethods(mollieOptions);
-    const enableCardComponent =
-      toBoolean(readConfiguration().mollie.cardComponent, true) &&
-      methods.filter((method: Method) => method.id === PaymentMethod.creditcard).length > 0;
-    const ctUpdateActions: UpdateAction[] = [];
+    const configObjects: CustomObject[] = await getMethodConfigObjects();
 
-    if (enableCardComponent) {
-      methods.splice(
-        methods.findIndex((method: Method) => method.id === PaymentMethod.creditcard),
-        1,
-      );
+    const billingCountry = getBillingCountry(ctPayment);
+
+    if (!billingCountry) {
+      logger.error(`SCTM - listPaymentMethodsByPayment - billingCountry is not provided.`, {
+        commerceToolsPaymentId: ctPayment.id,
+      });
+      throw new CustomError(400, 'billingCountry is not provided.');
+    }
+
+    const customMethods = methods.map(mapMollieMethodToCustomMethod);
+
+    const validatedMethods = validateAndSortMethods(customMethods, configObjects);
+
+    const enableCardComponent = shouldEnableCardComponent(validatedMethods, configObjects);
+
+    if (billingCountry) {
+      filterMethodsByPricingConstraints(validatedMethods, configObjects, ctPayment, billingCountry);
     }
 
     const availableMethods = JSON.stringify({
-      count: methods.length,
-      methods: methods.length
-        ? methods.filter((method: Method) => SupportedPaymentMethods[method.id.toString() as SupportedPaymentMethods])
-        : [],
+      count: validatedMethods.length,
+      methods: validatedMethods.length ? validatedMethods : [],
     });
 
-    ctUpdateActions.push(
+    const ctUpdateActions: UpdateAction[] = [
       setCustomFields(CustomFields.payment.profileId, enableCardComponent ? readConfiguration().mollie.profileId : ''),
-    );
-    ctUpdateActions.push(setCustomFields(CustomFields.payment.response, availableMethods));
+      setCustomFields(CustomFields.payment.response, availableMethods),
+    ];
 
     return {
       statusCode: 200,
@@ -107,7 +246,7 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
       },
     );
     if (error instanceof CustomError) {
-      Promise.reject(error);
+      return Promise.reject(error);
     }
 
     return { statusCode: 200, actions: [] };
@@ -165,6 +304,10 @@ export const handlePaymentWebhook = async (paymentId: string): Promise<boolean> 
   logger.info(`handlePaymentWebhook - actions:${JSON.stringify(action)}`);
 
   await updatePayment(ctPayment, action as PaymentUpdateAction[]);
+
+  if (molliePayment.status === PaymentStatus.canceled) {
+    await removeCartMollieCustomLineItem(ctPayment);
+  }
 
   return true;
 };
@@ -250,7 +393,36 @@ export const getPaymentStatusUpdateAction = (
 export const handleCreatePayment = async (ctPayment: Payment): Promise<ControllerResponseType> => {
   const extensionUrl = (((await getPaymentExtension()) as Extension)?.destination as HttpDestination).url;
 
-  const paymentParams = createMollieCreatePaymentParams(ctPayment, extensionUrl);
+  const cart = await getCartFromPayment(ctPayment.id);
+
+  const [method] = ctPayment?.paymentMethodInfo?.method?.split(',') ?? [null, null];
+
+  logger.debug(`SCTM - handleCreatePayment - Getting customized configuration for payment method: ${method}`);
+  const paymentMethodConfig = await getSingleMethodConfigObject(method as string);
+  const billingCountry = getBillingCountry(ctPayment);
+  const banktransferDueDate = paymentMethodConfig.value.banktransferDueDate;
+
+  const pricingConstraint = paymentMethodConfig.value.pricingConstraints?.find((constraint: PricingConstraintItem) => {
+    return (
+      constraint.countryCode === billingCountry && constraint.currencyCode === ctPayment.amountPlanned.currencyCode
+    );
+  }) as PricingConstraintItem;
+
+  logger.debug(`SCTM - handleCreatePayment - Calculating total surcharge amount`);
+  const surchargeAmountInCent = pricingConstraint
+    ? roundSurchargeAmountToCent(
+        calculateTotalSurchargeAmount(ctPayment, pricingConstraint.surchargeCost),
+        ctPayment.amountPlanned.fractionDigits,
+      )
+    : 0;
+
+  const paymentParams = createMollieCreatePaymentParams(
+    ctPayment,
+    extensionUrl,
+    surchargeAmountInCent,
+    cart,
+    banktransferDueDate,
+  );
 
   let molliePayment;
   if (PaymentMethod[paymentParams.method as PaymentMethod]) {
@@ -265,7 +437,12 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
     molliePayment = await createPaymentWithCustomMethod(paymentParams);
   }
 
-  const ctActions = await getCreatePaymentUpdateAction(molliePayment, ctPayment);
+  const cartUpdateActions = createCartUpdateActions(cart, ctPayment, surchargeAmountInCent);
+  if (cartUpdateActions.length > 0) {
+    await updateCart(cart, cartUpdateActions as CartUpdateAction[]);
+  }
+
+  const ctActions = await getCreatePaymentUpdateAction(molliePayment, ctPayment, surchargeAmountInCent);
 
   return {
     statusCode: 201,
@@ -281,7 +458,11 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
  * @return {Promise<UpdateAction[]>} A promise that resolves to an array of update actions.
  * @throws {Error} If the original transaction is not found.
  */
-export const getCreatePaymentUpdateAction = async (molliePayment: MPayment | CustomPayment, CTPayment: Payment) => {
+export const getCreatePaymentUpdateAction = async (
+  molliePayment: MPayment | CustomPayment,
+  CTPayment: Payment,
+  surchargeAmountInCent: number,
+) => {
   try {
     // Find the original transaction which triggered create order
     const originalTransaction = CTPayment.transactions?.find((transaction) => {
@@ -317,7 +498,7 @@ export const getCreatePaymentUpdateAction = async (molliePayment: MPayment | Cus
       sctm_created_at: molliePayment.createdAt,
     };
 
-    return Promise.resolve([
+    const actions: UpdateAction[] = [
       // Add interface interaction
       addInterfaceInteraction(interfaceInteractionParams),
       // Update transaction interactionId
@@ -326,7 +507,18 @@ export const getCreatePaymentUpdateAction = async (molliePayment: MPayment | Cus
       changeTransactionTimestamp(originalTransaction.id, molliePayment.createdAt),
       // Update transaction state
       changeTransactionState(originalTransaction.id, CTTransactionState.Pending),
-    ]);
+    ];
+
+    if (surchargeAmountInCent > 0) {
+      // Add surcharge amount to the custom field of the transaction
+      actions.push(
+        setTransactionCustomType(originalTransaction.id, CustomFields.transactionSurchargeCost, {
+          surchargeAmountInCent,
+        }),
+      );
+    }
+
+    return Promise.resolve(actions);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return Promise.reject(error);
@@ -334,13 +526,46 @@ export const getCreatePaymentUpdateAction = async (molliePayment: MPayment | Cus
 };
 
 export const handleCreateRefund = async (ctPayment: Payment): Promise<ControllerResponseType> => {
-  const successChargeTransaction = ctPayment.transactions.find(
-    (transaction) => transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Success,
-  );
+  let successChargeTransaction;
+  const updateActions = [] as UpdateAction[];
 
   const initialRefundTransaction = ctPayment.transactions.find(
     (transaction) => transaction.type === CTTransactionType.Refund && transaction.state === CTTransactionState.Initial,
   );
+
+  if (initialRefundTransaction?.custom?.fields[CustomFields.transactionRefundForMolliePayment]) {
+    logger.debug('SCTM - handleCreateRefund - creating a refund with specific payment id');
+
+    successChargeTransaction = ctPayment.transactions.find(
+      (transaction) =>
+        transaction.type === CTTransactionType.Charge &&
+        transaction.state === CTTransactionState.Success &&
+        transaction.interactionId ===
+          initialRefundTransaction?.custom?.fields[CustomFields.transactionRefundForMolliePayment],
+    );
+  } else {
+    logger.debug('SCTM - handleCreateRefund - creating a refund for the latest success charge transaction');
+
+    const hasTransactionWithoutTimestamp = ctPayment.transactions.filter((transaction) => !transaction.timestamp);
+    const latestTransactions = hasTransactionWithoutTimestamp
+      ? ctPayment.transactions.reverse()
+      : sortTransactionsByLatestCreationTime(ctPayment.transactions);
+
+    successChargeTransaction = latestTransactions.find(
+      (transaction) =>
+        transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Success,
+    );
+
+    updateActions.push(
+      setTransactionCustomType(initialRefundTransaction?.id as string, CustomFields.transactionRefundForMolliePayment, {
+        [CustomFields.transactionRefundForMolliePayment]: successChargeTransaction?.interactionId,
+      }),
+    );
+  }
+
+  if (!successChargeTransaction) {
+    throw new CustomError(400, 'SCTM - handleCreateRefund - Cannot find valid success charge transaction');
+  }
 
   const paymentCreateRefundParams: CreateParameters = {
     paymentId: successChargeTransaction?.interactionId as string,
@@ -349,12 +574,14 @@ export const handleCreateRefund = async (ctPayment: Payment): Promise<Controller
 
   const refund = await createPaymentRefund(paymentCreateRefundParams);
 
+  updateActions.push(
+    changeTransactionInteractionId(initialRefundTransaction?.id as string, refund.id),
+    changeTransactionState(initialRefundTransaction?.id as string, CTTransactionState.Pending),
+  );
+
   return {
     statusCode: 201,
-    actions: [
-      changeTransactionInteractionId(initialRefundTransaction?.id as string, refund.id),
-      changeTransactionState(initialRefundTransaction?.id as string, CTTransactionState.Pending),
-    ],
+    actions: updateActions,
   };
 };
 
@@ -366,18 +593,62 @@ export const handleCreateRefund = async (ctPayment: Payment): Promise<Controller
  * @throws {CustomError} If there is an error in the process.
  */
 export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<ControllerResponseType> => {
-  const successChargeTransaction = ctPayment.transactions.find(
-    (transaction) => transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Success,
-  );
-
-  const pendingRefundTransaction = ctPayment.transactions.find(
-    (transaction) => transaction.type === CTTransactionType.Refund && transaction.state === CTTransactionState.Pending,
-  );
+  let pendingRefundTransaction: any;
+  let successChargeTransaction: any;
 
   const initialCancelAuthorization = ctPayment.transactions.find(
     (transaction) =>
       transaction.type === CTTransactionType.CancelAuthorization && transaction.state === CTTransactionState.Initial,
   );
+
+  if (initialCancelAuthorization?.interactionId) {
+    pendingRefundTransaction = ctPayment.transactions.find(
+      (transaction) =>
+        transaction.type === CTTransactionType.Refund &&
+        transaction.state === CTTransactionState.Pending &&
+        transaction?.interactionId === initialCancelAuthorization.interactionId,
+    ) as Transaction;
+
+    if (pendingRefundTransaction) {
+      successChargeTransaction = ctPayment.transactions.find(
+        (transaction) =>
+          transaction.type === CTTransactionType.Charge &&
+          transaction.state === CTTransactionState.Success &&
+          transaction.interactionId ===
+            pendingRefundTransaction?.custom?.fields[CustomFields.transactionRefundForMolliePayment],
+      ) as Transaction;
+    }
+
+    if (!successChargeTransaction) {
+      throw new CustomError(
+        400,
+        'SCTM - handlePaymentCancelRefund - Cannot find the valid Success Charge transaction.',
+      );
+    }
+  }
+
+  /**
+   * @deprecated v1.2 - Will be remove in the next version
+   */
+  if (!pendingRefundTransaction || !successChargeTransaction) {
+    const hasTransactionWithoutTimestamp = ctPayment.transactions.filter((transaction) => !transaction.timestamp);
+    const latestTransactions = hasTransactionWithoutTimestamp
+      ? ctPayment.transactions.reverse()
+      : sortTransactionsByLatestCreationTime(ctPayment.transactions);
+
+    pendingRefundTransaction = latestTransactions.find(
+      (transaction) =>
+        transaction.type === CTTransactionType.Refund && transaction.state === CTTransactionState.Pending,
+    );
+
+    successChargeTransaction = latestTransactions.find(
+      (transaction) =>
+        transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Success,
+    );
+  }
+  /**
+   * end deprecated
+   */
 
   const paymentGetRefundParams: CancelParameters = {
     paymentId: successChargeTransaction?.interactionId as string,
@@ -539,6 +810,8 @@ export const handleCancelPayment = async (ctPayment: Payment): Promise<Controlle
   }
 
   await cancelPayment(molliePayment.id);
+
+  await removeCartMollieCustomLineItem(ctPayment);
 
   return {
     statusCode: 200,

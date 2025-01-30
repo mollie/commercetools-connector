@@ -1,4 +1,4 @@
-import { optional, standardKey, standardString, region, standardDueDate } from './helpers.validators';
+import { optional, standardKey, standardString, region } from './helpers.validators';
 
 /**
  * Create here your own validators
@@ -46,6 +46,26 @@ const envValidators = [
     referencedBy: 'environmentVariables',
   }),
 
+  standardString(
+    ['commerceTools', 'sessionAudience'],
+    {
+      code: 'InvalidSessionAudience',
+      message: 'Not a valid sessionAudience.',
+      referencedBy: 'environmentVariables',
+    },
+    { min: 1, max: undefined },
+  ),
+
+  standardString(
+    ['commerceTools', 'sessionIssuer'],
+    {
+      code: 'InvalidSessionIssuer',
+      message: 'Not a valid sessionIssuer.',
+      referencedBy: 'environmentVariables',
+    },
+    { min: 1, max: undefined },
+  ),
+
   standardKey(['mollie', 'testApiKey'], {
     code: 'InvalidMollieTestApiKey',
     message: 'Mollie test API key should be a valid string.',
@@ -78,19 +98,6 @@ const envValidators = [
   ),
 
   standardString(
-    ['mollie', 'cardComponent'],
-    {
-      code: 'InvalidEnableCardComponent',
-      message: 'Enable Mollie card component should be a valid string of either "0" or "1".',
-      referencedBy: 'environmentVariables',
-    },
-    {
-      min: 1,
-      max: 1,
-    },
-  ),
-
-  standardString(
     ['mollie', 'mode'],
     {
       code: 'InvalidMode',
@@ -102,12 +109,19 @@ const envValidators = [
       max: 4,
     },
   ),
-  standardDueDate(['mollie', 'bankTransferDueDate'], {
-    code: 'InvalidBankTransferDueDate',
-    message:
-      'Bank transfer due date must be from 1d to 100d, the number must be an integer. If it was not set, the default will be 14d',
-    referencedBy: 'environmentVariables',
-  }),
+
+  standardString(
+    ['commerceTools', 'authMode'],
+    {
+      code: 'InvalidAuthMode',
+      message: 'AuthMode should be a valid string of either "0" or "1".',
+      referencedBy: 'environmentVariables',
+    },
+    {
+      min: 1,
+      max: 1,
+    },
+  ),
 ];
 
 export default envValidators;

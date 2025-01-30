@@ -11,9 +11,12 @@ const convertCTToMollieAmountValue = (ctValue: number, fractionDigits = 2): stri
   return (ctValue / divider).toFixed(fractionDigits);
 };
 
-export const makeMollieAmount = ({ centAmount, fractionDigits, currencyCode }: CentPrecisionMoney): Amount => {
+export const makeMollieAmount = (
+  { centAmount, fractionDigits, currencyCode }: CentPrecisionMoney,
+  surchargeAmountInCent: number = 0,
+): Amount => {
   return {
-    value: convertCTToMollieAmountValue(centAmount, fractionDigits),
+    value: convertCTToMollieAmountValue(centAmount + surchargeAmountInCent, fractionDigits),
     currency: currencyCode,
   };
 };
@@ -101,7 +104,7 @@ export const calculateDueDate = (input?: string): string => {
     input = DEFAULT_DUE_DATE + 'd';
   }
 
-  const match = input.match(DUE_DATE_PATTERN);
+  const match = DUE_DATE_PATTERN.exec(input);
 
   if (match) {
     const days = parseInt(match[1]);

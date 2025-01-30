@@ -1,5 +1,4 @@
 import {
-  standardDueDate,
   array,
   standardEmail,
   standardNaturalNumber,
@@ -10,8 +9,8 @@ import {
   optional,
   region,
 } from './../../src/validators/helpers.validators';
-import { describe, test, expect, jest, it } from '@jest/globals';
-import { ConnectorEnvVars, Message } from '../../src/types/index.types';
+import { describe, test, expect, jest } from '@jest/globals';
+import { Message } from '../../src/types/index.types';
 import envValidators from '../../src/validators/env.validators';
 
 const mockObject = {
@@ -68,15 +67,6 @@ const mockObject = {
       referencedBy: 'environmentVariables',
     } as Message,
   },
-  standardDueDate: {
-    path: ['./demo/path/dueDate'] as string[],
-    message: {
-      code: 'InvalidBankTransferDueDate',
-      message:
-        'Bank transfer due date must be from 1d to 100d, the number must be an integer. If it was not set, the default will be 14d',
-      referencedBy: 'environmentVariables',
-    } as Message,
-  },
 };
 
 const mockResponse = {
@@ -105,20 +95,6 @@ const mockResponse = {
           referencedBy: 'environmentVariables',
         },
         [undefined],
-      ],
-    ],
-  ],
-  standardDueDate: [
-    ['./demo/path/dueDate'],
-    [
-      [
-        [jest.fn()],
-        {
-          code: 'InvalidBankTransferDueDate',
-          message:
-            'Bank transfer due date must be from 1d to 100d, the number must be an integer. If it was not set, the default will be 14d',
-          referencedBy: 'environmentVariables',
-        },
       ],
     ],
   ],
@@ -255,6 +231,10 @@ describe('Test helpers.validators.ts', () => {
         projectKey: process.env.CTP_PROJECT_KEY as string,
         scope: process.env.CTP_SCOPE as string,
         region: process.env.CTP_REGION as string,
+        authUrl: process.env.CTP_AUTH_URL as string,
+        authMode: process.env.AUTHENTICATION_MODE as string,
+        sessionAudience: process.env.CTP_SESSION_AUDIENCE as string,
+        sessionIssuer: process.env.CTP_SESSION_ISSUER as string,
       },
       mollie: {
         liveApiKey: process.env.MOLLIE_API_LIVE_KEY as string,
@@ -262,8 +242,6 @@ describe('Test helpers.validators.ts', () => {
         mode: process.env.CONNECTOR_MODE as string,
         debug: (process.env.DEBUG ?? '0') as string,
         profileId: process.env.MOLLIE_PROFILE_ID as string,
-        cardComponent: (process.env.MOLLIE_CARD_COMPONENT ?? '0') as string,
-        bankTransferDueDate: process.env.MOLLIE_BANK_TRANSFER_DUE_DATE,
       },
     };
     const error = getValidateMessages(envValidators, vars);
@@ -279,6 +257,10 @@ describe('Test helpers.validators.ts', () => {
         projectKey: process.env.CTP_PROJECT_KEY as string,
         scope: process.env.CTP_SCOPE as string,
         region: process.env.CTP_REGION as string,
+        authUrl: process.env.CTP_AUTH_URL as string,
+        authMode: process.env.AUTHENTICATION_MODE as string,
+        sessionAudience: process.env.CTP_SESSION_AUDIENCE as string,
+        sessionIssuer: process.env.CTP_SESSION_ISSUER as string,
       },
       mollie: {
         liveApiKey: process.env.MOLLIE_API_LIVE_KEY as string,
@@ -286,8 +268,6 @@ describe('Test helpers.validators.ts', () => {
         mode: process.env.CONNECTOR_MODE as string,
         debug: (process.env.DEBUG ?? '0') as string,
         profileId: process.env.MOLLIE_PROFILE_ID as string,
-        cardComponent: (process.env.MOLLIE_CARD_COMPONENT ?? '0') as string,
-        bankTransferDueDate: process.env.MOLLIE_BANK_TRANSFER_DUE_DATE,
       },
     };
     const error = getValidateMessages(envValidators, vars);
@@ -324,110 +304,5 @@ describe('Test helpers.validators.ts', () => {
     expect(response).toBeDefined();
     expect(response[0]).toStrictEqual(mockResponse.region[0]);
     expect(response[1][0][1]).toStrictEqual(mockResponse.region[1][0][1]);
-  });
-
-  test('call standardDuedate', async () => {
-    const response = standardDueDate(mockObject.standardDueDate.path, mockObject.standardDueDate.message);
-    expect(response).toBeDefined();
-    expect(response[0]).toStrictEqual(mockResponse.standardDueDate[0]);
-    expect(response[1][0][1]).toStrictEqual(mockResponse.standardDueDate[1][0][1]);
-  });
-});
-
-describe('test getValidateMessages', () => {
-  it('should able to return suitable error message when MOLLIE_BANK_TRANSFER_DUE_DATE is invalid', () => {
-    const envVars: ConnectorEnvVars = {
-      commerceTools: {
-        clientId: process.env.CTP_CLIENT_ID as string,
-        clientSecret: process.env.CTP_CLIENT_SECRET as string,
-        projectKey: process.env.CTP_PROJECT_KEY as string,
-        scope: process.env.CTP_SCOPE as string,
-        region: process.env.CTP_REGION as string,
-      },
-      mollie: {
-        testApiKey: process.env.MOLLIE_API_TEST_KEY as string,
-        liveApiKey: process.env.MOLLIE_API_LIVE_KEY as string,
-        mode: process.env.CONNECTOR_MODE as string,
-        debug: process.env.DEBUG as string,
-        profileId: process.env.MOLLIE_PROFILE_ID as string,
-        cardComponent: process.env.MOLLIE_CARD_COMPONENT as string,
-        bankTransferDueDate: 'dummy',
-      },
-    };
-
-    const result = getValidateMessages(envValidators, envVars);
-
-    expect(result).toEqual([
-      {
-        code: 'InvalidBankTransferDueDate',
-        message:
-          'Bank transfer due date must be from 1d to 100d, the number must be an integer. If it was not set, the default will be 14d',
-        referencedBy: 'environmentVariables',
-      },
-    ]);
-  });
-
-  it('should able to return suitable error message when MOLLIE_BANK_TRANSFER_DUE_DATE is invalid', () => {
-    const envVars: ConnectorEnvVars = {
-      commerceTools: {
-        clientId: process.env.CTP_CLIENT_ID as string,
-        clientSecret: process.env.CTP_CLIENT_SECRET as string,
-        projectKey: process.env.CTP_PROJECT_KEY as string,
-        scope: process.env.CTP_SCOPE as string,
-        region: process.env.CTP_REGION as string,
-      },
-      mollie: {
-        testApiKey: process.env.MOLLIE_API_TEST_KEY as string,
-        liveApiKey: process.env.MOLLIE_API_LIVE_KEY as string,
-        mode: process.env.CONNECTOR_MODE as string,
-        debug: process.env.DEBUG as string,
-        profileId: process.env.MOLLIE_PROFILE_ID as string,
-        cardComponent: process.env.MOLLIE_CARD_COMPONENT as string,
-        bankTransferDueDate: 'dummy',
-      },
-    };
-
-    const result = getValidateMessages(envValidators, envVars);
-
-    expect(result).toEqual([
-      {
-        code: 'InvalidBankTransferDueDate',
-        message:
-          'Bank transfer due date must be from 1d to 100d, the number must be an integer. If it was not set, the default will be 14d',
-        referencedBy: 'environmentVariables',
-      },
-    ]);
-  });
-
-  it('should able to return suitable error message when MOLLIE_BANK_TRANSFER_DUE_DATE is more than 100 days', () => {
-    const envVars: ConnectorEnvVars = {
-      commerceTools: {
-        clientId: process.env.CTP_CLIENT_ID as string,
-        clientSecret: process.env.CTP_CLIENT_SECRET as string,
-        projectKey: process.env.CTP_PROJECT_KEY as string,
-        scope: process.env.CTP_SCOPE as string,
-        region: process.env.CTP_REGION as string,
-      },
-      mollie: {
-        testApiKey: process.env.MOLLIE_API_TEST_KEY as string,
-        liveApiKey: process.env.MOLLIE_API_LIVE_KEY as string,
-        mode: process.env.CONNECTOR_MODE as string,
-        debug: process.env.DEBUG as string,
-        profileId: process.env.MOLLIE_PROFILE_ID as string,
-        cardComponent: process.env.MOLLIE_CARD_COMPONENT as string,
-        bankTransferDueDate: '101d',
-      },
-    };
-
-    const result = getValidateMessages(envValidators, envVars);
-
-    expect(result).toEqual([
-      {
-        code: 'InvalidBankTransferDueDate',
-        message:
-          'Bank transfer due date must be from 1d to 100d, the number must be an integer. If it was not set, the default will be 14d',
-        referencedBy: 'environmentVariables',
-      },
-    ]);
   });
 });

@@ -6,10 +6,9 @@ import { logger } from '../utils/logger.utils';
 import { ConnectorActions, CustomFields } from '../utils/constant.utils';
 import { DeterminePaymentActionType } from '../types/controller.types';
 import { CTTransactionState, CTTransactionType } from '../types/commercetools.types';
-import { parseStringToJsonObject, validateEmail } from '../utils/app.utils';
-import { readConfiguration } from '../utils/config.utils';
-import { toBoolean } from 'validator';
+import { parseStringToJsonObject } from '../utils/app.utils';
 import { CustomPaymentMethod, SupportedPaymentMethods } from '../types/mollie.types';
+import { getSingleMethodConfigObject } from '../commercetools/customObjects.commercetools';
 
 const throwError = (process: string, errorMessage: string, ctPayment?: CTPayment): void => {
   logger.error(`SCTM - ${process} - ${errorMessage}`, {
@@ -39,30 +38,18 @@ const validateCardToken = (cardToken: string | undefined, ctPayment: CTPayment):
 };
 
 export const validateBanktransfer = (paymentCustomFields: any, ctPayment: CTPayment): void => {
-  if (!paymentCustomFields?.billingAddress || !paymentCustomFields?.billingAddress?.email) {
+  if (!paymentCustomFields?.billingAddress?.email) {
     throwError(
       'validateBanktransfer',
       'email is required for payment method banktransfer. Please make sure you have sent it in billingAddress.email of the custom field.',
       ctPayment,
     );
   }
-
-  if (!validateEmail(paymentCustomFields.billingAddress.email)) {
-    throwError('validateBanktransfer', 'email must be a valid email address.', ctPayment);
-  }
 };
 
 const validateBlik = (paymentCustomFields: any, ctPayment: CTPayment): void => {
   if (ctPayment.amountPlanned.currencyCode.toLowerCase() !== 'pln') {
     throwError('validateBlik', 'Currency Code must be PLN for payment method BLIK.', ctPayment);
-  }
-
-  if (!paymentCustomFields?.billingEmail) {
-    throwError('validateBlik', 'billingEmail is required for payment method BLIK.', ctPayment);
-  }
-
-  if (!validateEmail(paymentCustomFields.billingEmail)) {
-    throwError('validateBlik', 'billingEmail must be a valid email address.', ctPayment);
   }
 };
 
@@ -192,7 +179,7 @@ export const checkValidRefundTransactionForCreate = (ctPayment: CTPayment): bool
     throwError('checkValidRefundTransactionForCreate', 'No initial refund transaction found.');
   }
 
-  if (!initialRefundTransaction?.amount || !initialRefundTransaction?.amount.centAmount) {
+  if (!initialRefundTransaction?.amount?.centAmount) {
     throwError(
       'checkValidRefundTransactionForCreate',
       `No amount found in initial refund transaction, CommerceTools Transaction ID: ${initialRefundTransaction?.id}.`,
@@ -254,7 +241,7 @@ export const checkValidSuccessAuthorizationTransaction = (ctPayment: CTPayment):
  * The `isInvalid` property indicates if the payment method input is invalid.
  * The `errorMessage` property contains the error message if the input is invalid.
  */
-export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, method: string): void => {
+export const checkPaymentMethodSpecificParameters = async (ctPayment: CTPayment, method: string): Promise<void> => {
   const paymentCustomFields = parseStringToJsonObject(
     ctPayment.custom?.fields?.[CustomFields.createPayment.request],
     CustomFields.createPayment.request,
@@ -262,8 +249,10 @@ export const checkPaymentMethodSpecificParameters = (ctPayment: CTPayment, metho
     ctPayment.id,
   );
 
+  const paymentMethodConfig = await getSingleMethodConfigObject(method as string);
+
   if (method === MolliePaymentMethods.creditcard) {
-    const cardComponentEnabled = toBoolean(readConfiguration().mollie.cardComponent, true);
+    const cardComponentEnabled = paymentMethodConfig.value.banktransferDueDate;
 
     if (cardComponentEnabled) {
       validateCardToken(paymentCustomFields?.cardToken, ctPayment);

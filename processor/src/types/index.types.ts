@@ -21,6 +21,10 @@ export type ConnectorEnvVars = {
     projectKey: string;
     scope: string;
     region: string;
+    authUrl: string;
+    authMode: string;
+    sessionAudience: string;
+    sessionIssuer: string;
   };
   mollie: {
     testApiKey: string;
@@ -28,7 +32,5 @@ export type ConnectorEnvVars = {
     mode: string;
     profileId: string;
     debug: string;
-    cardComponent: string;
-    bankTransferDueDate: string;
   };
 };

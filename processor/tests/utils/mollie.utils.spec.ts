@@ -45,6 +45,23 @@ describe('Test mollie.utils.ts', () => {
 
       expect(makeMollieAmount(centPrecisionMoney)).toEqual(expected);
     });
+
+    it('should create a Mollie Amount from CentPrecisionMoney with surcharge amount is not 0', () => {
+      const centPrecisionMoney: CentPrecisionMoney = {
+        centAmount: 1234,
+        fractionDigits: 2,
+        currencyCode: 'EUR',
+      } as CentPrecisionMoney;
+
+      const surchargeAmountInCent = 20;
+
+      const expected: Amount = {
+        value: '12.54',
+        currency: 'EUR',
+      };
+
+      expect(makeMollieAmount(centPrecisionMoney, surchargeAmountInCent)).toEqual(expected);
+    });
   });
 
   describe('makeCTMoney', () => {

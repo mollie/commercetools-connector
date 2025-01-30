@@ -4,6 +4,7 @@
   * [Parameters map](#parameters-map)
   * [Representation: CommerceTools Payment](#representation-ct-payment)
   * [Creating commercetools actions from Mollie's response](#creating-commercetools-actions-from-mollies-response)
+  * [Update per version](#update-per-version)
 
 ## Overview
 
@@ -21,8 +22,6 @@ A success charge transaction is expected to trigger a refund. The transaction sh
 A transaction with type "Refund" and state "Initial" triggers a refund.
 
 ## Example Usage
-
-In commercetools, we have a Payment which has one Transaction. This maps to an order in mollie. The commercetools Payment's key is the mollie orderId, and the commercetools Transaction maps to the payment in mollie.
 
 In commercetools, we have a Payment which has one Transaction. This maps to an order in mollie. The commercetools Payment's key is the mollie orderId, and the commercetools Transaction maps to the payment in mollie.
 
@@ -96,4 +95,9 @@ transactions: [
 ]
 ```
 
-When the refund is completed, this transaction's state will be updated by the notifications module to "Success" or "Failure". 
+When the refund is completed, this transaction's state will be updated by the notifications module to "Success" or "Failure".
+
+## Update per version
+
+The function was updated at:
+- [v1.1.3](../CHANGELOG.md#v113)

@@ -2,6 +2,13 @@ import { v4 as uuid } from 'uuid';
 import { createDateNowString } from '../utils/app.utils';
 import { CustomFields } from '../utils/constant.utils';
 import { CTTransactionState, CreateInterfaceInteractionParams } from '../types/commercetools.types';
+import {
+  CartAddCustomLineItemAction,
+  CartRemoveCustomLineItemAction,
+  LocalizedString,
+  TaxCategoryResourceIdentifier,
+  _Money,
+} from '@commercetools/platform-sdk';
 
 /**
  * A function that sets custom fields with the given field name and field value.
@@ -30,8 +37,8 @@ export const setCustomFields = (fieldName: string, fieldValue: string) => {
  */
 export const addInterfaceInteraction = (params: CreateInterfaceInteractionParams) => {
   const { sctm_action_type, sctm_request, sctm_response, sctm_id, sctm_created_at } = params;
-  const interfaceInteractionId = sctm_id ? sctm_id : uuid();
-  const interfaceInteractionTimestamp = sctm_created_at ? sctm_created_at : createDateNowString();
+  const interfaceInteractionId = sctm_id ?? uuid();
+  const interfaceInteractionTimestamp = sctm_created_at ?? createDateNowString();
 
   return {
     action: 'addInterfaceInteraction',
@@ -95,6 +102,49 @@ export const setTransactionCustomType = (transactionId: string, key: string, fie
       key,
     },
     fields,
+    transactionId,
+  };
+};
+
+export const removeCustomLineItem = (customLineItemId: string): CartRemoveCustomLineItemAction => {
+  return {
+    action: 'removeCustomLineItem',
+    customLineItemId: customLineItemId,
+  };
+};
+
+export const addCustomLineItem = (
+  name: LocalizedString,
+  quantity: number,
+  money: _Money,
+  slug: string,
+  taxCategory?: TaxCategoryResourceIdentifier,
+): CartAddCustomLineItemAction => {
+  if (!taxCategory) {
+    return {
+      action: 'addCustomLineItem',
+      name,
+      quantity,
+      money,
+      slug,
+    };
+  }
+
+  return {
+    action: 'addCustomLineItem',
+    name,
+    quantity,
+    money,
+    slug,
+    taxCategory,
+  };
+};
+
+export const setTransactionCustomField = (name: string, value: string, transactionId: string) => {
+  return {
+    action: 'setTransactionCustomField',
+    name,
+    value,
     transactionId,
   };
 };

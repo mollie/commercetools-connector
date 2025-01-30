@@ -12,6 +12,10 @@ describe('Test src/utils/config.utils.ts', () => {
         projectKey: process.env.CTP_PROJECT_KEY,
         scope: process.env.CTP_SCOPE,
         region: process.env.CTP_REGION,
+        authUrl: process.env.CTP_AUTH_URL,
+        authMode: process.env.AUTHENTICATION_MODE,
+        sessionAudience: process.env.CTP_SESSION_AUDIENCE,
+        sessionIssuer: process.env.CTP_SESSION_ISSUER,
       },
       mollie: {
         liveApiKey: process.env.MOLLIE_API_LIVE_KEY,
@@ -19,8 +23,6 @@ describe('Test src/utils/config.utils.ts', () => {
         mode: process.env.CONNECTOR_MODE,
         debug: process.env.DEBUG,
         profileId: process.env.MOLLIE_PROFILE_ID,
-        cardComponent: process.env.MOLLIE_CARD_COMPONENT,
-        bankTransferDueDate: process.env.MOLLIE_BANK_TRANSFER_DUE_DATE,
       },
     });
   });
@@ -65,18 +67,13 @@ describe('Test src/utils/config.utils.ts', () => {
     expect(() => readConfiguration()).toThrow(CustomError);
   });
 
-  test('should throw an error when MOLLIE_CARD_COMPONENT is not defined', () => {
-    delete process.env.MOLLIE_CARD_COMPONENT;
-    expect(() => readConfiguration()).toThrow(CustomError);
-  });
-
   test('should throw an error when CONNECTOR_MODE is not defined', () => {
     delete process.env.CONNECTOR_MODE;
     expect(() => readConfiguration()).toThrow(CustomError);
   });
 
-  test('should throw an error when MOLLIE_BANK_TRANSFER_DUE_DATE is invalid', () => {
-    process.env.MOLLIE_BANK_TRANSFER_DUE_DATE = 'dummy';
+  test('should throw an error when AUTHENTICATION_MODE is invalid', () => {
+    process.env.AUTHENTICATION_MODE = 'dummy';
     expect(() => readConfiguration()).toThrow(CustomError);
   });
 });

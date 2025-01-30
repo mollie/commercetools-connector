@@ -27,6 +27,10 @@ describe('Test extension.commercetools', () => {
     destination: {
       type: 'HTTP',
       url: mockUrl,
+      authentication: {
+        type: 'AuthorizationHeader',
+        headerValue: 'Bearer _token_',
+      },
     },
     triggers: [
       {
@@ -166,7 +170,9 @@ describe('Test extension.commercetools', () => {
       }),
     );
 
-    await createPaymentExtension(mockUrl);
+    const accessToken = 'token123';
+
+    await createPaymentExtension(mockUrl, accessToken);
 
     expect(getExtensions).toHaveBeenCalledTimes(1);
     expect(withKey).toHaveBeenCalledTimes(1);
@@ -184,6 +190,10 @@ describe('Test extension.commercetools', () => {
         destination: {
           type: 'HTTP',
           url: mockUrl,
+          authentication: {
+            type: 'AuthorizationHeader',
+            headerValue: `Bearer ${accessToken}`,
+          },
         },
         triggers: [
           {
@@ -205,7 +215,9 @@ describe('Test extension.commercetools', () => {
       }),
     );
 
-    await createPaymentExtension(mockUrl);
+    const accessToken = 'token123';
+
+    await createPaymentExtension(mockUrl, accessToken);
 
     expect(getExtensions).toHaveBeenCalledTimes(1);
     expect(createMock).toHaveBeenCalledTimes(1);
@@ -215,6 +227,10 @@ describe('Test extension.commercetools', () => {
         destination: {
           type: 'HTTP',
           url: mockUrl,
+          authentication: {
+            type: 'AuthorizationHeader',
+            headerValue: `Bearer ${accessToken}`,
+          },
         },
         triggers: [
           {
