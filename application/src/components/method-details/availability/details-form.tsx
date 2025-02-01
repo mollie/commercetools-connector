@@ -67,6 +67,7 @@ const AvailabilityDetailsForm = (props: TAvailabilityDetailsFormProps) => {
   const [selectedCurrency, setSelectedCurrency] = useState<TCurrencyCode>(
     projectCurrencies[0] as TCurrencyCode
   );
+
   const [countryOptions, setCountryOptions] = useState<
     { value: string; label: string }[]
   >(

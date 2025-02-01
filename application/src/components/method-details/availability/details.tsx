@@ -86,7 +86,7 @@ const AvailabilityDetails = (props: TAvailabilityDetailFormProps) => {
         maxAmount: maxAmount?.toString(),
         surchargeCost: {
           percentageAmount: surchargeCost?.percentageAmount ?? 0,
-          fixedAmount: surchargeCost?.fixedAmount.toString() ?? '0',
+          fixedAmount: surchargeCost?.fixedAmount?.toString() ?? '0',
         },
       };
 
