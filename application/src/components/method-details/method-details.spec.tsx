@@ -81,6 +81,8 @@ describe('Test method-details.tsx', () => {
     (useApplicationContext as jest.Mock).mockReturnValue({
       dataLocale: 'de',
       projectLanguages: ['de'],
+      projectCurrencies: ['DE'],
+      projectCountries: ['EUR'],
     });
 
     (useShowNotification as jest.Mock).mockReturnValue(jest.fn());
