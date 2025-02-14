@@ -1,6 +1,6 @@
 import { ControllerResponseType } from '../types/controller.types';
 import { CancelStatusText, ConnectorActions, CustomFields, PAY_LATER_ENUMS } from '../utils/constant.utils';
-import { List, Method, Payment as MPayment, PaymentMethod, PaymentStatus, Refund } from '@mollie/api-client';
+import { Method, Payment as MPayment, PaymentMethod, PaymentStatus, Refund } from '@mollie/api-client';
 import { logger } from '../utils/logger.utils';
 import {
   createCartUpdateActions,
@@ -57,10 +57,6 @@ import {
   setTransactionCustomType,
 } from '../commercetools/action.commercetools';
 import { readConfiguration } from '../utils/config.utils';
-import {
-  CancelParameters,
-  CreateParameters,
-} from '@mollie/api-client/dist/types/src/binders/payments/refunds/parameters';
 import { getPaymentExtension } from '../commercetools/extensions.commercetools';
 import { HttpDestination } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/extension';
 import { cancelPaymentRefund, createPaymentRefund, getPaymentRefund } from '../mollie/refund.mollie';
@@ -72,10 +68,11 @@ import {
   roundSurchargeAmountToCent,
   sortTransactionsByLatestCreationTime,
 } from '../utils/app.utils';
-import ApplePaySession from '@mollie/api-client/dist/types/src/data/applePaySession/ApplePaySession';
 import { getMethodConfigObjects, getSingleMethodConfigObject } from '../commercetools/customObjects.commercetools';
 import { getCartFromPayment, updateCart } from '../commercetools/cart.commercetools';
 import { removeCartMollieCustomLineItem } from './cart.service';
+import { CancelParameters, CreateParameters } from '@mollie/api-client/dist/types/binders/payments/refunds/parameters';
+import ApplePaySession from '@mollie/api-client/dist/types/data/applePaySession/ApplePaySession';
 
 /**
  * Validates and sorts the payment methods.
@@ -201,7 +198,7 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
   logger.debug(`SCTM - listPaymentMethodsByPayment - ctPaymentId:${JSON.stringify(ctPayment?.id)}`);
   try {
     const mollieOptions = await mapCommercetoolsPaymentCustomFieldsToMollieListParams(ctPayment);
-    const methods: List<Method> = await listPaymentMethods(mollieOptions);
+    const methods: Method[] = await listPaymentMethods(mollieOptions);
     const configObjects: CustomObject[] = await getMethodConfigObjects();
 
     const billingCountry = getBillingCountry(ctPayment);

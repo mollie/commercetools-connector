@@ -1,10 +1,10 @@
 import { CentPrecisionMoney } from '@commercetools/platform-sdk';
-import { Amount } from '@mollie/api-client/dist/types/src/data/global';
 import { CTMoney, CTTransactionState } from '../types/commercetools.types';
 import { PaymentStatus, RefundStatus } from '@mollie/api-client';
 import { DEFAULT_DUE_DATE, DUE_DATE_PATTERN } from './constant.utils';
 import { logger } from './logger.utils';
 import CustomError from '../errors/custom.error';
+import { Amount } from '@mollie/api-client/dist/types/data/global';
 
 const convertCTToMollieAmountValue = (ctValue: number, fractionDigits = 2): string => {
   const divider = Math.pow(10, fractionDigits);
