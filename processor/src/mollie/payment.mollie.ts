@@ -1,4 +1,5 @@
 import {
+  Capture,
   Method,
   MethodsListParams,
   MollieApiError,
@@ -14,6 +15,7 @@ import { getApiKey } from '../utils/config.utils';
 import { MOLLIE_VERSION_STRINGS } from '../utils/constant.utils';
 import fetch from 'node-fetch';
 import ApplePaySession from '@mollie/api-client/dist/types/data/applePaySession/ApplePaySession';
+import { CreateParameters } from '@mollie/api-client/dist/types/binders/payments/captures/parameters';
 
 const HEADER = {
   'Content-Type': 'application/json',
@@ -183,6 +185,24 @@ export const getApplePaySession = async (options: ApplePaySessionRequest): Promi
       errorMessage = `SCTM - getApplePaySession - error: ${error.message}, field: ${error.field}`;
     } else {
       errorMessage = `SCTM - getApplePaySession - Failed to get ApplePay session with unknown errors`;
+    }
+
+    logger.error(errorMessage, {
+      error,
+    });
+    throw new CustomError(400, errorMessage);
+  }
+};
+
+export const createCapturePayment = async (options: CreateParameters): Promise<Capture> => {
+  try {
+    return await initMollieClient().paymentCaptures.create(options);
+  } catch (error: unknown) {
+    let errorMessage;
+    if (error instanceof MollieApiError) {
+      errorMessage = `SCTM - createCapturePayment - error: ${error.message}, field: ${error.field}`;
+    } else {
+      errorMessage = `SCTM - createCapturePayment - Failed to create capture payment with unknown errors`;
     }
 
     logger.error(errorMessage, {

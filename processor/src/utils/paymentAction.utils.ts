@@ -107,6 +107,22 @@ export const determinePaymentAction = (ctPayment?: Payment): DeterminePaymentAct
     return ConnectorActions.GetApplePaySession;
   }
 
+  const shouldCapturePayment =
+    ctPayment.transactions.filter(
+      (transaction) =>
+        transaction.type === CTTransactionType.Charge &&
+        transaction.state === CTTransactionState.Pending &&
+        !!transaction?.custom?.fields?.[CustomFields.capturePayment.fields.shouldCapture.name],
+    ).length === 1 &&
+    ctPayment.transactions.filter(
+      (transaction) =>
+        transaction.type === CTTransactionType.Authorization && transaction.state === CTTransactionState.Success,
+    ).length === 1;
+
+  if (shouldCapturePayment) {
+    return ConnectorActions.CapturePayment;
+  }
+
   const { transactions } = ctPayment;
   const groups = getTransactionGroups(transactions);
 

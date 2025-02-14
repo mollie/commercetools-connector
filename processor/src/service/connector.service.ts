@@ -5,6 +5,7 @@ import {
   createCustomPaymentTransactionCancelReasonType,
   createTransactionSurchargeCustomType,
   createTransactionRefundForMolliePaymentCustomType,
+  createTransactionCaptureForMolliePaymentCustomType,
 } from '../commercetools/customFields.commercetools';
 import { getAccessToken } from '../commercetools/auth.commercetools';
 
@@ -16,6 +17,7 @@ export const createExtensionAndCustomFields = async (extensionUrl: string): Prom
   await createCustomPaymentTransactionCancelReasonType();
   await createTransactionSurchargeCustomType();
   await createTransactionRefundForMolliePaymentCustomType();
+  await createTransactionCaptureForMolliePaymentCustomType();
 };
 
 export const removeExtension = async (): Promise<void> => {
