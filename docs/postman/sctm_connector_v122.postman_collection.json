@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "8fb1a9c2-1d84-49cb-8871-5c80b3d92e15",
-		"name": "SCTM Collection v1.2.1",
+		"name": "SCTM Collection v1.2.2",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "14200932",
 		"_collection_link": "https://mol-1591.postman.co/workspace/MOL~471ca30a-668a-4dde-88b2-8fa80e5dae88/collection/14200932-8fb1a9c2-1d84-49cb-8871-5c80b3d92e15?action=share&source=collection_link&creator=14200932"
@@ -619,26 +619,6 @@
 								}
 							],
 							"request": {
-								"auth": {
-									"type": "oauth2",
-									"oauth2": [
-										{
-											"key": "accessToken",
-											"value": "{{ctp_access_token}}",
-											"type": "string"
-										},
-										{
-											"key": "addTokenTo",
-											"value": "header",
-											"type": "string"
-										},
-										{
-											"key": "tokenType",
-											"value": "Bearer",
-											"type": "string"
-										}
-									]
-								},
 								"method": "POST",
 								"header": [
 									{
@@ -709,26 +689,6 @@
 								}
 							],
 							"request": {
-								"auth": {
-									"type": "oauth2",
-									"oauth2": [
-										{
-											"key": "accessToken",
-											"value": "{{ctp_access_token}}",
-											"type": "string"
-										},
-										{
-											"key": "addTokenTo",
-											"value": "header",
-											"type": "string"
-										},
-										{
-											"key": "tokenType",
-											"value": "Bearer",
-											"type": "string"
-										}
-									]
-								},
 								"method": "POST",
 								"header": [
 									{
@@ -778,7 +738,7 @@
 											"listen": "test",
 											"script": {
 												"exec": [
-													"tests[\"Status code \" + responseCode.code] = responseCode.code === 200 || responseCode.code === 201;",
+													"pm.test[\"Status code \" + pm.response.code] = pm.response.code === 200 || pm.response.code === 201;",
 													"var data = JSON.parse(responseBody);",
 													"if(data.results && data.results[0] && data.results[0].id && data.results[0].version){",
 													"    pm.environment.set(\"payment-id\", data.results[0].id); ",
@@ -801,29 +761,16 @@
 												"type": "text/javascript",
 												"packages": {}
 											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"packages": {},
+												"type": "text/javascript"
+											}
 										}
 									],
 									"request": {
-										"auth": {
-											"type": "oauth2",
-											"oauth2": [
-												{
-													"key": "accessToken",
-													"value": "{{ctp_access_token}}",
-													"type": "string"
-												},
-												{
-													"key": "addTokenTo",
-													"value": "header",
-													"type": "string"
-												},
-												{
-													"key": "tokenType",
-													"value": "Bearer",
-													"type": "string"
-												}
-											]
-										},
 										"method": "POST",
 										"header": [
 											{
@@ -895,26 +842,6 @@
 										}
 									],
 									"request": {
-										"auth": {
-											"type": "oauth2",
-											"oauth2": [
-												{
-													"key": "accessToken",
-													"value": "{{ctp_access_token}}",
-													"type": "string"
-												},
-												{
-													"key": "addTokenTo",
-													"value": "header",
-													"type": "string"
-												},
-												{
-													"key": "tokenType",
-													"value": "Bearer",
-													"type": "string"
-												}
-											]
-										},
 										"method": "POST",
 										"header": [
 											{
@@ -986,26 +913,6 @@
 										}
 									],
 									"request": {
-										"auth": {
-											"type": "oauth2",
-											"oauth2": [
-												{
-													"key": "accessToken",
-													"value": "{{ctp_access_token}}",
-													"type": "string"
-												},
-												{
-													"key": "addTokenTo",
-													"value": "header",
-													"type": "string"
-												},
-												{
-													"key": "tokenType",
-													"value": "Bearer",
-													"type": "string"
-												}
-											]
-										},
 										"method": "POST",
 										"header": [
 											{
@@ -1077,26 +984,6 @@
 										}
 									],
 									"request": {
-										"auth": {
-											"type": "oauth2",
-											"oauth2": [
-												{
-													"key": "accessToken",
-													"value": "{{ctp_access_token}}",
-													"type": "string"
-												},
-												{
-													"key": "addTokenTo",
-													"value": "header",
-													"type": "string"
-												},
-												{
-													"key": "tokenType",
-													"value": "Bearer",
-													"type": "string"
-												}
-											]
-										},
 										"method": "POST",
 										"header": [
 											{
@@ -1168,26 +1055,6 @@
 										}
 									],
 									"request": {
-										"auth": {
-											"type": "oauth2",
-											"oauth2": [
-												{
-													"key": "accessToken",
-													"value": "{{ctp_access_token}}",
-													"type": "string"
-												},
-												{
-													"key": "addTokenTo",
-													"value": "header",
-													"type": "string"
-												},
-												{
-													"key": "tokenType",
-													"value": "Bearer",
-													"type": "string"
-												}
-											]
-										},
 										"method": "POST",
 										"header": [
 											{
@@ -1255,26 +1122,6 @@
 								}
 							],
 							"request": {
-								"auth": {
-									"type": "oauth2",
-									"oauth2": [
-										{
-											"key": "accessToken",
-											"value": "{{ctp_access_token}}",
-											"type": "string"
-										},
-										{
-											"key": "addTokenTo",
-											"value": "header",
-											"type": "string"
-										},
-										{
-											"key": "tokenType",
-											"value": "Bearer",
-											"type": "string"
-										}
-									]
-								},
 								"method": "POST",
 								"header": [
 									{
@@ -1340,26 +1187,6 @@
 								}
 							],
 							"request": {
-								"auth": {
-									"type": "oauth2",
-									"oauth2": [
-										{
-											"key": "accessToken",
-											"value": "{{ctp_access_token}}",
-											"type": "string"
-										},
-										{
-											"key": "addTokenTo",
-											"value": "header",
-											"type": "string"
-										},
-										{
-											"key": "tokenType",
-											"value": "Bearer",
-											"type": "string"
-										}
-									]
-								},
 								"method": "POST",
 								"header": [
 									{
@@ -1434,26 +1261,6 @@
 								}
 							],
 							"request": {
-								"auth": {
-									"type": "oauth2",
-									"oauth2": [
-										{
-											"key": "accessToken",
-											"value": "{{ctp_access_token}}",
-											"type": "string"
-										},
-										{
-											"key": "addTokenTo",
-											"value": "header",
-											"type": "string"
-										},
-										{
-											"key": "tokenType",
-											"value": "Bearer",
-											"type": "string"
-										}
-									]
-								},
 								"method": "POST",
 								"header": [
 									{
@@ -1521,26 +1328,6 @@
 								}
 							],
 							"request": {
-								"auth": {
-									"type": "oauth2",
-									"oauth2": [
-										{
-											"key": "accessToken",
-											"value": "{{ctp_access_token}}",
-											"type": "string"
-										},
-										{
-											"key": "addTokenTo",
-											"value": "header",
-											"type": "string"
-										},
-										{
-											"key": "tokenType",
-											"value": "Bearer",
-											"type": "string"
-										}
-									]
-								},
 								"method": "POST",
 								"header": [
 									{
@@ -1580,7 +1367,6 @@
 								{
 									"listen": "test",
 									"script": {
-										"type": "text/javascript",
 										"exec": [
 											"tests[\"Status code \" + responseCode.code] = responseCode.code === 200 || responseCode.code === 201;",
 											"var data = JSON.parse(responseBody);",
@@ -1601,7 +1387,9 @@
 											"    pm.environment.set(\"payment-key\", data.key);",
 											"}",
 											""
-										]
+										],
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -1609,26 +1397,6 @@
 								"disableBodyPruning": true
 							},
 							"request": {
-								"auth": {
-									"type": "oauth2",
-									"oauth2": [
-										{
-											"key": "accessToken",
-											"value": "{{ctp_access_token}}",
-											"type": "string"
-										},
-										{
-											"key": "addTokenTo",
-											"value": "header",
-											"type": "string"
-										},
-										{
-											"key": "tokenType",
-											"value": "Bearer",
-											"type": "string"
-										}
-									]
-								},
 								"method": "GET",
 								"header": [
 									{
@@ -1701,26 +1469,6 @@
 								}
 							],
 							"request": {
-								"auth": {
-									"type": "oauth2",
-									"oauth2": [
-										{
-											"key": "accessToken",
-											"value": "{{ctp_access_token}}",
-											"type": "string"
-										},
-										{
-											"key": "addTokenTo",
-											"value": "header",
-											"type": "string"
-										},
-										{
-											"key": "tokenType",
-											"value": "Bearer",
-											"type": "string"
-										}
-									]
-								},
 								"method": "POST",
 								"header": [
 									{
@@ -1788,26 +1536,6 @@
 								}
 							],
 							"request": {
-								"auth": {
-									"type": "oauth2",
-									"oauth2": [
-										{
-											"key": "accessToken",
-											"value": "{{ctp_access_token}}",
-											"type": "string"
-										},
-										{
-											"key": "addTokenTo",
-											"value": "header",
-											"type": "string"
-										},
-										{
-											"key": "tokenType",
-											"value": "Bearer",
-											"type": "string"
-										}
-									]
-								},
 								"method": "POST",
 								"header": [
 									{
@@ -1847,7 +1575,6 @@
 								{
 									"listen": "test",
 									"script": {
-										"type": "text/javascript",
 										"exec": [
 											"tests[\"Status code \" + responseCode.code] = responseCode.code === 200 || responseCode.code === 201;",
 											"var data = JSON.parse(responseBody);",
@@ -1868,7 +1595,9 @@
 											"    pm.environment.set(\"payment-key\", data.key);",
 											"}",
 											""
-										]
+										],
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -1876,26 +1605,6 @@
 								"disableBodyPruning": true
 							},
 							"request": {
-								"auth": {
-									"type": "oauth2",
-									"oauth2": [
-										{
-											"key": "accessToken",
-											"value": "{{ctp_access_token}}",
-											"type": "string"
-										},
-										{
-											"key": "addTokenTo",
-											"value": "header",
-											"type": "string"
-										},
-										{
-											"key": "tokenType",
-											"value": "Bearer",
-											"type": "string"
-										}
-									]
-								},
 								"method": "GET",
 								"header": [
 									{
@@ -1968,26 +1677,6 @@
 								}
 							],
 							"request": {
-								"auth": {
-									"type": "oauth2",
-									"oauth2": [
-										{
-											"key": "accessToken",
-											"value": "{{ctp_access_token}}",
-											"type": "string"
-										},
-										{
-											"key": "addTokenTo",
-											"value": "header",
-											"type": "string"
-										},
-										{
-											"key": "tokenType",
-											"value": "Bearer",
-											"type": "string"
-										}
-									]
-								},
 								"method": "POST",
 								"header": [
 									{
@@ -2055,26 +1744,6 @@
 								}
 							],
 							"request": {
-								"auth": {
-									"type": "oauth2",
-									"oauth2": [
-										{
-											"key": "accessToken",
-											"value": "{{ctp_access_token}}",
-											"type": "string"
-										},
-										{
-											"key": "addTokenTo",
-											"value": "header",
-											"type": "string"
-										},
-										{
-											"key": "tokenType",
-											"value": "Bearer",
-											"type": "string"
-										}
-									]
-								},
 								"method": "POST",
 								"header": [
 									{
@@ -2139,26 +1808,6 @@
 								}
 							],
 							"request": {
-								"auth": {
-									"type": "oauth2",
-									"oauth2": [
-										{
-											"key": "accessToken",
-											"value": "{{ctp_access_token}}",
-											"type": "string"
-										},
-										{
-											"key": "addTokenTo",
-											"value": "header",
-											"type": "string"
-										},
-										{
-											"key": "tokenType",
-											"value": "Bearer",
-											"type": "string"
-										}
-									]
-								},
 								"method": "POST",
 								"header": [
 									{
@@ -2198,7 +1847,6 @@
 								{
 									"listen": "test",
 									"script": {
-										"type": "text/javascript",
 										"exec": [
 											"tests[\"Status code \" + responseCode.code] = responseCode.code === 200 || responseCode.code === 201;",
 											"var data = JSON.parse(responseBody);",
@@ -2219,7 +1867,9 @@
 											"    pm.environment.set(\"payment-key\", data.key);",
 											"}",
 											""
-										]
+										],
+										"type": "text/javascript",
+										"packages": {}
 									}
 								}
 							],
@@ -2227,26 +1877,6 @@
 								"disableBodyPruning": true
 							},
 							"request": {
-								"auth": {
-									"type": "oauth2",
-									"oauth2": [
-										{
-											"key": "accessToken",
-											"value": "{{ctp_access_token}}",
-											"type": "string"
-										},
-										{
-											"key": "addTokenTo",
-											"value": "header",
-											"type": "string"
-										},
-										{
-											"key": "tokenType",
-											"value": "Bearer",
-											"type": "string"
-										}
-									]
-								},
 								"method": "GET",
 								"header": [
 									{
@@ -2284,6 +1914,132 @@
 					"description": "Play around with the Postman requests:\n\n- As usual, you need to create a payment object first, you will do that by sending a request via `Create Payment` in this folder.\n    \n- It will return the `checkoutUrl` and the `molliePaymentId` inside `interfaceInteractions`, please access the `checkoutUrl` via your browser and process checkout, select Paid as the status.\n    \n- After that, you can access our Mollie Dashboard, use the value from `molliePaymentId` to check the details of the payment. Its status here should be Paid.\n    \n- Next, make a new request with the `Create Refund` request in this folder. After the response returned successfully, please have a look at the Mollie Payment details page again, the History on the right side of the page should be updated, it should say about a Refund created.\n    \n- Next, make a new request with the `Cancel Refund` request in this folder. Similar with the above point, after the response returned successfully, the History in Mollie Payment details page should be updated, information about the Refund Cancellation should be added.\n    \n- Finally, you can have a look at the CommerceTools final state if you want to by making a request with `Get Payment by id` in this folder, it is expected to have 3 transactions: 1 Success Charge, 1 Failure Refund and 1 Success CancelAuthorization."
 				},
 				{
+					"name": "Capture Payment",
+					"item": [
+						{
+							"name": "1. Get capture custom type ID",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.environment.set('capture_type_id', JSON.parse(pm.response.text()).id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/{{project-key}}/types/key=sctm_capture_payment_request",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"{{project-key}}",
+										"types",
+										"key=sctm_capture_payment_request"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2. Get the payment for capturing",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const pendingTransaction = JSON.parse(pm.response.text()).transactions.find((transaction) => transaction.state === 'Pending') || {};",
+											"",
+											"if (pendingTransaction) {",
+											"    pm.environment.set('capture_payment_id', JSON.parse(pm.response.text()).id);",
+											"    pm.environment.set('capture_payment_version', JSON.parse(pm.response.text()).version);",
+											"    pm.environment.set('capture_transaction_id', pendingTransaction.id);",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{host}}/{{project-key}}/payments/{{payment-id}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"{{project-key}}",
+										"payments",
+										"{{payment-id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "3. Capture payment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set('current_datetime', new Date().toISOString())",
+											"pm.environment.set('sctm_should_capture', 'sctm_should_capture')",
+											"pm.environment.set('sctm_capture_description', 'sctm_capture_description')"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"version\": {{capture_payment_version}},\n    \"actions\": [\n        {\n            \"action\" : \"setTransactionCustomType\",\n            \"type\" : {\n              \"id\" : \"{{capture_type_id}}\",\n              \"typeId\" : \"type\"\n            },\n            \"fields\" : {\n              \"{{sctm_should_capture}}\" : true,\n              \"{{sctm_capture_description}}\": \"Capture on {{current_datetime}}\"\n            },\n            \"transactionId\" : \"{{capture_transaction_id}}\"\n          }\n    ]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{host}}/{{project-key}}/payments/{{capture_payment_id}}",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"{{project-key}}",
+										"payments",
+										"{{capture_payment_id}}"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "<u><b>How it function?</b></u>\n\nTo trigger the capture for a certain payment, simply update the target pending transaction of type `Charge` with our predefined custom type named `sctm_capture_payment_request`\n\n| **Custom fields** | Required | **Description** |\n| --- | --- | --- |\n| `sctm_should_capture` | false | WHEN its value set to `true`, the Processor will start to capture with associated payment information |\n| `sctm_capture_description` | false | Hold the description of the capture |\n\n<u><b>Custom type definition</b></u>\n\n``` json\n{\n    \"key\": \"sctm_capture_payment_request\",\n    \"name\": {\n        \"en\": \"Capture payment\",\n        \"de\": \"Zahlung einziehen\"\n    },\n    \"resourceTypeIds\": [\n        \"transaction\"\n    ],\n    \"fieldDefinitions\": [\n        {\n            \"name\": \"sctm_should_capture\",\n            \"label\": {\n                \"en\": \"Should capture money for this transaction\",\n                \"de\": \"Soll das Geld für diese Transaktion eingezogen werden\"\n            },\n            \"required\": false,\n            \"type\": {\n                \"name\": \"Boolean\"\n            }\n        },\n        {\n            \"name\": \"sctm_capture_description\",\n            \"label\": {\n                \"en\": \"Capture description\",\n                \"de\": \"Beschreibung der Einziehung\"\n            },\n            \"required\": false,\n            \"type\": {\n                \"name\": \"String\"\n            },\n            \"inputHint\": \"MultiLine\"\n        }\n    ]\n}\n\n ```\n\n<u><b>Prerequisites</b></u>\n\nFor a payment to be captured, its transactions has to be as followed\n\n- One transaction with type `Authorization` and status `Success`\n    \n- One transaction with type `Charge` and status `Pending`\n    \n\n<img src=\"https://content.pstmn.io/eb8188bb-f759-42d6-8c85-37294c6978bb/aW1hZ2UucG5n\" alt=\"Figure%201%20-%20Valid%20payment%20for%20capturing%20money\" width=\"1060\" height=\"534\">\n\n<u><b>To capture the money:</b></u>\n\n1. Run [the first request](https://mol-1591.postman.co/workspace/MOL~471ca30a-668a-4dde-88b2-8fa80e5dae88/request/14200932-263c1505-099d-4317-b346-d1ab18fa16d0?action=share&source=copy-link&creator=14200932&ctx=documentation) to obtain the `custom type ID` needed for the payment capture request\n    \n2. Update the `payment-id` in the URL parameter of [the second request](https://mol-1591.postman.co/workspace/MOL~471ca30a-668a-4dde-88b2-8fa80e5dae88/request/14200932-d8058941-5972-4f8c-b156-20eca112a1e4?action=share&source=copy-link&creator=14200932&ctx=documentation) then run it to gather required data for the capture request ([the third request](https://mol-1591.postman.co/workspace/MOL~471ca30a-668a-4dde-88b2-8fa80e5dae88/request/14200932-9910f047-e609-4d14-bfc9-0f5b75abaa9b?action=share&source=copy-link&creator=14200932&ctx=documentation)). Noticed that your payment must meet the prerequiisite above so as to capture successfully.\n    \n3. With all the needed data from former requests, we can now update the transaction custom fields to trigger the capture process ([the third request](https://mol-1591.postman.co/workspace/MOL~471ca30a-668a-4dde-88b2-8fa80e5dae88/request/14200932-9910f047-e609-4d14-bfc9-0f5b75abaa9b?action=share&source=copy-link&creator=14200932&ctx=documentation)).\n    \n\n<img src=\"https://content.pstmn.io/f7497bc1-a4d7-44a2-8f46-14c9c4b84287/aW1hZ2UucG5n\" alt=\"FIgure%202%20-%20Use%20this%20payment%20ID%20for%20the%20second%20request\" width=\"1521\" height=\"830\">\n\n<img src=\"https://content.pstmn.io/082c6c3b-8cfb-471b-b2da-810b1c73f440/aW1hZ2UucG5n\" alt=\"Figure%203%20-%20Success%20capture%20transaction\" height=\"745\" width=\"1366\">\n\n<img src=\"https://content.pstmn.io/15ffb063-f8c9-4b75-a15c-7e3fc283a532/aW1hZ2UucG5n\" alt=\"Figure%204%20-%20Success%20%20capture%20transaction%20custom%20fields\" height=\"630\" width=\"874\">"
+				},
+				{
 					"name": "Health check",
 					"request": {
 						"method": "POST",
@@ -2307,7 +2063,6 @@
 						{
 							"listen": "test",
 							"script": {
-								"type": "text/javascript",
 								"exec": [
 									"tests[\"Status code is 200\"] = responseCode.code === 200;",
 									"var data = JSON.parse(responseBody);",
@@ -2327,26 +2082,13 @@
 									"        }",
 									"    }",
 									"}"
-								]
+								],
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "basic",
-							"basic": [
-								{
-									"key": "username",
-									"value": "{{client_id}}",
-									"type": "string"
-								},
-								{
-									"key": "password",
-									"value": "{{client_secret}}",
-									"type": "string"
-								}
-							]
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -2384,7 +2126,6 @@
 						{
 							"listen": "test",
 							"script": {
-								"type": "text/javascript",
 								"exec": [
 									"tests[\"Status code \" + responseCode.code] = responseCode.code === 200 || responseCode.code === 201;",
 									"var data = JSON.parse(responseBody);",
@@ -2405,7 +2146,9 @@
 									"    pm.environment.set(\"custom-object-key\", data.key);",
 									"}",
 									""
-								]
+								],
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],
@@ -2413,26 +2156,6 @@
 						"disableBodyPruning": true
 					},
 					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "accessToken",
-									"value": "{{ctp_access_token}}",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "header",
-									"type": "string"
-								},
-								{
-									"key": "tokenType",
-									"value": "Bearer",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
 						"header": [
 							{
@@ -2497,6 +2220,94 @@
 					"response": []
 				}
 			]
+		}
+	],
+	"auth": {
+		"type": "oauth2",
+		"oauth2": [
+			{
+				"key": "tokenType",
+				"value": "Bearer",
+				"type": "string"
+			},
+			{
+				"key": "accessToken",
+				"value": "{{ctp_access_token}}",
+				"type": "string"
+			},
+			{
+				"key": "refreshTokenUrl",
+				"value": "{{auth_url}}/oauth/token?grant_type=client_credentials",
+				"type": "string"
+			},
+			{
+				"key": "tokenName",
+				"value": "ctp_access_token",
+				"type": "string"
+			},
+			{
+				"key": "accessTokenUrl",
+				"value": "{{auth_url}}/oauth/token?grant_type=client_credentials",
+				"type": "string"
+			},
+			{
+				"key": "clientSecret",
+				"value": "{{client_secret}}",
+				"type": "string"
+			},
+			{
+				"key": "clientId",
+				"value": "{{client_id}}",
+				"type": "string"
+			},
+			{
+				"key": "grant_type",
+				"value": "client_credentials",
+				"type": "string"
+			},
+			{
+				"key": "authUrl",
+				"value": "{{auth_url}}/oauth/token?grant_type=client_credentials",
+				"type": "string"
+			},
+			{
+				"key": "redirect_uri",
+				"value": "",
+				"type": "string"
+			},
+			{
+				"key": "addTokenTo",
+				"value": "header",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "currentDateTime",
+			"value": ""
 		}
 	]
 }

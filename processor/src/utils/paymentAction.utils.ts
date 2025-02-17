@@ -80,10 +80,6 @@ const determineAction = (groups: ReturnType<typeof getTransactionGroups>): Deter
     return ConnectorActions.CancelRefund;
   }
 
-  if (groups.pendingCharge.length === 1 && groups.successAuthorization.length === 1) {
-    return ConnectorActions.CapturePayment;
-  }
-
   logger.warn('SCTM - No payment actions matched');
   return ConnectorActions.NoAction;
 };
