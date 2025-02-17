@@ -9,10 +9,10 @@ import {
   shouldRefundStatusUpdate,
   calculateDueDate,
 } from '../../src/utils/mollie.utils';
-import { Amount } from '@mollie/api-client/dist/types/src/data/global';
 import { expect, describe, it, test, jest } from '@jest/globals';
 import { logger } from '../../src/utils/logger.utils';
 import CustomError from '../../src/errors/custom.error';
+import { Amount } from '@mollie/api-client/dist/types/data/global';
 
 describe('Test mollie.utils.ts', () => {
   describe('convertCTToMollieAmountValue', () => {

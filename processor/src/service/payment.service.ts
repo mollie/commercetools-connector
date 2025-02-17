@@ -904,7 +904,7 @@ export const handleCapturePayment = async (ctPayment: Payment): Promise<Controll
       `SCTM - handleCapturePayment - Pending charge transaction is not found, CommerceTools Payment ID: ${ctPayment.id}`,
     );
 
-    throw new CustomError(400, 'SCTM - handleCapturePayment - Pending charge transaction is not found');
+    throw new CustomError(400, 'SCTM - handleCapturePayment - Pending charge transaction is not found.');
   }
 
   const molliePayment: MPayment = await getPaymentById(pendingChargeTransaction.interactionId as string);
@@ -938,13 +938,13 @@ export const handleCapturePayment = async (ctPayment: Payment): Promise<Controll
     description:
       pendingChargeTransaction?.custom?.fields?.[CustomFields.capturePayment.fields.descriptionCapture.name] || '',
   };
+
   const captureResponse: Capture = await createCapturePayment(createParams);
 
   if (captureResponse.status) {
     logger.debug(`SCTM - handleCapturePayment - Capture is successful, Mollie Payment ID: ${molliePayment.id}`);
 
     const ctActions: UpdateAction[] = [changeTransactionState(pendingChargeTransaction.id, CTTransactionState.Success)];
-
     return {
       statusCode: 200,
       actions: ctActions,

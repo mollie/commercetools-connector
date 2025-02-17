@@ -13,8 +13,8 @@
     "lint": "eslint . --ext .ts",
     "prettier:check": "prettier --check '**/*.{js,ts}'",
     "fix": "eslint . --ext .ts --fix && prettier --write '**/*.{js,ts}'",
-    "test": "jest --detectOpenHandles --clearMocks --colors --config jest.config.cjs --ci --ci --reporters=default --reporters=jest-junit --coverage",
-    "test:watch": "jest --watch --clearMocks --detectOpenHandles --colors --config jest.config.cjs",
+    "test": "jest --detectOpenHandles --clearMocks --colors --forceExit --config jest.config.cjs --ci --ci --reporters=default --reporters=jest-junit --coverage",
+    "test:watch": "jest --watch --clearMocks --detectOpenHandles --colors --forceExit --config jest.config.cjs",
     "preinstall": "npx npm-force-resolutions",
     "connector:post-deploy": "node dist/connector/post-deploy.js",
     "connector:pre-undeploy": "node dist/connector/pre-undeploy.js"

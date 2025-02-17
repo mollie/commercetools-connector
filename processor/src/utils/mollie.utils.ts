@@ -6,7 +6,7 @@ import { logger } from './logger.utils';
 import CustomError from '../errors/custom.error';
 import { Amount } from '@mollie/api-client/dist/types/data/global';
 
-const convertCTToMollieAmountValue = (ctValue: number, fractionDigits = 2): string => {
+export const convertCTToMollieAmountValue = (ctValue: number, fractionDigits = 2): string => {
   const divider = Math.pow(10, fractionDigits);
   return (ctValue / divider).toFixed(fractionDigits);
 };

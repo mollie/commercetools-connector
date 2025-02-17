@@ -9,7 +9,9 @@ import {
   createCustomPaymentTransactionCancelReasonType,
   createTransactionSurchargeCustomType,
   createTransactionRefundForMolliePaymentCustomType,
+  createTransactionCaptureForMolliePaymentCustomType,
 } from '../../src/commercetools/customFields.commercetools';
+import { getAccessToken } from '../../src/commercetools/auth.commercetools';
 
 jest.mock('../../src/commercetools/extensions.commercetools', () => ({
   deletePaymentExtension: jest.fn(),
@@ -22,6 +24,11 @@ jest.mock('../../src/commercetools/customFields.commercetools', () => ({
   createCustomPaymentTransactionCancelReasonType: jest.fn(),
   createTransactionSurchargeCustomType: jest.fn(),
   createTransactionRefundForMolliePaymentCustomType: jest.fn(),
+  createTransactionCaptureForMolliePaymentCustomType: jest.fn(),
+}));
+
+jest.mock('../../src/commercetools/auth.commercetools', () => ({
+  getAccessToken: jest.fn(),
 }));
 
 describe('Test src/route/processor.route.ts', () => {
@@ -86,7 +93,48 @@ describe('Test src/route/processor.route.ts', () => {
           action: 'Update',
           resource: {
             typeId: 'payment',
-            obj: {},
+            obj: {
+              id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+              version: 1,
+              createdAt: '2024-07-04T14:07:35.625Z',
+              lastModifiedAt: '2024-07-04T14:07:35.625Z',
+              amountPlanned: {
+                type: 'centPrecision',
+                currencyCode: 'EUR',
+                centAmount: 1000,
+                fractionDigits: 2,
+              },
+              paymentStatus: {},
+              transactions: [
+                {
+                  id: '199292919285',
+                  type: 'Charge',
+                  interactionId: 'tr_123123',
+                  amount: {
+                    type: 'centPrecision',
+                    currencyCode: 'EUR',
+                    centAmount: 1000,
+                    fractionDigits: 2,
+                  },
+                  state: 'Success',
+                },
+                {
+                  id: 'test_refund',
+                  type: 'Refund',
+                  amount: {
+                    type: 'centPrecision',
+                    currencyCode: 'EUR',
+                    centAmount: 1000,
+                    fractionDigits: 2,
+                  },
+                  state: 'Initial',
+                },
+              ],
+              interfaceInteractions: [],
+              paymentMethodInfo: {
+                method: 'creditcard',
+              },
+            },
           },
         },
       };
@@ -115,6 +163,10 @@ describe('Test src/route/processor.route.ts', () => {
       (createCustomPaymentTransactionCancelReasonType as jest.Mock).mockReturnValueOnce(Promise.resolve());
       (createTransactionSurchargeCustomType as jest.Mock).mockReturnValueOnce(Promise.resolve());
       (createTransactionRefundForMolliePaymentCustomType as jest.Mock).mockReturnValueOnce(Promise.resolve());
+      (createTransactionRefundForMolliePaymentCustomType as jest.Mock).mockReturnValueOnce(Promise.resolve());
+      (createTransactionCaptureForMolliePaymentCustomType as jest.Mock).mockReturnValueOnce(Promise.resolve());
+
+      (getAccessToken as jest.Mock).mockReturnValueOnce(Promise.resolve());
 
       req = {
         hostname: 'test.com',
@@ -125,6 +177,7 @@ describe('Test src/route/processor.route.ts', () => {
       await handler(req as Request, res as Response, next);
 
       expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.send).not.toHaveBeenCalled;
     });
 
     it('should return 400 if hostname is not provided', async () => {
