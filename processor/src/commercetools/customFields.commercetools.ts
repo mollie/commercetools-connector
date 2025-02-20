@@ -486,6 +486,18 @@ export async function createTransactionCaptureForMolliePaymentCustomType(): Prom
       },
       inputHint: 'MultiLine',
     },
+    {
+      name: CustomFields.capturePayment.fields.captureErrors.name,
+      label: {
+        en: CustomFields.capturePayment.fields.captureErrors.label.en,
+        de: CustomFields.capturePayment.fields.captureErrors.label.de,
+      },
+      required: false,
+      type: {
+        name: 'String',
+      },
+      inputHint: 'MultiLine',
+    },
   ];
 
   const {

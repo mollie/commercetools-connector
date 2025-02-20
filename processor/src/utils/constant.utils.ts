@@ -62,6 +62,13 @@ export const CustomFields = {
           de: 'Beschreibung der Einziehung',
         },
       },
+      captureErrors: {
+        name: 'sctm_capture_errors',
+        label: {
+          en: 'Capture errors',
+          de: 'Fehler bei der Einziehung',
+        },
+      },
     },
   },
 };

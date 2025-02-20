@@ -939,20 +939,27 @@ export const handleCapturePayment = async (ctPayment: Payment): Promise<Controll
       pendingChargeTransaction?.custom?.fields?.[CustomFields.capturePayment.fields.descriptionCapture.name] || '',
   };
 
-  const captureResponse: Capture = await createCapturePayment(createParams);
+  const captureResponse: Capture | CustomError = await createCapturePayment(createParams);
 
-  if (captureResponse.status) {
-    logger.debug(`SCTM - handleCapturePayment - Capture is successful, Mollie Payment ID: ${molliePayment.id}`);
-
-    const ctActions: UpdateAction[] = [changeTransactionState(pendingChargeTransaction.id, CTTransactionState.Success)];
+  if (captureResponse instanceof CustomError) {
     return {
-      statusCode: 200,
-      actions: ctActions,
+      statusCode: 400,
+      actions: [
+        setTransactionCustomType(pendingChargeTransaction.id, CustomFields.capturePayment.typeKey, {
+          [CustomFields.capturePayment.fields.captureErrors.name]: JSON.stringify({
+            errorMessage: captureResponse.message,
+            submitData: createParams,
+          }),
+        }),
+      ],
     };
   }
 
+  logger.debug(`SCTM - handleCapturePayment - Capture is successful, Mollie Payment ID: ${molliePayment.id}`);
+  const ctActions: UpdateAction[] = [changeTransactionState(pendingChargeTransaction.id, CTTransactionState.Success)];
+
   return {
     statusCode: 200,
-    actions: [],
+    actions: ctActions,
   };
 };

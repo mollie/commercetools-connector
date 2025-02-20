@@ -3408,7 +3408,7 @@ describe('Test handleGetApplePaySession', () => {
       expect(logger.error).toBeCalledTimes(1);
     });
 
-    test('should do nothing when nothing valid', async () => {
+    test('should record errors when capturing failed', async () => {
       const CTPayment: Payment = {
         id: '5c8b0375-305a-3f19-ae8e-07806b101999',
         version: 1,
@@ -3482,11 +3482,23 @@ describe('Test handleGetApplePaySession', () => {
 
       (getPaymentById as jest.Mock).mockReturnValueOnce(molliePayment);
 
-      (createCapturePayment as jest.Mock).mockReturnValueOnce({});
+      (createCapturePayment as jest.Mock).mockReturnValueOnce(new CustomError(400, 'Capture failed'));
 
       await expect(handleCapturePayment(CTPayment)).resolves.toEqual({
-        statusCode: 200,
-        actions: [],
+        statusCode: 400,
+        actions: [
+          {
+            action: 'setTransactionCustomType',
+            type: {
+              key: 'sctm_capture_payment_request',
+            },
+            fields: {
+              sctm_capture_errors:
+                '{"errorMessage":"Capture failed","submitData":{"paymentId":"tr_7UhSN2zuXS","amount":{"value":"10.00","currency":"EUR"},"description":""}}',
+            },
+            transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          },
+        ],
       });
     });
   });

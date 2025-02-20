@@ -194,7 +194,7 @@ export const getApplePaySession = async (options: ApplePaySessionRequest): Promi
   }
 };
 
-export const createCapturePayment = async (options: CreateParameters): Promise<Capture> => {
+export const createCapturePayment = async (options: CreateParameters): Promise<Capture | CustomError> => {
   try {
     return await initMollieClient().paymentCaptures.create(options);
   } catch (error: unknown) {
@@ -208,6 +208,6 @@ export const createCapturePayment = async (options: CreateParameters): Promise<C
     logger.error(errorMessage, {
       error,
     });
-    throw new CustomError(400, errorMessage);
+    return new CustomError(400, errorMessage);
   }
 };
