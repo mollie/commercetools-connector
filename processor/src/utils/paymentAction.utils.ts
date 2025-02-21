@@ -15,6 +15,8 @@ const getTransactionGroups = (transactions: Transaction[]) => {
     pendingRefund: [] as Transaction[],
     initialCancelAuthorization: [] as Transaction[],
     successAuthorization: [] as Transaction[],
+    failureCapture: [] as Transaction[],
+    pendingCapture: [] as Transaction[],
   };
 
   transactions?.forEach((transaction) => {
@@ -30,7 +32,9 @@ const getTransactionGroups = (transactions: Transaction[]) => {
         break;
       case CTTransactionState.Pending:
         if (transaction.type === CTTransactionType.Charge) {
-          groups.pendingCharge.push(transaction);
+          transaction.custom?.fields?.[CustomFields.capturePayment.fields.shouldCapture.name]
+            ? groups.pendingCapture.push(transaction)
+            : groups.pendingCharge.push(transaction);
         } else if (transaction.type === CTTransactionType.Refund) {
           groups.pendingRefund.push(transaction);
         }
@@ -40,6 +44,15 @@ const getTransactionGroups = (transactions: Transaction[]) => {
           groups.successCharge.push(transaction);
         } else if (transaction.type === CTTransactionType.Authorization) {
           groups.successAuthorization.push(transaction);
+        }
+        break;
+      case CTTransactionState.Failure:
+        if (
+          (transaction.type === CTTransactionType.Charge &&
+            transaction.custom?.fields?.[CustomFields.capturePayment.fields.captureErrors.name]?.length >= 1) ||
+          transaction.custom?.fields?.[CustomFields.capturePayment.fields.shouldCapture.name]
+        ) {
+          groups.failureCapture.push(transaction);
         }
         break;
     }
@@ -78,6 +91,13 @@ const determineAction = (groups: ReturnType<typeof getTransactionGroups>): Deter
     groups.initialCancelAuthorization.length === 1
   ) {
     return ConnectorActions.CancelRefund;
+  }
+
+  if (
+    (groups.failureCapture.length >= 1 || groups.pendingCapture.length >= 1) &&
+    groups.successAuthorization.length >= 1
+  ) {
+    return ConnectorActions.CapturePayment;
   }
 
   logger.warn('SCTM - No payment actions matched');

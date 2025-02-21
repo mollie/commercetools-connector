@@ -459,3 +459,106 @@ export async function createTransactionRefundForMolliePaymentCustomType(): Promi
     return;
   }
 }
+
+export async function createTransactionCaptureForMolliePaymentCustomType(): Promise<void> {
+  const apiRoot = createApiRoot();
+  const customFields: FieldDefinition[] = [
+    {
+      name: CustomFields.capturePayment.fields.shouldCapture.name,
+      label: {
+        en: CustomFields.capturePayment.fields.shouldCapture.label.en,
+        de: CustomFields.capturePayment.fields.shouldCapture.label.de,
+      },
+      required: false,
+      type: {
+        name: 'Boolean',
+      },
+    },
+    {
+      name: CustomFields.capturePayment.fields.descriptionCapture.name,
+      label: {
+        en: CustomFields.capturePayment.fields.descriptionCapture.label.en,
+        de: CustomFields.capturePayment.fields.descriptionCapture.label.de,
+      },
+      required: false,
+      type: {
+        name: 'String',
+      },
+      inputHint: 'MultiLine',
+    },
+    {
+      name: CustomFields.capturePayment.fields.captureErrors.name,
+      label: {
+        en: CustomFields.capturePayment.fields.captureErrors.label.en,
+        de: CustomFields.capturePayment.fields.captureErrors.label.de,
+      },
+      required: false,
+      type: {
+        name: 'String',
+      },
+      inputHint: 'MultiLine',
+    },
+  ];
+
+  const {
+    body: { results: types },
+  } = await apiRoot
+    .types()
+    .get({
+      queryArgs: {
+        where: `key = "${CustomFields.capturePayment.typeKey}"`,
+      },
+    })
+    .execute();
+
+  if (types.length <= 0) {
+    await apiRoot
+      .types()
+      .post({
+        body: {
+          key: CustomFields.capturePayment.typeKey,
+          name: {
+            en: CustomFields.capturePayment.name.en,
+            de: CustomFields.capturePayment.name.de,
+          },
+          resourceTypeIds: [CustomFields.capturePayment.resourceTypeId],
+          fieldDefinitions: customFields,
+        },
+      })
+      .execute();
+
+    return;
+  }
+
+  const type = types[0];
+  const definitions = type.fieldDefinitions;
+
+  if (definitions.length > 0) {
+    const actions: TypeUpdateAction[] = [];
+    definitions.forEach((definition) => {
+      actions.push({
+        action: 'removeFieldDefinition',
+        fieldName: definition.name,
+      });
+    });
+    customFields.forEach((field) => {
+      actions.push({
+        action: 'addFieldDefinition',
+        fieldDefinition: field,
+      });
+    });
+
+    await apiRoot
+      .types()
+      .withKey({ key: CustomFields.capturePayment.typeKey })
+      .post({
+        body: {
+          version: type.version,
+          actions,
+        },
+      })
+      .execute();
+
+    return;
+  }
+}

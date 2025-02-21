@@ -1,13 +1,12 @@
+import { initMollieClient } from '../client/mollie.client';
+import { MollieApiError, Refund } from '@mollie/api-client';
+import { logger } from '../utils/logger.utils';
+import CustomError from '../errors/custom.error';
 import {
   CancelParameters,
   CreateParameters,
   GetParameters,
-} from '@mollie/api-client/dist/types/src/binders/payments/refunds/parameters';
-import { initMollieClient } from '../client/mollie.client';
-import { MollieApiError } from '@mollie/api-client';
-import { logger } from '../utils/logger.utils';
-import CustomError from '../errors/custom.error';
-import Refund from '@mollie/api-client/dist/types/src/data/refunds/Refund';
+} from '@mollie/api-client/dist/types/binders/payments/refunds/parameters';
 
 export const createPaymentRefund = async (params: CreateParameters): Promise<Refund> => {
   try {

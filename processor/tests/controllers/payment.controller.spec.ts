@@ -10,6 +10,7 @@ import {
   handleCreateRefund,
   handleGetApplePaySession,
   handleCancelPayment,
+  handleCapturePayment,
 } from '../../src/service/payment.service';
 import { CancelStatusText, ConnectorActions, CustomFields as CustomFieldName } from '../../src/utils/constant.utils';
 import { validateCommerceToolsPaymentPayload } from '../../src/validators/payment.validators';
@@ -23,6 +24,7 @@ jest.mock('../../src/service/payment.service', () => ({
   handleCreateRefund: jest.fn(),
   handleGetApplePaySession: jest.fn(),
   handleCancelPayment: jest.fn(),
+  handleCapturePayment: jest.fn(),
 }));
 
 jest.mock('../../src/validators/payment.validators.ts', () => ({
@@ -524,5 +526,80 @@ describe('Test payment.controller.ts', () => {
     expect(handlePaymentCancelRefund).toBeCalledTimes(0);
     expect(handleCancelPayment).toBeCalledTimes(1);
     expect(handleCancelPayment).toReturnWith(handleCancelPaymentResponse);
+  });
+
+  test('able to call and retrieve the result from handleCapturePayment', async () => {
+    mockAction = 'Update' as string;
+    mockResource = {
+      typeId: 'payment',
+      obj: {
+        id: '5c8b0375-305a-3f19-ae8e-07806b101999',
+        version: 1,
+        createdAt: '2024-07-04T14:07:35.625Z',
+        lastModifiedAt: '2024-07-04T14:07:35.625Z',
+        amountPlanned: {
+          type: 'centPrecision',
+          currencyCode: 'EUR',
+          centAmount: 1000,
+          fractionDigits: 2,
+        },
+        paymentStatus: {},
+        transactions: [
+          {
+            id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+            type: 'Charge',
+            amount: {
+              type: 'centPrecision',
+              currencyCode: 'EUR',
+              centAmount: 1000,
+              fractionDigits: 2,
+            },
+            state: 'Pending',
+            interactionId: 'tr_7UhSN2zuXS',
+            customs: {
+              fields: {
+                scmt_should_capture: true,
+                sctm_capture_description: 'Capture the payment',
+              },
+            },
+          },
+          {
+            id: '5c8b0375-305a-4f19-ae8e-07806b101299',
+            type: 'Authorization',
+            amount: {
+              type: 'centPrecision',
+              currencyCode: 'EUR',
+              centAmount: 1000,
+              fractionDigits: 2,
+            },
+            state: 'Success',
+            interactionId: 'tr_7UhSN2zuXS',
+          },
+        ],
+        interfaceInteractions: [],
+        paymentMethodInfo: {
+          method: 'creditcard',
+        },
+      } as unknown as Payment,
+    } as PaymentReference;
+
+    const ctActions = {
+      statusCode: 200,
+      actions: [
+        {
+          action: 'changeTransactionState',
+          transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          state: 'Success',
+        },
+      ],
+    };
+
+    (determinePaymentAction as jest.Mock).mockReturnValue(ConnectorActions.CapturePayment);
+
+    (handleCapturePayment as jest.Mock).mockReturnValue(ctActions);
+
+    const response = await paymentController(mockAction, mockResource);
+
+    expect(response).toBeDefined();
   });
 });

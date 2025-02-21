@@ -40,6 +40,37 @@ export const CustomFields = {
   },
   transactionSurchargeCost: 'sctm_transaction_surcharge_cost',
   transactionRefundForMolliePayment: 'sctm_transaction_refund_for_mollie_payment',
+  capturePayment: {
+    typeKey: 'sctm_capture_payment_request',
+    name: {
+      en: 'Capture payment',
+      de: 'Zahlung einziehen',
+    },
+    resourceTypeId: 'transaction',
+    fields: {
+      shouldCapture: {
+        name: 'sctm_should_capture',
+        label: {
+          en: 'Should capture money for this transaction',
+          de: 'Soll das Geld für diese Transaktion eingezogen werden',
+        },
+      },
+      descriptionCapture: {
+        name: 'sctm_capture_description',
+        label: {
+          en: 'Capture description',
+          de: 'Beschreibung der Einziehung',
+        },
+      },
+      captureErrors: {
+        name: 'sctm_capture_errors',
+        label: {
+          en: 'Capture errors',
+          de: 'Fehler bei der Einziehung',
+        },
+      },
+    },
+  },
 };
 
 export enum ConnectorActions {
@@ -50,6 +81,7 @@ export enum ConnectorActions {
   CancelRefund = 'cancelRefund',
   NoAction = 'noAction',
   GetApplePaySession = 'getApplePaySession',
+  CapturePayment = 'capturePayment',
 }
 
 export const ErrorMessages = {

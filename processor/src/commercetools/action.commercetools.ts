@@ -140,7 +140,7 @@ export const addCustomLineItem = (
   };
 };
 
-export const setTransactionCustomField = (name: string, value: string, transactionId: string) => {
+export const setTransactionCustomField = (name: string, value: string | boolean, transactionId: string) => {
   return {
     action: 'setTransactionCustomField',
     name,
