@@ -3015,6 +3015,11 @@ describe('Test handleGetApplePaySession', () => {
             },
             state: 'Pending',
             interactionId: 'tr_7UhSN1zuXS',
+            custom: {
+              fields: {
+                sctm_should_capture: true,
+              },
+            } as unknown as CustomFields,
           },
           {
             id: '5c8b0375-305a-4f19-ae8e-07806b101299',
@@ -3186,6 +3191,11 @@ describe('Test handleGetApplePaySession', () => {
             },
             state: 'Pending',
             interactionId: 'tr_7UhSN1zuXS',
+            custom: {
+              fields: {
+                sctm_should_capture: true,
+              },
+            } as unknown as CustomFields,
           },
           {
             id: '5c8b0375-305a-4f19-ae8e-07806b101299',
@@ -3279,6 +3289,11 @@ describe('Test handleGetApplePaySession', () => {
             },
             state: 'Pending',
             interactionId: 'tr_7UhSN2zuXS',
+            custom: {
+              fields: {
+                sctm_should_capture: true,
+              },
+            } as unknown as CustomFields,
           },
           {
             id: '5c8b0375-305a-4f19-ae8e-07806b101299',
@@ -3362,6 +3377,11 @@ describe('Test handleGetApplePaySession', () => {
             },
             state: 'Pending',
             interactionId: 'tr_7UhSN2zuXS',
+            custom: {
+              fields: {
+                sctm_should_capture: true,
+              },
+            } as unknown as CustomFields,
           },
           {
             id: '5c8b0375-305a-4f19-ae8e-07806b101299',
@@ -3445,6 +3465,11 @@ describe('Test handleGetApplePaySession', () => {
             },
             state: 'Pending',
             interactionId: 'tr_7UhSN2zuXS',
+            custom: {
+              fields: {
+                sctm_should_capture: true,
+              },
+            } as unknown as CustomFields,
           },
           {
             id: '5c8b0375-305a-4f19-ae8e-07806b101299',

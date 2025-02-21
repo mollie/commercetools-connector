@@ -921,8 +921,9 @@ export const handleCapturePayment = async (ctPayment: Payment): Promise<Controll
 
   const pendingChargeTransaction = ctPayment.transactions.find(
     (transaction) =>
-      (transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Pending) ||
-      transaction.state === CTTransactionState.Failure,
+      transaction.type === CTTransactionType.Charge &&
+      (transaction.state === CTTransactionState.Pending || transaction.state === CTTransactionState.Failure) &&
+      transaction.custom?.fields?.[CustomFields.capturePayment.fields.shouldCapture.name],
   );
 
   if (!pendingChargeTransaction) {
