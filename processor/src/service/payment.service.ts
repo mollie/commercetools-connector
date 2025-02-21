@@ -56,6 +56,7 @@ import {
   changeTransactionState,
   changeTransactionTimestamp,
   setCustomFields,
+  setTransactionCustomField,
   setTransactionCustomType,
 } from '../commercetools/action.commercetools';
 import { readConfiguration } from '../utils/config.utils';
@@ -212,12 +213,22 @@ const isCaptureFromMollie = (
     );
   });
 
-  const answer = manualCapture && hasSuccessAuthorizedTransaction && hasPendingChargeTransaction;
+  const hasFailureCaptureTransaction = ctTransactions.some((transaction) => {
+    return (
+      transaction.type === CTTransactionType.Charge &&
+      transaction.state === CTTransactionState.Failure &&
+      transaction.interactionId === molliePayment.id &&
+      transaction.custom?.fields
+    );
+  });
+
+  const answer =
+    manualCapture && hasSuccessAuthorizedTransaction && (hasPendingChargeTransaction || hasFailureCaptureTransaction);
 
   const pendingChargeTransaction = ctTransactions.find(
     (transaction) =>
       transaction.type === CTTransactionType.Charge &&
-      transaction.state === CTTransactionState.Pending &&
+      (transaction.state === CTTransactionState.Pending || transaction.state === CTTransactionState.Failure) &&
       transaction.interactionId === molliePayment.id,
   );
 
@@ -428,10 +439,21 @@ export const getPaymentStatusUpdateAction = (
       `SCTM - getPaymentStatusUpdateAction - Capture payment triggered from Mollie paymentID: ${molliePaymentId}`,
     );
     updateActions.push(
-      setTransactionCustomType(doCaptureInMollie.id as string, CustomFields.capturePayment.typeKey, {
-        [CustomFields.capturePayment.fields.shouldCapture.name]: true,
-        [CustomFields.capturePayment.fields.descriptionCapture.name]: 'Capture payment triggered from Mollie.',
-      }),
+      setTransactionCustomField(
+        CustomFields.capturePayment.fields.shouldCapture.name,
+        true,
+        doCaptureInMollie.id as string,
+      ),
+      setTransactionCustomField(
+        CustomFields.capturePayment.fields.descriptionCapture.name,
+        'Payment is captured from Mollie.',
+        doCaptureInMollie.id as string,
+      ),
+      setTransactionCustomField(
+        CustomFields.capturePayment.fields.captureErrors.name,
+        '',
+        doCaptureInMollie.id as string,
+      ),
     );
   }
 
@@ -895,8 +917,12 @@ export const handleGetApplePaySession = async (ctPayment: Payment): Promise<Cont
 };
 
 export const handleCapturePayment = async (ctPayment: Payment): Promise<ControllerResponseType> => {
+  const ctActions: UpdateAction[] = [];
+
   const pendingChargeTransaction = ctPayment.transactions.find(
-    (transaction) => transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Pending,
+    (transaction) =>
+      (transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Pending) ||
+      transaction.state === CTTransactionState.Failure,
   );
 
   if (!pendingChargeTransaction) {
@@ -914,7 +940,7 @@ export const handleCapturePayment = async (ctPayment: Payment): Promise<Controll
 
     return {
       statusCode: 200,
-      actions: [],
+      actions: [changeTransactionState(pendingChargeTransaction.id, CTTransactionState.Success)],
     };
   }
 
@@ -941,22 +967,31 @@ export const handleCapturePayment = async (ctPayment: Payment): Promise<Controll
 
   const captureResponse: Capture | CustomError = await createCapturePayment(createParams);
 
+  // if errors, change transaction type to Failure & save error message to custom field sctm_capture_errors
   if (captureResponse instanceof CustomError) {
+    ctActions.push(
+      setTransactionCustomField(
+        CustomFields.capturePayment.fields.captureErrors.name,
+        JSON.stringify({
+          errorMessage: captureResponse.message,
+          submitData: createParams,
+        }),
+        pendingChargeTransaction.id,
+      ),
+    );
+
+    if (pendingChargeTransaction.state !== CTTransactionState.Failure) {
+      ctActions.push(changeTransactionState(pendingChargeTransaction.id, CTTransactionState.Failure));
+    }
+
     return {
       statusCode: 400,
-      actions: [
-        setTransactionCustomType(pendingChargeTransaction.id, CustomFields.capturePayment.typeKey, {
-          [CustomFields.capturePayment.fields.captureErrors.name]: JSON.stringify({
-            errorMessage: captureResponse.message,
-            submitData: createParams,
-          }),
-        }),
-      ],
+      actions: ctActions,
     };
   }
 
   logger.debug(`SCTM - handleCapturePayment - Capture is successful, Mollie Payment ID: ${molliePayment.id}`);
-  const ctActions: UpdateAction[] = [changeTransactionState(pendingChargeTransaction.id, CTTransactionState.Success)];
+  ctActions.push(changeTransactionState(pendingChargeTransaction.id, CTTransactionState.Success));
 
   return {
     statusCode: 200,

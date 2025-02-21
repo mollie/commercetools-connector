@@ -3161,7 +3161,7 @@ describe('Test handleGetApplePaySession', () => {
       expect(logger.error).toBeCalledTimes(1);
     });
 
-    test('should return no actions when mollie payment already paid ', async () => {
+    test('should update transaction status to success when mollie payment already paid ', async () => {
       const CTPayment: Payment = {
         id: '5c8b0375-305a-4f19-ae8e-07806b101999',
         version: 1,
@@ -3235,9 +3235,21 @@ describe('Test handleGetApplePaySession', () => {
 
       (getPaymentById as jest.Mock).mockReturnValueOnce(molliePayment);
 
+      (changeTransactionState as jest.Mock).mockReturnValueOnce({
+        action: 'changeTransactionState',
+        state: 'Success',
+        transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      });
+
       await expect(handleCapturePayment(CTPayment)).resolves.toEqual({
         statusCode: 200,
-        actions: [],
+        actions: [
+          {
+            action: 'changeTransactionState',
+            state: 'Success',
+            transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          },
+        ],
       });
       expect(logger.error).toBeCalledTimes(1);
     });
@@ -3484,18 +3496,25 @@ describe('Test handleGetApplePaySession', () => {
 
       (createCapturePayment as jest.Mock).mockReturnValueOnce(new CustomError(400, 'Capture failed'));
 
+      (changeTransactionState as jest.Mock).mockReturnValueOnce({
+        action: 'changeTransactionState',
+        state: 'Failure',
+        transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      });
+
       await expect(handleCapturePayment(CTPayment)).resolves.toEqual({
         statusCode: 400,
         actions: [
           {
-            action: 'setTransactionCustomType',
-            type: {
-              key: 'sctm_capture_payment_request',
-            },
-            fields: {
-              sctm_capture_errors:
-                '{"errorMessage":"Capture failed","submitData":{"paymentId":"tr_7UhSN2zuXS","amount":{"value":"10.00","currency":"EUR"},"description":""}}',
-            },
+            action: 'setTransactionCustomField',
+            name: 'sctm_capture_errors',
+            value:
+              '{"errorMessage":"Capture failed","submitData":{"paymentId":"tr_7UhSN2zuXS","amount":{"value":"10.00","currency":"EUR"},"description":""}}',
+            transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
+          },
+          {
+            action: 'changeTransactionState',
+            state: 'Failure',
             transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',
           },
         ],
