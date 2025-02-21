@@ -23,7 +23,7 @@ To trigger the capture for a certain payment, simply update the target pending t
 
 1. A valid authorized CT payment must contain the two follow transactions:
     * One with type of `authorization` and state `success`
-    * One with type of `charge` and state `pending`
+    * One with type of `charge` and state `pending` | `failure` with  (in case previous capture attempt failed and we want to retry) with custom field `sctm_should_capture` = `true`
 2. The ref Mollie payment must have `captureMode` equal to `manual` and `state` equal to `authorized`
 
 ## Transactions' custom fields
