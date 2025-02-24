@@ -446,17 +446,17 @@ export const getPaymentStatusUpdateAction = (
     );
     updateActions.push(
       setTransactionCustomField(
-        CustomFields.capturePayment.fields.shouldCapture.name,
+        CustomFields.surchargeAndCapture.fields.shouldCapture.name,
         true,
         doCaptureInMollie.id as string,
       ),
       setTransactionCustomField(
-        CustomFields.capturePayment.fields.descriptionCapture.name,
+        CustomFields.surchargeAndCapture.fields.descriptionCapture.name,
         'Payment is captured from Mollie.',
         doCaptureInMollie.id as string,
       ),
       setTransactionCustomField(
-        CustomFields.capturePayment.fields.captureErrors.name,
+        CustomFields.surchargeAndCapture.fields.captureErrors.name,
         '',
         doCaptureInMollie.id as string,
       ),
@@ -594,7 +594,7 @@ export const getCreatePaymentUpdateAction = async (
     if (surchargeAmountInCent > 0) {
       // Add surcharge amount to the custom field of the transaction
       actions.push(
-        setTransactionCustomType(originalTransaction.id, CustomFields.transactionSurchargeCost, {
+        setTransactionCustomType(originalTransaction.id, CustomFields.surchargeAndCapture.typeKey, {
           surchargeAmountInCent,
         }),
       );
@@ -929,7 +929,7 @@ export const handleCapturePayment = async (ctPayment: Payment): Promise<Controll
     (transaction) =>
       transaction.type === CTTransactionType.Charge &&
       (transaction.state === CTTransactionState.Pending || transaction.state === CTTransactionState.Failure) &&
-      transaction.custom?.fields?.[CustomFields.capturePayment.fields.shouldCapture.name],
+      transaction.custom?.fields?.[CustomFields.surchargeAndCapture.fields.shouldCapture.name],
   );
 
   if (!pendingChargeTransaction) {
@@ -969,7 +969,7 @@ export const handleCapturePayment = async (ctPayment: Payment): Promise<Controll
     paymentId: molliePayment.id,
     amount: molliePayment.amount,
     description:
-      pendingChargeTransaction?.custom?.fields?.[CustomFields.capturePayment.fields.descriptionCapture.name] || '',
+      pendingChargeTransaction?.custom?.fields?.[CustomFields.surchargeAndCapture.fields.descriptionCapture.name] || '',
   };
 
   const captureResponse: Capture | CustomError = await createCapturePayment(createParams);
@@ -978,7 +978,7 @@ export const handleCapturePayment = async (ctPayment: Payment): Promise<Controll
   if (captureResponse instanceof CustomError) {
     ctActions.push(
       setTransactionCustomField(
-        CustomFields.capturePayment.fields.captureErrors.name,
+        CustomFields.surchargeAndCapture.fields.captureErrors.name,
         JSON.stringify({
           errorMessage: captureResponse.message,
           submitData: createParams,

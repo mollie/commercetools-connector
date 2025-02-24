@@ -32,7 +32,7 @@ const getTransactionGroups = (transactions: Transaction[]) => {
         break;
       case CTTransactionState.Pending:
         if (transaction.type === CTTransactionType.Charge) {
-          transaction.custom?.fields?.[CustomFields.capturePayment.fields.shouldCapture.name]
+          transaction.custom?.fields?.[CustomFields.surchargeAndCapture.fields.shouldCapture.name]
             ? groups.pendingCapture.push(transaction)
             : groups.pendingCharge.push(transaction);
         } else if (transaction.type === CTTransactionType.Refund) {
@@ -49,8 +49,8 @@ const getTransactionGroups = (transactions: Transaction[]) => {
       case CTTransactionState.Failure:
         if (
           (transaction.type === CTTransactionType.Charge &&
-            transaction.custom?.fields?.[CustomFields.capturePayment.fields.captureErrors.name]?.length >= 1) ||
-          transaction.custom?.fields?.[CustomFields.capturePayment.fields.shouldCapture.name]
+            transaction.custom?.fields?.[CustomFields.surchargeAndCapture.fields.captureErrors.name]?.length >= 1) ||
+          transaction.custom?.fields?.[CustomFields.surchargeAndCapture.fields.shouldCapture.name]
         ) {
           groups.failureCapture.push(transaction);
         }
