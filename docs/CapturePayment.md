@@ -2,7 +2,6 @@
 
 * [Overview](#overview)
 * [Conditions](#conditions)
-* [Transactions' custom fields](#transactions-custom-fields)
 * [Example payload](#example-payload)
 * [Example response](#example-response)
 
@@ -12,12 +11,14 @@ This feature is to capture the money of an authorized Mollie payment and update 
 
 It calls Mollie [Capture API](https://docs.mollie.com/reference/captures-api) eventually.
 
-To trigger the capture for a certain payment, simply update the target pending transaction of type `Charge` with our predefined custom type named `sctm_capture_payment_request`
+To trigger the capture for a certain payment, simply update the target pending transaction of type `Charge` with our predefined custom type named `sctm_transaction_surcharge_and_capture`
 
 | **Custom fields** | **Required** | **Description** |
 | --- | --- | --- |
+| `surchargeAmountInCent` | false | Store the setting for additional surcharge fee |
 | `sctm_should_capture` | false | WHEN its value set to `true`, the Processor will start to capture with associated payment information |
-| `sctm_capture_description` | false | Hold the description of the capture |
+| `sctm_capture_description` | false | Store the description for a capture |
+| `sctm_capture_errors` | false | Store the reason why the capture is failed |
 
 ## Conditions
 
@@ -26,14 +27,31 @@ To trigger the capture for a certain payment, simply update the target pending t
     * One with type of `charge` and state `pending` | `failure` with  (in case previous capture attempt failed and we want to retry) with custom field `sctm_should_capture` = `true`
 2. The ref Mollie payment must have `captureMode` equal to `manual` and `state` equal to `authorized`
 
-## Transactions' custom fields
-
-| Fields                                                                                       | Data type                  | Required | Usage |
-|-----------------------------------------------------------------------------------------------------------|----------------------------------------------|----------|------------------|
-| `sctm_should_capture`                                                                    | `boolean`                           | NO      | If `true`, trigger the capture process |
-| `sctm_capture_description` | `string` | NO | Contain the description for the capture |
-
 ## Example payload
+
+Please notice that if the transaction has surcharge costs then using the action `setTransactionCustomField`
+
+```json
+{
+    "version": {{capture_payment_version}},
+    "actions": [
+        {
+            "action" : "setTransactionCustomField",
+            "name" : "{{sctm_should_capture}}",
+            "value": true,
+            "transactionId" : "{{capture_transaction_id}}"
+        },
+        {
+            "action" : "setTransactionCustomField",
+            "name" : "{{sctm_capture_description}}",
+            "value": "Capture on {{current_datetime}}",
+            "transactionId" : "{{capture_transaction_id}}"
+        }
+    ]
+}
+```
+
+Otherwise, using the action `setTransactionCustomType`
 
 ```json
 ENDPOINT: `https://api.europe-west1.gcp.commercetools.com/{{your_project_key}}/payments/{{payment_id_for_capture}}`
@@ -60,24 +78,24 @@ ENDPOINT: `https://api.europe-west1.gcp.commercetools.com/{{your_project_key}}/p
 
 ```json
 {
-    "id": "ba410236-3135-4037-b61e-10aa82a1ae99",
-    "version": 26,
-    "versionModifiedAt": "2025-02-17T08:12:45.109Z",
+    "id": "2eeaed85-e389-4e5a-a434-330a0d31ae3e",
+    "version": 27,
+    "versionModifiedAt": "2025-02-24T07:00:07.064Z",
     "lastMessageSequenceNumber": 6,
-    "createdAt": "2025-02-17T08:09:06.565Z",
-    "lastModifiedAt": "2025-02-17T08:12:45.109Z",
+    "createdAt": "2025-02-24T06:54:04.470Z",
+    "lastModifiedAt": "2025-02-24T07:00:07.064Z",
     "lastModifiedBy": {
-        "clientId": "8a_rNd-HokSybRmRRqdEuh82",
+        "clientId": "pQTXqp3kGvXQynj1ehl9GtNr",
         "isPlatformClient": false
     },
     "createdBy": {
-        "clientId": "8a_rNd-HokSybRmRRqdEuh82",
+        "clientId": "pQTXqp3kGvXQynj1ehl9GtNr",
         "isPlatformClient": false
     },
     "amountPlanned": {
         "type": "centPrecision",
         "currencyCode": "EUR",
-        "centAmount": 11999,
+        "centAmount": 6000,
         "fractionDigits": 2
     },
     "paymentMethodInfo": {
@@ -91,13 +109,13 @@ ENDPOINT: `https://api.europe-west1.gcp.commercetools.com/{{your_project_key}}/p
     "custom": {
         "type": {
             "typeId": "type",
-            "id": "53cdd626-7884-4421-9226-d81ba7038424"
+            "id": "8e5500cb-0761-4a46-8cc1-e84262b5f50c"
         },
         "fields": {
             "sctm_payment_methods_request": "{\"locale\":\"de_DE\",\"billingCountry\":\"DE\",\"includeWallets\":\"applepay\"}",
             "sctm_mollie_profile_id": "pfl_SPkYGiEQjf",
-            "sctm_payment_methods_response": "{\"count\":3,\"methods\":[{\"id\":\"creditcard\",\"name\":{\"en-GB\":\"Card\",\"de-DE\":\"Card\",\"en-US\":\"Card\"},\"description\":{\"en-GB\":\"\",\"de-DE\":\"\",\"en-US\":\"\"},\"image\":\"https://www.mollie.com/external/icons/payment-methods/creditcard.svg\",\"order\":20},{\"id\":\"applepay\",\"name\":{\"en-GB\":\"Apple Pay\",\"de-DE\":\"Apple Pay\",\"en-US\":\"Apple Pay\"},\"description\":{\"en-GB\":\"\",\"de-DE\":\"\",\"en-US\":\"\"},\"image\":\"https://www.mollie.com/external/icons/payment-methods/applepay.svg\",\"order\":0},{\"id\":\"banktransfer\",\"name\":{\"en-GB\":\"Bank transfer\",\"de-DE\":\"Bank transfer\",\"en-US\":\"Bank transfer\"},\"description\":{\"en-GB\":\"\",\"de-DE\":\"\",\"en-US\":\"\"},\"image\":\"https://www.mollie.com/external/icons/payment-methods/banktransfer.svg\",\"order\":0}]}",
-            "sctm_create_payment_request": "{\"description\":\"Testing creating Mollie payment\",\"redirectUrl\":\"http://localhost:3000/thank-you?orderId=ae22-e03f-aab1\",\"billingAddress\":{\"givenName\":\"thach\",\"familyName\":\"dang\",\"streetAndNumber\":\"Am campus 5\",\"postalCode\":\"48721\",\"city\":\"Gescher\",\"country\":\"DE\",\"phone\":\"49254287030\",\"email\":\"t.dang@shopmacher.de\"},\"shippingAddress\":{\"givenName\":\"thach\",\"familyName\":\"dang\",\"streetAndNumber\":\"Am campus 5\",\"postalCode\":\"48721\",\"city\":\"Gescher\",\"country\":\"DE\",\"phone\":\"49254287030\",\"email\":\"t.dang@shopmacher.de\"},\"billingEmail\":\"t.dang@shopmacher.de\",\"cardToken\":\"tkn_h3mrzMtest\",\"lines\":[{\"description\":\"Geometrischer Kissenbezug\",\"quantity\":1,\"quantityUnit\":\"pcs\",\"unitPrice\":{\"currency\":\"EUR\",\"value\":\"19.99\"},\"totalAmount\":{\"currency\":\"EUR\",\"value\":\"19.99\"}}],\"captureMode\":\"manual\"}"
+            "sctm_payment_methods_response": "{\"count\":4,\"methods\":[{\"id\":\"creditcard\",\"name\":{\"en-GB\":\"Card\",\"de-DE\":\"Card\",\"en-US\":\"Card\"},\"description\":{\"en-GB\":\"\",\"de-DE\":\"\",\"en-US\":\"\"},\"image\":\"https://www.mollie.com/external/icons/payment-methods/creditcard.svg\",\"order\":0},{\"id\":\"paypal\",\"name\":{\"en-GB\":\"PayPal\",\"de-DE\":\"PayPal\",\"en-US\":\"PayPal\"},\"description\":{\"en-GB\":\"\",\"de-DE\":\"\",\"en-US\":\"\"},\"image\":\"https://www.mollie.com/external/icons/payment-methods/paypal.svg\",\"order\":0},{\"id\":\"banktransfer\",\"name\":{\"en-GB\":\"Bank transfer\",\"de-DE\":\"Bank transfer\",\"en-US\":\"Bank transfer\"},\"description\":{\"en-GB\":\"\",\"de-DE\":\"\",\"en-US\":\"\"},\"image\":\"https://www.mollie.com/external/icons/payment-methods/banktransfer.svg\",\"order\":0},{\"id\":\"ideal\",\"name\":{\"en-GB\":\"iDEAL\",\"de-DE\":\"iDEAL\",\"en-US\":\"iDEAL\"},\"description\":{\"en-GB\":\"\",\"de-DE\":\"\",\"en-US\":\"\"},\"image\":\"https://www.mollie.com/external/icons/payment-methods/ideal.svg\",\"order\":0}]}",
+            "sctm_create_payment_request": "{\"description\":\"Testing creating Mollie payment\",\"redirectUrl\":\"http://localhost:3000/thank-you?orderId=6fe8-b457-9e18\",\"billingAddress\":{\"givenName\":\"thach\",\"familyName\":\"dang\",\"streetAndNumber\":\"Am campus 5\",\"postalCode\":\"48721\",\"city\":\"Gescher\",\"country\":\"DE\",\"email\":\"t.dang+tuff$@shopmacher.de\"},\"shippingAddress\":{\"givenName\":\"thach\",\"familyName\":\"dang\",\"streetAndNumber\":\"Am campus 5\",\"postalCode\":\"48721\",\"city\":\"Gescher\",\"country\":\"DE\",\"email\":\"t.dang+tuff$@shopmacher.de\"},\"billingEmail\":\"t.dang+tuff$@shopmacher.de\",\"cardToken\":\"tkn_fwGrzMtest\",\"lines\":[{\"description\":\"Intl 101\",\"quantity\":1,\"quantityUnit\":\"pcs\",\"unitPrice\":{\"currency\":\"EUR\",\"value\":\"50.00\"},\"totalAmount\":{\"currency\":\"EUR\",\"value\":\"50.00\"}}],\"captureMode\":\"manual\"}"
         }
     },
     "paymentStatus": {
@@ -105,38 +123,38 @@ ENDPOINT: `https://api.europe-west1.gcp.commercetools.com/{{your_project_key}}/p
     },
     "transactions": [
         {
-            "id": "0c80239c-ade7-4556-a871-f4317759be10",
-            "timestamp": "2025-02-17T08:09:36.000Z",
+            "id": "be2beaeb-7a21-4f30-a81d-dc3db84ac4a3",
+            "timestamp": "2025-02-24T06:54:25.000Z",
             "type": "Charge",
             "amount": {
                 "type": "centPrecision",
                 "currencyCode": "EUR",
-                "centAmount": 11999,
+                "centAmount": 6000,
                 "fractionDigits": 2
             },
-            "interactionId": "tr_mDmhmxTzkX",
+            "interactionId": "tr_T6daBBKgrZ",
             "state": "Success",
             "custom": {
                 "type": {
                     "typeId": "type",
-                    "id": "418c568c-15a5-4418-9698-a81edcffc471"
+                    "id": "2c08d482-e195-4f9f-ad57-99634471b797"
                 },
                 "fields": {
                     "sctm_should_capture": true,
-                    "sctm_capture_description": "Capture on 2025-02-17T08:12:42.171Z"
+                    "sctm_capture_description": "Capture description 2025-02-14T08:25:16.613Z"
                 }
             }
         },
         {
-            "id": "d39ed5fc-f8ae-405b-ae99-3f713d243da0",
+            "id": "90a1a015-f2ab-4bcd-950d-31e8c6a971f1",
             "type": "Authorization",
             "amount": {
                 "type": "centPrecision",
                 "currencyCode": "EUR",
-                "centAmount": 11999,
+                "centAmount": 6000,
                 "fractionDigits": 2
             },
-            "interactionId": "tr_mDmhmxTzkX",
+            "interactionId": "tr_T6daBBKgrZ",
             "state": "Success"
         }
     ],
@@ -144,14 +162,14 @@ ENDPOINT: `https://api.europe-west1.gcp.commercetools.com/{{your_project_key}}/p
         {
             "type": {
                 "typeId": "type",
-                "id": "9d9b436c-58cc-4f2e-a393-0fbd05ba0193"
+                "id": "cd8707ea-3c9e-4e37-a4b3-312d538d385e"
             },
             "fields": {
-                "sctm_id": "6e134208-fdfe-453f-928e-8ab44d9b10ec",
+                "sctm_id": "6f58eee1-370f-4a81-94d7-2919e993f73f",
                 "sctm_action_type": "createPayment",
-                "sctm_created_at": "2025-02-17T08:09:36+00:00",
-                "sctm_request": "{\"transactionId\":\"0c80239c-ade7-4556-a871-f4317759be10\",\"paymentMethod\":\"creditcard\"}",
-                "sctm_response": "{\"molliePaymentId\":\"tr_mDmhmxTzkX\",\"checkoutUrl\":\"https://www.mollie.com/checkout/test-mode?method=creditcard&token=6.8hhrnm\",\"transactionId\":\"0c80239c-ade7-4556-a871-f4317759be10\"}"
+                "sctm_created_at": "2025-02-24T06:54:25+00:00",
+                "sctm_request": "{\"transactionId\":\"be2beaeb-7a21-4f30-a81d-dc3db84ac4a3\",\"paymentMethod\":\"creditcard\"}",
+                "sctm_response": "{\"molliePaymentId\":\"tr_T6daBBKgrZ\",\"checkoutUrl\":\"https://www.mollie.com/checkout/test-mode?method=creditcard&token=6.suayi7\",\"transactionId\":\"be2beaeb-7a21-4f30-a81d-dc3db84ac4a3\"}"
             }
         }
     ]

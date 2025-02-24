@@ -1212,7 +1212,7 @@ describe('Test getCreatePaymentUpdateAction', () => {
     expect(actual[4]).toEqual({
       action: 'setTransactionCustomType',
       type: {
-        key: 'sctm_transaction_surcharge_cost',
+        key: 'sctm_transaction_surcharge_and_capture',
       },
       fields: {
         surchargeAmountInCent: 1000,
@@ -1429,7 +1429,7 @@ describe('Test handleCreatePayment', () => {
       {
         action: 'setTransactionCustomType',
         type: {
-          key: 'sctm_transaction_surcharge_cost',
+          key: 'sctm_transaction_surcharge_and_capture',
         },
         fields: {
           surchargeAmountInCent: 1020,

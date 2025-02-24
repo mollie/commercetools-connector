@@ -9,7 +9,6 @@ import {
   createCustomPaymentTransactionCancelReasonType,
   createTransactionSurchargeCustomType,
   createTransactionRefundForMolliePaymentCustomType,
-  createTransactionCaptureForMolliePaymentCustomType,
 } from '../../src/commercetools/customFields.commercetools';
 import { getAccessToken } from '../../src/commercetools/auth.commercetools';
 
@@ -24,7 +23,6 @@ jest.mock('../../src/commercetools/customFields.commercetools', () => ({
   createCustomPaymentTransactionCancelReasonType: jest.fn(),
   createTransactionSurchargeCustomType: jest.fn(),
   createTransactionRefundForMolliePaymentCustomType: jest.fn(),
-  createTransactionCaptureForMolliePaymentCustomType: jest.fn(),
 }));
 
 jest.mock('../../src/commercetools/auth.commercetools', () => ({
@@ -164,7 +162,6 @@ describe('Test src/route/processor.route.ts', () => {
       (createTransactionSurchargeCustomType as jest.Mock).mockReturnValueOnce(Promise.resolve());
       (createTransactionRefundForMolliePaymentCustomType as jest.Mock).mockReturnValueOnce(Promise.resolve());
       (createTransactionRefundForMolliePaymentCustomType as jest.Mock).mockReturnValueOnce(Promise.resolve());
-      (createTransactionCaptureForMolliePaymentCustomType as jest.Mock).mockReturnValueOnce(Promise.resolve());
 
       (getAccessToken as jest.Mock).mockReturnValueOnce(Promise.resolve());
 

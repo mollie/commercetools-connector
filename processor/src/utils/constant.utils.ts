@@ -40,14 +40,21 @@ export const CustomFields = {
   },
   transactionSurchargeCost: 'sctm_transaction_surcharge_cost',
   transactionRefundForMolliePayment: 'sctm_transaction_refund_for_mollie_payment',
-  capturePayment: {
-    typeKey: 'sctm_capture_payment_request',
+  surchargeAndCapture: {
+    typeKey: 'sctm_transaction_surcharge_and_capture',
     name: {
-      en: 'Capture payment',
-      de: 'Zahlung einziehen',
+      en: '(SCTM) Transaction surcharge & capture control',
+      de: '(SCTM) Transaktionszuschlag & Erfassungskontrolle',
     },
     resourceTypeId: 'transaction',
     fields: {
+      surchargeCode: {
+        name: 'surchargeAmountInCent',
+        label: {
+          en: 'Total surcharge amount in cent',
+          de: 'Gesamtbetrag des Zuschlags in Cent',
+        },
+      },
       shouldCapture: {
         name: 'sctm_should_capture',
         label: {
