@@ -38,11 +38,12 @@ const renderComponent = (props = {}) => {
   return render(
     <IntlProvider locale="en">
       <AvailabilityDetails
-        method={{ 
-            id: 'creditcard',
-            container: 'availability',
-            key: 'creditcard',
-            value: initialValues as unknown as string }}
+        method={{
+          id: 'creditcard',
+          container: 'availability',
+          key: 'creditcard',
+          value: initialValues as unknown as string,
+        }}
         formModalState={{ isModalOpen: true, closeModal: jest.fn() }}
         {...props}
       />
@@ -58,9 +59,13 @@ describe('AvailabilityDetails', () => {
   test('renders form fields correctly', () => {
     renderComponent();
 
-    expect(screen.getByTestId('availability-revert-button')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('availability-revert-button')
+    ).toBeInTheDocument();
     expect(screen.getByTestId('availability-save-button')).toBeInTheDocument();
-    expect(screen.getByTestId('availability-delete-button')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('availability-delete-button')
+    ).toBeInTheDocument();
     expect(screen.getByTestId('name-input')).toBeInTheDocument();
     expect(screen.getByTestId('description-input')).toBeInTheDocument();
   });
