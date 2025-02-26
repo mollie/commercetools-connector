@@ -41,6 +41,7 @@ const mockMethods = ForwardToFixture._embedded.methods.map((method) => {
     status: method.status === 'active' ? 'Active' : 'Inactive',
     imageUrl: method.image.svg,
     displayOrder: 0,
+    pricingConstrains: [],
   };
 });
 
@@ -62,6 +63,7 @@ beforeEach(() => {
     customObjectsPaginatedResult: ObjectsPaginated,
     error: null,
     loading: false,
+    refetch: jest.fn().mockReturnValue(ObjectsPaginated),
   });
 
   (useExtensionDestinationFetcher as jest.Mock).mockReturnValue({

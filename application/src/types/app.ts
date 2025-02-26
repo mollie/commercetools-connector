@@ -65,4 +65,7 @@ export enum SupportedPaymentMethods {
   applepay = 'applepay',
   paypal = 'paypal',
   giftcard = 'giftcard',
+  klarna = 'klarna',
 }
+
+export const PaymentsWithResitrctedSurcharge = ['klarna'];

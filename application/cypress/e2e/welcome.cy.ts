@@ -28,6 +28,7 @@ describe('Test welcome.cy.ts', () => {
       'Bancontact',
       'Blik',
       'Bank transfer',
+      'Pay with Klarna'
     ];
 
     const headers = ['Payment method', 'Active', 'Icon', 'Display order'];

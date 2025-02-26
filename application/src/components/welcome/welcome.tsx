@@ -36,8 +36,7 @@ const Welcome = () => {
   const intl = useIntl();
   const match = useRouteMatch();
   const { push } = useHistory();
-  const { dataLocale, projectLanguages } = useApplicationContext((context) => ({
-    dataLocale: context.dataLocale ?? '',
+  const { projectLanguages } = useApplicationContext((context) => ({
     projectLanguages: context.project?.languages ?? [],
   }));
   const columns = [
@@ -74,7 +73,7 @@ const Welcome = () => {
     key: 'key',
     order: 'asc',
   });
-  const { customObjectsPaginatedResult, error, loading } =
+  const { customObjectsPaginatedResult, error, loading, refetch } =
     useCustomObjectsFetcher({
       page,
       perPage,
@@ -112,6 +111,7 @@ const Welcome = () => {
               .catch((error) => {
                 console.error(`Error creating custom object: ${error}`);
               });
+            refetch();
             return method;
           } else {
             return customObjectsPaginatedResult?.results.find(
@@ -122,7 +122,12 @@ const Welcome = () => {
       );
       setMethods(updatedMethods);
     }
-  }, [customObjectUpdater, customObjectsPaginatedResult?.results, fetchedData]);
+  }, [
+    customObjectUpdater,
+    customObjectsPaginatedResult?.results,
+    fetchedData,
+    refetch,
+  ]);
 
   useEffect(() => {
     if (

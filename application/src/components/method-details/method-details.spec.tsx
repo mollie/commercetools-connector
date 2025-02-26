@@ -110,3 +110,74 @@ describe('Test method-details.tsx', () => {
     });
   });
 });
+
+describe('Test klarna detail', () => {
+  beforeEach(() => {
+    (useCustomObjectDetailsFetcher as jest.Mock).mockReturnValue({
+      loading: true,
+      error: null,
+      method: {
+        id: '43c3f945-c429-4719-878f-008cd507c581',
+        container: 'sctm-app-methods',
+        key: 'klarna',
+        value: {
+          id: 'klarna',
+          technicalName: 'Pay with Klarna',
+          name: {
+            'en-GB': 'Pay with Klarna',
+            'de-DE': 'Pay with Klarna',
+            'en-US': 'Pay with Klarna',
+            'de-AT': 'Pay with Klarna',
+            'it-IT': 'Pay with Klarna',
+            'pl-PL': 'Pay with Klarna',
+          },
+          description: {
+            'en-GB': '',
+            'de-DE': '',
+            'en-US': '',
+            'de-AT': '',
+            'it-IT': '',
+            'pl-PL': '',
+          },
+          imageUrl:
+            'https://www.mollie.com/external/icons/payment-methods/klarna.svg',
+          status: 'Inactive',
+          displayOrder: 0,
+          pricingConstraints: [],
+        },
+        __typename: 'CustomObject',
+      },
+    });
+
+    (useApplicationContext as jest.Mock).mockReturnValue({
+      dataLocale: 'de',
+      projectLanguages: ['de'],
+      projectCurrencies: ['DE'],
+      projectCountries: ['EUR'],
+    });
+
+    (useShowNotification as jest.Mock).mockReturnValue(jest.fn());
+
+    (useIsAuthorized as jest.Mock).mockReturnValue(true);
+
+    (useCustomObjectDetailsUpdater as jest.Mock).mockReturnValue({
+      execute: jest.fn().mockResolvedValue({}),
+    });
+  });
+
+  it('should render method details page', async () => {
+    render(
+      <MemoryRouter>
+        <Suspense fallback={<div>Loading...</div>}>
+          <IntlProvider locale="en" messages={{}}>
+            <MethodDetails onClose={jest.fn()} />
+          </IntlProvider>
+        </Suspense>
+      </MemoryRouter>
+    );
+
+    screen.getAllByText('Pay with Klarna').forEach((element: unknown) => {
+      expect(element).toBeInTheDocument();
+    });
+  });
+});

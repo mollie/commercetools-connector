@@ -107,4 +107,9 @@ export default defineMessages({
     id: 'MethodDetails.fieldBanktransaferDueDateIsNotAString',
     defaultMessage: 'Due date must be a string e.g. 25d, 9d',
   },
+  fieldSurchargeRestrictionNotificationKlarna: {
+    id: 'MethodDetails.fieldSurchargeRestrictionNotificationKlarna',
+    defaultMessage:
+      'Payment surcharge for BNPL payment methods are restricted by law in the Netherlands.',
+  },
 });
