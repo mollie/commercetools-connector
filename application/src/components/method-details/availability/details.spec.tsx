@@ -96,12 +96,18 @@ describe('AvailabilityDetails', () => {
     expect(
       screen.getByTestId('availability-delete-button')
     ).toBeInTheDocument();
-    expect(screen.getByTestId('money-field-surchargeCost--fixedAmount')).toBeInTheDocument();
-    expect(screen.getByTestId('money-field-surchargeCost--percentageAmount')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('money-field-surchargeCost--fixedAmount')
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId('money-field-surchargeCost--percentageAmount')
+    ).toBeInTheDocument();
     expect(screen.getByTestId('select-country')).toBeInTheDocument();
     expect(screen.getByTestId('select-currency')).toBeInTheDocument();
     expect(screen.getByTestId('money-field-minAmount')).toBeInTheDocument();
     expect(screen.getByTestId('money-field-maxAmount')).toBeInTheDocument();
-    expect(screen.queryByTestId('surcharge-restriction')).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('surcharge-restriction')
+    ).not.toBeInTheDocument();
   });
 });
