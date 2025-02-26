@@ -2336,7 +2336,7 @@ describe('Test handlePaymentWebhook', () => {
       ],
     });
     await handlePaymentWebhook(fakePaymentId);
-    expect(logger.debug).toBeCalledTimes(2);
+    expect(logger.debug).toBeCalledTimes(3);
     expect(logger.debug).toBeCalledWith(`SCTM - handlePaymentWebhook - paymentId:${fakePaymentId}`);
     expect(logger.debug).toBeCalledWith(`handlePaymentWebhook - No actions needed`);
   });
