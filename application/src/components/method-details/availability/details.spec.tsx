@@ -11,12 +11,34 @@ jest.mock('../../../hooks/use-custom-objects-connector', () => ({
 
 jest.mock('@commercetools-frontend/application-shell-connectors', () => ({
   useApplicationContext: jest.fn().mockReturnValue({
-    project: {
-      countries: ['DE'],
-      currencies: ['EUR'],
-      languages: ['en'],
-    },
-    dataLocale: 'en',
+    dataLocale: 'de-DE',
+    projectCountries: [
+      'GB',
+      'DE',
+      'PL',
+      'CH',
+      'IT',
+      'NL',
+      'AT',
+      'ES',
+      'BE',
+      'FR',
+      'PT',
+    ],
+    projectCurrencies: ['EUR', 'GBP', 'PLN', 'CHF'],
+    projectLanguages: [
+      'en-GB',
+      'de-DE',
+      'pl-PL',
+      'fr-FR',
+      'de-CH',
+      'nl-NL',
+      'de-BE',
+      'es-ES',
+      'de-AT',
+      'pt-PT',
+      'it-IT',
+    ],
   }),
 }));
 
@@ -25,12 +47,20 @@ jest.mock('@commercetools-frontend/actions-global', () => ({
 }));
 
 const initialValues: TMethodObjectValueFormValues = {
-  name: { en: 'Test Method' },
-  description: { en: 'Test Description' },
+  name: { en: 'Test Method', de: 'Test Methode' },
+  description: { en: 'Test Description', de: 'Test Beschreibung' },
   displayOrder: 1,
   id: 'creditcard',
   imageUrl: 'http://example.com/image.png',
-  pricingConstraints: [],
+
+  pricingConstraints: [
+    {
+      currencyCode: 'EUR',
+      countryCode: 'DE',
+      minAmount: 333,
+      maxAmount: 999,
+    },
+  ],
   status: 'active',
 };
 
@@ -66,7 +96,12 @@ describe('AvailabilityDetails', () => {
     expect(
       screen.getByTestId('availability-delete-button')
     ).toBeInTheDocument();
-    expect(screen.getByTestId('name-input')).toBeInTheDocument();
-    expect(screen.getByTestId('description-input')).toBeInTheDocument();
+    expect(screen.getByTestId('money-field-surchargeCost--fixedAmount')).toBeInTheDocument();
+    expect(screen.getByTestId('money-field-surchargeCost--percentageAmount')).toBeInTheDocument();
+    expect(screen.getByTestId('select-country')).toBeInTheDocument();
+    expect(screen.getByTestId('select-currency')).toBeInTheDocument();
+    expect(screen.getByTestId('money-field-minAmount')).toBeInTheDocument();
+    expect(screen.getByTestId('money-field-maxAmount')).toBeInTheDocument();
+    expect(screen.queryByTestId('surcharge-restriction')).not.toBeInTheDocument();
   });
 });
