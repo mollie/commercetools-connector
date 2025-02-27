@@ -1088,21 +1088,6 @@ describe('createMollieCreatePaymentParams', () => {
       locale: 'en_GB',
       redirectUrl: 'https://example.com/success',
       webhookUrl: 'https://example.com/webhook',
-      extraMerchantData: {
-        other_delivery_address: [
-          {
-            shipping_method: 'store pick-up',
-            shipping_type: 'normal',
-            first_name: 'John',
-            last_name: 'Doe',
-            street_address: 'Am Borsigturm 100',
-            street_number: '88w',
-            postal_code: '13507',
-            city: 'Berlin',
-            country: 'Germany',
-          },
-        ],
-      },
     };
 
     const CTPayment: Payment = {
@@ -1152,7 +1137,6 @@ describe('createMollieCreatePaymentParams', () => {
       webhookUrl: extensionUrl,
       description: customFieldObject.description,
       lines: [],
-      extraMerchantData: customFieldObject.extraMerchantData,
     });
   });
 });
