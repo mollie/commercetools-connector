@@ -102,8 +102,6 @@ const getSpecificPaymentParams = (
       };
     case PaymentMethod.creditcard:
       return { cardToken: paymentRequest.cardToken ?? '' };
-    case PaymentMethod.klarna:
-      return { extraMerchantData: paymentRequest.extraMerchantData ?? {} };
     default:
       return {};
   }
