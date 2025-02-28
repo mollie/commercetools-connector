@@ -151,3 +151,52 @@ describe('Test method details - availability tab', () => {
     cy.findByText(totalSurchargeCost).should('exist');
   });
 });
+
+describe('Test method details - availability tab - klarna', () => {
+  it('no surcharge cost for klarna', () => {
+    cy.fixture('objects-paginated').then((response) => {
+      customObjects = response;
+      cy.intercept('/graphql', (req) => {
+        if (req.body.operationName === 'FetchCustomObjects') {
+          req.reply({
+            data: {
+              customObjects: {
+                results: response.results,
+                count: response.results.length,
+                offset: 0,
+                total: response.results.length,
+                __typename: 'CustomObjectQueryResult',
+              },
+            },
+          });
+        } else if (req.body.operationName === 'FetchCustomObjectDetails') {
+          req.reply({
+            data: {
+              customObject: response.results[1], // Should be "Klarna" to align with the below test cases
+            },
+          });
+        } else {
+          req.continue();
+        }
+      });
+    });
+
+    cy.findByText('Pay with Klarna').click();
+    cy.url().should('contain', 'general');
+
+    cy.findByText('Availability').should('exist').click();
+
+    cy.findByText('Currency');
+    cy.findByText('Min amount');
+    cy.findByText('Max amount');
+    cy.findByText('Country');
+    cy.findByText('Surcharge transaction cost');
+
+    cy.findByTestId('availability-add-configuration-button').click();
+
+    cy.findByTestId('surcharge-restriction').should('exist');
+    cy.findByTestId('money-field-surchargeCost--percentageAmount').should(
+      'not.exist'
+    );
+  });
+});

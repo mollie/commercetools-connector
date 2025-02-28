@@ -23,6 +23,7 @@ import { convertCurrencyStringToNumber } from '../../../helpers';
 import { useCustomObjectDetailsUpdater } from '../../../hooks/use-custom-objects-connector';
 import { useShowNotification } from '@commercetools-frontend/actions-global';
 import { formatLocalizedString } from '@commercetools-frontend/l10n';
+import { PaymentsWithResitrctedSurcharge } from '../../../types/app';
 
 type TAvailabilityDetailFormProps = {
   method: TFetchCustomObjectDetailsQuery['customObject'];
@@ -33,6 +34,8 @@ type TAvailabilityDetailFormProps = {
 
 const AvailabilityDetails = (props: TAvailabilityDetailFormProps) => {
   const intl = useIntl();
+  const currentMethod = props.method
+    ?.value as unknown as TMethodObjectValueFormValues;
 
   const { projectCountries, projectCurrencies, dataLocale, projectLanguages } =
     useApplicationContext((context) => {
@@ -44,7 +47,7 @@ const AvailabilityDetails = (props: TAvailabilityDetailFormProps) => {
       };
     });
 
-  const [amountPerCountry, setAmountPerCountry] = useState(
+  const [amountPerCountry] = useState(
     projectCountries.reduce((obj: TAmountPerCountry, country: string) => {
       const amountPerCurrency = projectCurrencies.reduce(
         (obj: TAmountPerCurrency, currency: string) => {
@@ -68,9 +71,7 @@ const AvailabilityDetails = (props: TAvailabilityDetailFormProps) => {
     }, {})
   );
 
-  const existingPricingConstraints = (
-    props.method?.value as unknown as TMethodObjectValueFormValues
-  ).pricingConstraints?.reduce(
+  const existingPricingConstraints = currentMethod.pricingConstraints?.reduce(
     (
       acc,
       { countryCode, currencyCode, minAmount, maxAmount, surchargeCost }
@@ -222,11 +223,17 @@ const AvailabilityDetails = (props: TAvailabilityDetailFormProps) => {
     projectLanguages,
   ]);
 
+  const IsSurchargeRestricted = PaymentsWithResitrctedSurcharge.includes(
+    currentMethod.id
+  );
+
   return (
     <AvailabilityDetailsForm
       initialValues={detailsFormInitialValues as TAmountPerCountry}
       onSubmit={handleSubmitCallback}
       identifier={props?.identifier}
+      isSurchargeRestricted={IsSurchargeRestricted}
+      currentMethod={currentMethod}
     >
       {(formProps) => {
         return (
