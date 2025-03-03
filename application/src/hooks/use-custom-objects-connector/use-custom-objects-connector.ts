@@ -37,6 +37,9 @@ type TUseCustomObjectsFetcher = (
   customObjectsPaginatedResult?: TFetchCustomObjectsQuery['customObjects'];
   error?: ApolloError;
   loading: boolean;
+  refetch: (
+    variables?: Partial<TFetchCustomObjectsQueryVariables>
+  ) => Promise<unknown>;
 };
 
 export const useCustomObjectsFetcher: TUseCustomObjectsFetcher = ({
@@ -45,7 +48,7 @@ export const useCustomObjectsFetcher: TUseCustomObjectsFetcher = ({
   tableSorting,
   container,
 }) => {
-  const { data, error, loading } = useMcQuery<
+  const { data, error, loading, refetch } = useMcQuery<
     TFetchCustomObjectsQuery,
     TFetchCustomObjectsQueryVariables
   >(FetchCustomObjectsQuery, {
@@ -64,6 +67,7 @@ export const useCustomObjectsFetcher: TUseCustomObjectsFetcher = ({
     customObjectsPaginatedResult: data?.customObjects,
     error,
     loading,
+    refetch,
   };
 };
 type TUseCustomObjectDetailsFetcher = (id: string) => {
