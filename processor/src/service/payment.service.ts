@@ -195,7 +195,7 @@ const filterMethodsByPricingConstraints = (
 
 const isCaptureFromMollie = (
   manualCapture: boolean,
-  ctTransactions: CTTransaction[],
+  ctTransactions: Transaction[],
   molliePayment: MPayment,
 ): DoCapturePaymentFromMollie => {
   const hasSuccessAuthorizedTransaction = ctTransactions.some((transaction) => {
@@ -232,8 +232,13 @@ const isCaptureFromMollie = (
       transaction.interactionId === molliePayment.id,
   );
 
+  const hasSurchargeCost =
+    pendingChargeTransaction?.custom?.fields?.[CustomFields.surchargeAndCapture.fields.surchargeCode.name] !==
+    undefined;
+
   return {
     answer,
+    hasSurchargeCost,
     id: pendingChargeTransaction?.id,
   };
 };
@@ -333,13 +338,7 @@ export const handlePaymentWebhook = async (paymentId: string): Promise<boolean> 
     return false;
   }
 
-  logger.debug('SCTM - handlePaymentWebhook - debugging', {
-    mollieStatus: molliePayment.status,
-    ctPaymentId: ctPayment.id,
-    ctPaymentTransactions: JSON.stringify(ctPayment.transactions),
-  });
-
-  const action = getPaymentStatusUpdateAction(ctPayment.transactions as CTTransaction[], molliePayment);
+  const action = getPaymentStatusUpdateAction(ctPayment.transactions as Transaction[], molliePayment);
 
   // If refunds are present, update their status
   const refunds = molliePayment._embedded?.refunds;
@@ -366,7 +365,7 @@ export const handlePaymentWebhook = async (paymentId: string): Promise<boolean> 
 };
 
 export const getPaymentStatusUpdateAction = (
-  ctTransactions: CTTransaction[],
+  ctTransactions: Transaction[],
   molliePayment: MPayment,
 ): UpdateAction[] => {
   const updateActions: UpdateAction[] = [];
@@ -444,23 +443,34 @@ export const getPaymentStatusUpdateAction = (
     logger.debug(
       `SCTM - getPaymentStatusUpdateAction - Capture payment triggered from Mollie paymentID: ${molliePaymentId}`,
     );
-    updateActions.push(
-      setTransactionCustomField(
-        CustomFields.surchargeAndCapture.fields.shouldCapture.name,
-        true,
-        doCaptureInMollie.id as string,
-      ),
-      setTransactionCustomField(
-        CustomFields.surchargeAndCapture.fields.descriptionCapture.name,
-        'Payment is captured from Mollie.',
-        doCaptureInMollie.id as string,
-      ),
-      setTransactionCustomField(
-        CustomFields.surchargeAndCapture.fields.captureErrors.name,
-        '',
-        doCaptureInMollie.id as string,
-      ),
-    );
+
+    if (doCaptureInMollie.hasSurchargeCost) {
+      updateActions.push(
+        setTransactionCustomField(
+          CustomFields.surchargeAndCapture.fields.shouldCapture.name,
+          true,
+          doCaptureInMollie.id as string,
+        ),
+        setTransactionCustomField(
+          CustomFields.surchargeAndCapture.fields.descriptionCapture.name,
+          'Payment is captured from Mollie.',
+          doCaptureInMollie.id as string,
+        ),
+        setTransactionCustomField(
+          CustomFields.surchargeAndCapture.fields.captureErrors.name,
+          '',
+          doCaptureInMollie.id as string,
+        ),
+      );
+    } else {
+      updateActions.push(
+        setTransactionCustomType(doCaptureInMollie.id as string, CustomFields.surchargeAndCapture.typeKey, {
+          [CustomFields.surchargeAndCapture.fields.shouldCapture.name]: true,
+          [CustomFields.surchargeAndCapture.fields.descriptionCapture.name]: 'Payment is captured from Mollie.',
+          [CustomFields.surchargeAndCapture.fields.captureErrors.name]: '',
+        }),
+      );
+    }
   }
 
   return updateActions;
