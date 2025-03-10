@@ -1,5 +1,5 @@
 import {
-  List,
+  Capture,
   Method,
   MethodsListParams,
   MollieApiError,
@@ -11,10 +11,11 @@ import { initMollieClient, initMollieClientForApplePaySession } from '../client/
 import CustomError from '../errors/custom.error';
 import { logger } from '../utils/logger.utils';
 import { ApplePaySessionRequest, CustomPayment } from '../types/mollie.types';
-import ApplePaySession from '@mollie/api-client/dist/types/src/data/applePaySession/ApplePaySession';
 import { getApiKey } from '../utils/config.utils';
 import { MOLLIE_VERSION_STRINGS } from '../utils/constant.utils';
 import fetch from 'node-fetch';
+import ApplePaySession from '@mollie/api-client/dist/types/data/applePaySession/ApplePaySession';
+import { CreateParameters } from '@mollie/api-client/dist/types/binders/payments/captures/parameters';
 
 const HEADER = {
   'Content-Type': 'application/json',
@@ -62,9 +63,9 @@ export const getPaymentById = async (paymentId: string): Promise<Payment> => {
  * Retrieves a list of payment methods using the provided options.
  *
  * @param {MethodsListParams} options - The parameters for listing payment methods.
- * @return {Promise<List<Method>>} A promise that resolves to the list of payment methods.
+ * @return {Promise<Method[]>} A promise that resolves to the list of payment methods.
  */
-export const listPaymentMethods = async (options: MethodsListParams): Promise<List<Method>> => {
+export const listPaymentMethods = async (options: MethodsListParams): Promise<Method[]> => {
   try {
     return await initMollieClient().methods.list(options);
   } catch (error: unknown) {
@@ -149,7 +150,7 @@ export const createPaymentWithCustomMethod = async (paymentParams: PaymentCreate
   }
 };
 
-export const getAllPaymentMethods = async (options: MethodsListParams): Promise<List<Method>> => {
+export const getAllPaymentMethods = async (options: MethodsListParams): Promise<Method[]> => {
   let errorMessage;
 
   try {
@@ -190,5 +191,23 @@ export const getApplePaySession = async (options: ApplePaySessionRequest): Promi
       error,
     });
     throw new CustomError(400, errorMessage);
+  }
+};
+
+export const createCapturePayment = async (options: CreateParameters): Promise<Capture | CustomError> => {
+  try {
+    return await initMollieClient().paymentCaptures.create(options);
+  } catch (error: unknown) {
+    let errorMessage;
+    if (error instanceof MollieApiError) {
+      errorMessage = `SCTM - createCapturePayment - error: ${error.message}, field: ${error.field}`;
+    } else {
+      errorMessage = `SCTM - createCapturePayment - Failed to create capture payment with unknown errors`;
+    }
+
+    logger.error(errorMessage, {
+      error,
+    });
+    return new CustomError(400, errorMessage);
   }
 };

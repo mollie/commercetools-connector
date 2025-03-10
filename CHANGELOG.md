@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## v1.2.3
+
+Added
+
+- Capture payment feature
+
+## v1.2.2
+
+Fixed
+
+- Bugs fixing for custom application unit tests
+
+## v1.2.1
+
+Updated
+
+- Move setting of credit card component visibility and bank transfer payment method due date into the custom application
+
 ## v1.2.0
 
 Added
@@ -45,7 +63,7 @@ Added
 
 - New custom field for transaction: `sctm_transaction_refund_for_mollie_payment` which would store the Mollie Payment ID that need to be refunded
 
-Fixes
+Fixed
 
 [Create Refund](./docs/CreateRefund.md)
 - Handling the Refund Creation for the case that the Payment has more than one Success Charge transaction
@@ -251,7 +269,7 @@ Added
 
 ## v1.1.1
 
-Fixes
+Fixed
 
 - Type converting issue in payment method listing endpoint
 
@@ -278,7 +296,7 @@ Added
 
 ## v1.0.2
 
-Fixes
+Fixed
 
 - Fix the issue that the payment method is not correctly set in some cases
 

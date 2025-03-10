@@ -1,4 +1,4 @@
-import { PaymentData } from '@mollie/api-client/dist/types/src/data/payments/data';
+import { PaymentData } from '@mollie/api-client/dist/types/data/payments/data';
 
 export type ParsedMethodsRequestType = {
   locale?: string;
@@ -35,4 +35,5 @@ export enum SupportedPaymentMethods {
   applepay = 'applepay',
   paypal = 'paypal',
   giftcard = 'giftcard',
+  klarna = 'klarna',
 }

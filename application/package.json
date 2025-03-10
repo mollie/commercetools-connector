@@ -60,7 +60,7 @@
     "@commercetools-uikit/localized-text-field": "^19.9.0",
     "@commercetools-uikit/localized-text-input": "^19.9.0",
     "@commercetools-uikit/money-field": "^19.12.1",
-    "@commercetools-uikit/notifications": "^19.9.0",
+    "@commercetools-uikit/notifications": "^19.22.6",
     "@commercetools-uikit/number-field": "^19.11.0",
     "@commercetools-uikit/pagination": "^19.9.0",
     "@commercetools-uikit/primary-button": "^19.12.1",
