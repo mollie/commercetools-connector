@@ -4,11 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## v1.3.0
+
+Added
+
+- Klarna payment method - this payment method required `captureMode` to be `manual` (refer to this file [CreatePaymentWithSpecificParams.md](./docs//CreatePaymentWithSpecificParams.md) to create payment with custom params)
+
 ## v1.2.3
 
 Added
 
 - Capture payment feature
+
+Updated
+
+- Custom type name `sctm_transaction_surcharge_cost` to `sctm_transaction_surcharge_and_capture`
+- Added three more custom fields `sctm_should_capture`, `sctm_capture_description`, `sctm_capture_errors`
 
 ## v1.2.2
 
