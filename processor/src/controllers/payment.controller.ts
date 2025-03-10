@@ -7,6 +7,7 @@ import {
   handleGetApplePaySession,
   handleListPaymentMethodsByPayment,
   handlePaymentCancelRefund,
+  handleCapturePayment,
 } from '../service/payment.service';
 import { PaymentReference, Payment } from '@commercetools/platform-sdk';
 import { ConnectorActions } from '../utils/constant.utils';
@@ -60,6 +61,9 @@ export const paymentController = async (
     case ConnectorActions.GetApplePaySession:
       logger.debug('SCTM - payment processing - paymentController - getApplePaySession');
       return await handleGetApplePaySession(ctPayment);
+    case ConnectorActions.CapturePayment:
+      logger.debug('SCTM - payment processing - paymentController - capturePayment');
+      return await handleCapturePayment(ctPayment);
     default:
       logger.debug('SCTM - payment processing - paymentController - No payment actions matched');
       throw new SkipError('No payment actions matched');

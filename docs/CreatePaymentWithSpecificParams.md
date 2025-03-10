@@ -26,6 +26,7 @@ Refer to [CreatePayment.md#conditions](./CreatePayment.md#conditions)
 | `amountPlanned.currencyCode: "EUR"`                                                                       | `amount.currency: EUR`                       | YES      |
 | `amountPlanned.centAmount: "1000"` and `amountPlanned.fractionDigits: "2"`                                | `amount.value: "10.00"`                      | YES      |
 | `custom.fields.sctm_create_payment_request.redirectUrl: "https://webshop.example.org/order/12345/"`       | `redirectUrl: "https://webshop.example.org/order/12345/"`                      | YES      |
+| `custom.fields.sctm_create_payment_request.captureMode: "manual"`       | `captureMode: "manual"`                      | NO      |
 
 The others params which listed [here](https://docs.mollie.com/reference/create-payment) can be passed through the custom field of the Payment object name **sctm_create_payment_request** with exactly
 the same format like the field ``cardToken`` 

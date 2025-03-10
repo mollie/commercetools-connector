@@ -101,7 +101,7 @@ describe('test MethodDetails.tsx', () => {
 
     (useShowNotification as jest.Mock).mockReturnValue(jest.fn());
 
-    const result = render(
+    render(
       <MemoryRouter>
         <Suspense fallback={<div>Loading...</div>}>
           <IntlProvider

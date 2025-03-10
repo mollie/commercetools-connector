@@ -175,3 +175,10 @@ export type SurchargeCost = {
   percentageAmount: number;
   fixedAmount: number;
 };
+
+export enum CaptureModes {
+  Manual = 'manual',
+  Automatic = 'automatic',
+}
+
+export type DoCapturePaymentFromMollie = { answer: boolean } & Pick<CTTransaction, 'id'>;

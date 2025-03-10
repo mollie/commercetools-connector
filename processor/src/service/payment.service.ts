@@ -1,7 +1,6 @@
 import { ControllerResponseType } from '../types/controller.types';
 import { CancelStatusText, ConnectorActions, CustomFields, PAY_LATER_ENUMS } from '../utils/constant.utils';
-import { List, Method, Payment as MPayment, PaymentMethod, PaymentStatus, Refund } from '@mollie/api-client';
-import { logger } from '../utils/logger.utils';
+import { Capture, Method, Payment as MPayment, PaymentMethod, PaymentStatus, Refund } from '@mollie/api-client';
 import {
   createCartUpdateActions,
   createMollieCreatePaymentParams,
@@ -18,6 +17,7 @@ import {
 import CustomError from '../errors/custom.error';
 import {
   cancelPayment,
+  createCapturePayment,
   createMolliePayment,
   createPaymentWithCustomMethod,
   getApplePaySession,
@@ -26,6 +26,7 @@ import {
 } from '../mollie/payment.mollie';
 import {
   AddTransaction,
+  CaptureModes,
   ChangeTransactionState,
   CTTransaction,
   CTTransactionState,
@@ -35,6 +36,7 @@ import {
   mollieRefundToCTStatusMap,
   PricingConstraintItem,
   UpdateActionKey,
+  DoCapturePaymentFromMollie,
 } from '../types/commercetools.types';
 import {
   makeCTMoney,
@@ -54,13 +56,10 @@ import {
   changeTransactionState,
   changeTransactionTimestamp,
   setCustomFields,
+  setTransactionCustomField,
   setTransactionCustomType,
 } from '../commercetools/action.commercetools';
 import { readConfiguration } from '../utils/config.utils';
-import {
-  CancelParameters,
-  CreateParameters,
-} from '@mollie/api-client/dist/types/src/binders/payments/refunds/parameters';
 import { getPaymentExtension } from '../commercetools/extensions.commercetools';
 import { HttpDestination } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/extension';
 import { cancelPaymentRefund, createPaymentRefund, getPaymentRefund } from '../mollie/refund.mollie';
@@ -72,10 +71,13 @@ import {
   roundSurchargeAmountToCent,
   sortTransactionsByLatestCreationTime,
 } from '../utils/app.utils';
-import ApplePaySession from '@mollie/api-client/dist/types/src/data/applePaySession/ApplePaySession';
 import { getMethodConfigObjects, getSingleMethodConfigObject } from '../commercetools/customObjects.commercetools';
 import { getCartFromPayment, updateCart } from '../commercetools/cart.commercetools';
 import { removeCartMollieCustomLineItem } from './cart.service';
+import { CancelParameters, CreateParameters } from '@mollie/api-client/dist/types/binders/payments/refunds/parameters';
+import ApplePaySession from '@mollie/api-client/dist/types/data/applePaySession/ApplePaySession';
+import { CreateParameters as CreateCaptureParameters } from '@mollie/api-client/dist/types/binders/payments/captures/parameters';
+import { logger } from '../utils/logger.utils';
 
 /**
  * Validates and sorts the payment methods.
@@ -191,6 +193,51 @@ const filterMethodsByPricingConstraints = (
   });
 };
 
+const isCaptureFromMollie = (
+  manualCapture: boolean,
+  ctTransactions: CTTransaction[],
+  molliePayment: MPayment,
+): DoCapturePaymentFromMollie => {
+  const hasSuccessAuthorizedTransaction = ctTransactions.some((transaction) => {
+    return (
+      transaction.type === CTTransactionType.Authorization &&
+      transaction.state === CTTransactionState.Success &&
+      transaction.interactionId === molliePayment.id
+    );
+  });
+  const hasPendingChargeTransaction = ctTransactions.some((transaction) => {
+    return (
+      transaction.type === CTTransactionType.Charge &&
+      transaction.state === CTTransactionState.Pending &&
+      transaction.interactionId === molliePayment.id
+    );
+  });
+
+  const hasFailureCaptureTransaction = ctTransactions.some((transaction) => {
+    return (
+      transaction.type === CTTransactionType.Charge &&
+      transaction.state === CTTransactionState.Failure &&
+      transaction.interactionId === molliePayment.id &&
+      transaction.custom?.fields
+    );
+  });
+
+  const answer =
+    manualCapture && hasSuccessAuthorizedTransaction && (hasPendingChargeTransaction || hasFailureCaptureTransaction);
+
+  const pendingChargeTransaction = ctTransactions.find(
+    (transaction) =>
+      transaction.type === CTTransactionType.Charge &&
+      (transaction.state === CTTransactionState.Pending || transaction.state === CTTransactionState.Failure) &&
+      transaction.interactionId === molliePayment.id,
+  );
+
+  return {
+    answer,
+    id: pendingChargeTransaction?.id,
+  };
+};
+
 /**
  * Handles listing payment methods by payment.
  *
@@ -201,7 +248,7 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
   logger.debug(`SCTM - listPaymentMethodsByPayment - ctPaymentId:${JSON.stringify(ctPayment?.id)}`);
   try {
     const mollieOptions = await mapCommercetoolsPaymentCustomFieldsToMollieListParams(ctPayment);
-    const methods: List<Method> = await listPaymentMethods(mollieOptions);
+    const methods: Method[] = await listPaymentMethods(mollieOptions);
     const configObjects: CustomObject[] = await getMethodConfigObjects();
 
     const billingCountry = getBillingCountry(ctPayment);
@@ -316,12 +363,18 @@ export const getPaymentStatusUpdateAction = (
   ctTransactions: CTTransaction[],
   molliePayment: MPayment,
 ): UpdateAction[] => {
+  const updateActions: UpdateAction[] = [];
   const { id: molliePaymentId, status: molliePaymentStatus, method: paymentMethod } = molliePayment;
   // Determine if paynow or paylater method
   const manualCapture =
     PAY_LATER_ENUMS.includes(paymentMethod as PaymentMethod) ||
     ('captureMode' in molliePayment && molliePayment.captureMode === 'manual');
   const matchingTransaction = ctTransactions.find((transaction) => transaction.interactionId === molliePaymentId);
+  const doCaptureInMollie: DoCapturePaymentFromMollie = isCaptureFromMollie(
+    manualCapture,
+    ctTransactions,
+    molliePayment,
+  );
 
   // Handle for cancel payment case
   if (molliePayment.status === PaymentStatus.canceled) {
@@ -341,7 +394,7 @@ export const getPaymentStatusUpdateAction = (
     );
   }
 
-  if (manualCapture) {
+  if (manualCapture && molliePayment.status !== PaymentStatus.paid) {
     return [
       {
         action: UpdateActionKey.AddTransaction,
@@ -373,15 +426,38 @@ export const getPaymentStatusUpdateAction = (
   // Corresponding transaction, update it
   const shouldUpdate = shouldPaymentStatusUpdate(molliePaymentStatus, matchingTransaction.state as CTTransactionState);
   if (shouldUpdate) {
-    return [
+    updateActions.push(
       changeTransactionState(
         matchingTransaction.id as string,
         molliePaymentToCTStatusMap[molliePaymentStatus],
       ) as ChangeTransactionState,
-    ];
+    );
   }
 
-  return [];
+  if (doCaptureInMollie.answer) {
+    logger.debug(
+      `SCTM - getPaymentStatusUpdateAction - Capture payment triggered from Mollie paymentID: ${molliePaymentId}`,
+    );
+    updateActions.push(
+      setTransactionCustomField(
+        CustomFields.surchargeAndCapture.fields.shouldCapture.name,
+        true,
+        doCaptureInMollie.id as string,
+      ),
+      setTransactionCustomField(
+        CustomFields.surchargeAndCapture.fields.descriptionCapture.name,
+        'Payment is captured from Mollie.',
+        doCaptureInMollie.id as string,
+      ),
+      setTransactionCustomField(
+        CustomFields.surchargeAndCapture.fields.captureErrors.name,
+        '',
+        doCaptureInMollie.id as string,
+      ),
+    );
+  }
+
+  return updateActions;
 };
 
 /**
@@ -512,7 +588,7 @@ export const getCreatePaymentUpdateAction = async (
     if (surchargeAmountInCent > 0) {
       // Add surcharge amount to the custom field of the transaction
       actions.push(
-        setTransactionCustomType(originalTransaction.id, CustomFields.transactionSurchargeCost, {
+        setTransactionCustomType(originalTransaction.id, CustomFields.surchargeAndCapture.typeKey, {
           surchargeAmountInCent,
         }),
       );
@@ -833,6 +909,90 @@ export const handleGetApplePaySession = async (ctPayment: Payment): Promise<Cont
     setCustomFields(CustomFields.applePay.session.response, JSON.stringify(session)),
     setCustomFields(CustomFields.applePay.session.request, ''),
   ];
+
+  return {
+    statusCode: 200,
+    actions: ctActions,
+  };
+};
+
+export const handleCapturePayment = async (ctPayment: Payment): Promise<ControllerResponseType> => {
+  const ctActions: UpdateAction[] = [];
+
+  const pendingChargeTransaction = ctPayment.transactions.find(
+    (transaction) =>
+      transaction.type === CTTransactionType.Charge &&
+      (transaction.state === CTTransactionState.Pending || transaction.state === CTTransactionState.Failure) &&
+      transaction.custom?.fields?.[CustomFields.surchargeAndCapture.fields.shouldCapture.name],
+  );
+
+  if (!pendingChargeTransaction) {
+    logger.error(
+      `SCTM - handleCapturePayment - Pending charge transaction is not found, CommerceTools Payment ID: ${ctPayment.id}`,
+    );
+
+    throw new CustomError(400, 'SCTM - handleCapturePayment - Pending charge transaction is not found.');
+  }
+
+  const molliePayment: MPayment = await getPaymentById(pendingChargeTransaction.interactionId as string);
+
+  if (molliePayment?.status === PaymentStatus.paid) {
+    logger.error(`SCTM - handleCapturePayment - Payment is already paid, Mollie Payment ID: ${molliePayment.id}`);
+
+    return {
+      statusCode: 200,
+      actions: [changeTransactionState(pendingChargeTransaction.id, CTTransactionState.Success)],
+    };
+  }
+
+  if (
+    molliePayment?.captureMode?.toString() !== CaptureModes.Manual ||
+    molliePayment?.status !== PaymentStatus.authorized
+  ) {
+    logger.error(
+      `SCTM - handleCapturePayment - Payment is not authorized or capture mode is not manual, Mollie Payment ID: ${molliePayment.id}`,
+    );
+
+    throw new CustomError(
+      400,
+      `SCTM - handleCapturePayment - Payment is not authorized or capture mode is not manual, Mollie Payment ID: ${molliePayment.id}`,
+    );
+  }
+
+  const createParams: CreateCaptureParameters = {
+    paymentId: molliePayment.id,
+    amount: molliePayment.amount,
+    description:
+      pendingChargeTransaction?.custom?.fields?.[CustomFields.surchargeAndCapture.fields.descriptionCapture.name] || '',
+  };
+
+  const captureResponse: Capture | CustomError = await createCapturePayment(createParams);
+
+  // if errors, change transaction type to Failure & save error message to custom field sctm_capture_errors
+  if (captureResponse instanceof CustomError) {
+    ctActions.push(
+      setTransactionCustomField(
+        CustomFields.surchargeAndCapture.fields.captureErrors.name,
+        JSON.stringify({
+          errorMessage: captureResponse.message,
+          submitData: createParams,
+        }),
+        pendingChargeTransaction.id,
+      ),
+    );
+
+    if (pendingChargeTransaction.state !== CTTransactionState.Failure) {
+      ctActions.push(changeTransactionState(pendingChargeTransaction.id, CTTransactionState.Failure));
+    }
+
+    return {
+      statusCode: 400,
+      actions: ctActions,
+    };
+  }
+
+  logger.debug(`SCTM - handleCapturePayment - Capture is successful, Mollie Payment ID: ${molliePayment.id}`);
+  ctActions.push(changeTransactionState(pendingChargeTransaction.id, CTTransactionState.Success));
 
   return {
     statusCode: 200,

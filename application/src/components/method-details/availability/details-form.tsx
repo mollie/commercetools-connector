@@ -4,7 +4,7 @@ import messages from '../messages';
 import { useIntl } from 'react-intl';
 import MoneyField from '@commercetools-uikit/money-field';
 import { type TCurrencyCode } from '@commercetools-uikit/money-input';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, ReactElement } from 'react';
 import Spacings from '@commercetools-uikit/spacings';
 import TextField from '@commercetools-uikit/text-field';
 import { useFormik, type FormikHelpers } from 'formik';
@@ -12,15 +12,14 @@ import {
   TAmountPerCountry,
   TPricingConstraintIdentifier,
   TAmountPerCurrency,
+  TMethodObjectValueFormValues,
 } from '../../../types';
-import { ReactElement } from 'react';
 import validate from './validate';
 import FieldLabel from '@commercetools-uikit/field-label';
-import { FormattedMessage } from 'react-intl';
 import NumberField from '@commercetools-uikit/number-field';
-import SpacingsInline from '@commercetools-uikit/spacings-inline';
 import { PlusThinIcon } from '@commercetools-uikit/icons';
 import { convertCurrencyStringToNumber } from '../../../helpers';
+import { ContentNotification } from '@commercetools-uikit/notifications';
 
 type Formik = ReturnType<typeof useFormik>;
 type FormProps = {
@@ -40,9 +39,9 @@ type TAvailabilityDetailsFormProps = {
   ) => void | Promise<unknown>;
   initialValues?: TAmountPerCountry;
   identifier?: TPricingConstraintIdentifier;
-  // isReadOnly: boolean;
-  // dataLocale: string;
   children: (formProps: FormProps) => JSX.Element;
+  isSurchargeRestricted: boolean;
+  currentMethod: TMethodObjectValueFormValues;
 };
 
 const AvailabilityDetailsForm = (props: TAvailabilityDetailsFormProps) => {
@@ -53,6 +52,17 @@ const AvailabilityDetailsForm = (props: TAvailabilityDetailsFormProps) => {
     validate,
     enableReinitialize: true,
   });
+
+  let surchargeRestrictionMessage = '';
+  switch (props.currentMethod.id) {
+    case 'klarna':
+      surchargeRestrictionMessage = intl.formatMessage(
+        messages.fieldSurchargeRestrictionNotificationKlarna
+      );
+      break;
+    default:
+      surchargeRestrictionMessage = '';
+  }
 
   const { projectCountries, projectCurrencies } = useApplicationContext(
     (context) => ({
@@ -115,7 +125,7 @@ const AvailabilityDetailsForm = (props: TAvailabilityDetailsFormProps) => {
         })) ?? []
       );
     }
-  }, [props.identifier]);
+  }, [projectCountries, projectCurrencies, props.identifier]);
 
   const [countryHint, setCountryHint] = useState<boolean>(false);
   const [currencyHint, setCurrencyHint] = useState<boolean>(false);
@@ -307,96 +317,102 @@ const AvailabilityDetailsForm = (props: TAvailabilityDetailsFormProps) => {
         }
       />
 
-      <Spacings.Inline
-        scale="xl"
-        alignItems="center"
-        justifyContent="space-around"
-      >
-        <span
-          style={{
-            fontSize: '20px',
-            marginRight: '-20px',
-          }}
+      {props.isSurchargeRestricted ? (
+        <ContentNotification type="warning" data-testid="surcharge-restriction">
+          {surchargeRestrictionMessage}
+        </ContentNotification>
+      ) : (
+        <Spacings.Inline
+          scale="xl"
+          alignItems="center"
+          justifyContent="space-around"
         >
-          %
-        </span>
-        <NumberField
-          data-testid="money-field-surchargeCost--percentageAmount"
-          name="surchargeCost.percentageAmount"
-          title={''}
-          value={
-            formik.values[selectedCountry][selectedCurrency].surchargeCost
-              .percentageAmount
-          }
-          horizontalConstraint={12}
-          onChange={(event) => {
-            const formikOnChangeEvent = getFormikOnChangeEvent(event);
-            formik.handleChange(formikOnChangeEvent);
-          }}
-          onBlur={(event) => {
-            const percentageAmountOnBlurEvent = {
-              target: {
-                name: `${selectedCountry}.${selectedCurrency}.surchargeCost.percentageAmount`,
-                value:
-                  Number(event.target.value) >= 0
-                    ? Number(event.target.value)
-                    : 0,
-              },
-            };
-
-            formik.handleChange(percentageAmountOnBlurEvent);
-          }}
-        />
-
-        <PlusThinIcon />
-
-        <MoneyField
-          data-testid="money-field-surchargeCost--fixedAmount"
-          name="surchargeCost.fixedAmount"
-          title={''}
-          horizontalConstraint={14}
-          currencies={
-            currencyOptions.length === 1
-              ? [currencyOptions[0].value]
-              : projectCurrencies
-          }
-          value={{
-            amount:
+          <span
+            style={{
+              fontSize: '20px',
+              marginRight: '-20px',
+            }}
+          >
+            %
+          </span>
+          <NumberField
+            data-testid="money-field-surchargeCost--percentageAmount"
+            name="surchargeCost.percentageAmount"
+            title={''}
+            value={
               formik.values[selectedCountry][selectedCurrency].surchargeCost
-                .fixedAmount,
-            currencyCode: selectedCurrency,
-          }}
-          onChange={(event) => {
-            const formikOnChangeEvent = getFormikOnChangeEvent(event);
-            formik.handleChange(formikOnChangeEvent);
-
-            if (
-              event.target.name === 'surchargeCost.fixedAmount.currencyCode'
-            ) {
-              setSelectedCurrency(event.target.value as TCurrencyCode);
+                .percentageAmount
             }
-          }}
-          onBlur={(event) => {
-            if (event.target.name === 'surchargeCost.fixedAmount.amount') {
-              const convertedValue = convertCurrencyStringToNumber(
-                formik.values[selectedCountry][selectedCurrency].surchargeCost
-                  .fixedAmount
-              );
-              const validatedValue =
-                convertedValue >= 0 ? convertedValue.toFixed(2) : '0';
-
-              const fixedAmountOnBlurEvent = {
+            horizontalConstraint={12}
+            onChange={(event) => {
+              const formikOnChangeEvent = getFormikOnChangeEvent(event);
+              formik.handleChange(formikOnChangeEvent);
+            }}
+            onBlur={(event) => {
+              const percentageAmountOnBlurEvent = {
                 target: {
-                  name: `${selectedCountry}.${selectedCurrency}.surchargeCost.fixedAmount`,
-                  value: validatedValue,
+                  name: `${selectedCountry}.${selectedCurrency}.surchargeCost.percentageAmount`,
+                  value:
+                    Number(event.target.value) >= 0
+                      ? Number(event.target.value)
+                      : 0,
                 },
               };
 
-              formik.handleChange(fixedAmountOnBlurEvent);
+              formik.handleChange(percentageAmountOnBlurEvent);
+            }}
+          />
+
+          <PlusThinIcon />
+
+          <MoneyField
+            data-testid="money-field-surchargeCost--fixedAmount"
+            name="surchargeCost.fixedAmount"
+            title={''}
+            horizontalConstraint={14}
+            currencies={
+              currencyOptions.length === 1
+                ? [currencyOptions[0].value]
+                : projectCurrencies
             }
-          }}
-        />
-      </Spacings.Inline>
+            value={{
+              amount:
+                formik.values[selectedCountry][selectedCurrency].surchargeCost
+                  .fixedAmount,
+              currencyCode: selectedCurrency,
+            }}
+            onChange={(event) => {
+              const formikOnChangeEvent = getFormikOnChangeEvent(event);
+              formik.handleChange(formikOnChangeEvent);
+
+              if (
+                event.target.name === 'surchargeCost.fixedAmount.currencyCode'
+              ) {
+                setSelectedCurrency(event.target.value as TCurrencyCode);
+              }
+            }}
+            onBlur={(event) => {
+              if (event.target.name === 'surchargeCost.fixedAmount.amount') {
+                const convertedValue = convertCurrencyStringToNumber(
+                  formik.values[selectedCountry][selectedCurrency].surchargeCost
+                    .fixedAmount
+                );
+                const validatedValue =
+                  convertedValue >= 0 ? convertedValue.toFixed(2) : '0';
+
+                const fixedAmountOnBlurEvent = {
+                  target: {
+                    name: `${selectedCountry}.${selectedCurrency}.surchargeCost.fixedAmount`,
+                    value: validatedValue,
+                  },
+                };
+
+                formik.handleChange(fixedAmountOnBlurEvent);
+              }
+            }}
+          />
+        </Spacings.Inline>
+      )}
     </Spacings.Stack>
   );
 

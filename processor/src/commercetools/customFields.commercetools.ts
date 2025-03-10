@@ -304,10 +304,10 @@ export async function createTransactionSurchargeCustomType(): Promise<void> {
   const apiRoot = createApiRoot();
   const customFields: FieldDefinition[] = [
     {
-      name: 'surchargeAmountInCent',
+      name: CustomFields.surchargeAndCapture.fields.surchargeCode.name,
       label: {
-        en: 'Total surcharge amount in cent',
-        de: 'Gesamtbetrag des Zuschlags in Cent',
+        en: CustomFields.surchargeAndCapture.fields.surchargeCode.label.en,
+        de: CustomFields.surchargeAndCapture.fields.surchargeCode.label.en,
       },
       required: false,
       type: {
@@ -315,7 +315,71 @@ export async function createTransactionSurchargeCustomType(): Promise<void> {
       },
       inputHint: 'MultiLine',
     },
+    {
+      name: CustomFields.surchargeAndCapture.fields.shouldCapture.name,
+      label: {
+        en: CustomFields.surchargeAndCapture.fields.shouldCapture.label.en,
+        de: CustomFields.surchargeAndCapture.fields.shouldCapture.label.de,
+      },
+      required: false,
+      type: {
+        name: 'Boolean',
+      },
+    },
+    {
+      name: CustomFields.surchargeAndCapture.fields.descriptionCapture.name,
+      label: {
+        en: CustomFields.surchargeAndCapture.fields.descriptionCapture.label.en,
+        de: CustomFields.surchargeAndCapture.fields.descriptionCapture.label.de,
+      },
+      required: false,
+      type: {
+        name: 'String',
+      },
+      inputHint: 'MultiLine',
+    },
+    {
+      name: CustomFields.surchargeAndCapture.fields.captureErrors.name,
+      label: {
+        en: CustomFields.surchargeAndCapture.fields.captureErrors.label.en,
+        de: CustomFields.surchargeAndCapture.fields.captureErrors.label.de,
+      },
+      required: false,
+      type: {
+        name: 'String',
+      },
+      inputHint: 'MultiLine',
+    },
   ];
+
+  const {
+    body: { results: oldTypes },
+  } = await apiRoot
+    .types()
+    .get({
+      queryArgs: {
+        where: `key = "sctm_transaction_surcharge_cost"`,
+      },
+    })
+    .execute();
+
+  if (oldTypes.length > 0) {
+    await apiRoot
+      .types()
+      .withKey({ key: 'sctm_transaction_surcharge_cost' })
+      .post({
+        body: {
+          version: oldTypes[0].version,
+          actions: [
+            {
+              action: 'changeKey',
+              key: CustomFields.surchargeAndCapture.typeKey,
+            },
+          ],
+        },
+      })
+      .execute();
+  }
 
   const {
     body: { results: types },
@@ -323,7 +387,7 @@ export async function createTransactionSurchargeCustomType(): Promise<void> {
     .types()
     .get({
       queryArgs: {
-        where: `key = "${CustomFields.transactionSurchargeCost}"`,
+        where: `key = "${CustomFields.surchargeAndCapture.typeKey}"`,
       },
     })
     .execute();
@@ -333,18 +397,39 @@ export async function createTransactionSurchargeCustomType(): Promise<void> {
       .types()
       .post({
         body: {
-          key: CustomFields.transactionSurchargeCost,
+          key: CustomFields.surchargeAndCapture.typeKey,
           name: {
-            en: 'SCTM - Transaction surcharge amount',
-            de: 'SCTM - Betrag des Transaktionszuschlags',
+            en: '(SCTM) Transaction surcharge & capture control',
+            de: '(SCTM) Transaktionszuschlag & Erfassungskontrolle',
           },
-          resourceTypeIds: ['transaction'],
+          resourceTypeIds: [CustomFields.surchargeAndCapture.resourceTypeId],
           fieldDefinitions: customFields,
         },
       })
       .execute();
 
     return;
+  } else {
+    if (types[0].name.en !== CustomFields.surchargeAndCapture.name.en) {
+      await apiRoot
+        .types()
+        .withKey({ key: CustomFields.surchargeAndCapture.typeKey })
+        .post({
+          body: {
+            version: types[0].version,
+            actions: [
+              {
+                action: 'changeName',
+                name: {
+                  en: CustomFields.surchargeAndCapture.name.en,
+                  de: CustomFields.surchargeAndCapture.name.de,
+                },
+              },
+            ],
+          },
+        })
+        .execute();
+    }
   }
 
   const type = types[0];
@@ -352,22 +437,29 @@ export async function createTransactionSurchargeCustomType(): Promise<void> {
 
   if (definitions.length > 0) {
     const actions: TypeUpdateAction[] = [];
+    const fieldKeys = customFields.map((field) => field.name);
+
     definitions.forEach((definition) => {
-      actions.push({
-        action: 'removeFieldDefinition',
-        fieldName: definition.name,
-      });
+      if (!fieldKeys.includes(definition.name)) {
+        actions.push({
+          action: 'removeFieldDefinition',
+          fieldName: definition.name,
+        });
+      }
     });
+
     customFields.forEach((field) => {
-      actions.push({
-        action: 'addFieldDefinition',
-        fieldDefinition: field,
-      });
+      if (!definitions.find((definition) => definition.name === field.name)) {
+        actions.push({
+          action: 'addFieldDefinition',
+          fieldDefinition: field,
+        });
+      }
     });
 
     await apiRoot
       .types()
-      .withKey({ key: CustomFields.transactionSurchargeCost })
+      .withKey({ key: CustomFields.surchargeAndCapture.typeKey })
       .post({
         body: {
           version: type.version,

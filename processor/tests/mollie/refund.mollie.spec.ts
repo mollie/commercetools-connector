@@ -1,13 +1,13 @@
 import { afterEach, describe, expect, it, jest } from '@jest/globals';
-import {
-  CancelParameters,
-  CreateParameters,
-  GetParameters,
-} from '@mollie/api-client/dist/types/src/binders/payments/refunds/parameters';
 import { cancelPaymentRefund, createPaymentRefund, getPaymentRefund } from '../../src/mollie/refund.mollie';
 import { MollieApiError } from '@mollie/api-client';
 import CustomError from '../../src/errors/custom.error';
 import { logger } from '../../src/utils/logger.utils';
+import {
+  CancelParameters,
+  CreateParameters,
+  GetParameters,
+} from '@mollie/api-client/dist/types/binders/payments/refunds/parameters';
 
 const mockPaymentRefundGet = jest.fn();
 const mockPaymentRefundCreate = jest.fn();
