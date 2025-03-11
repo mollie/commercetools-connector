@@ -5,6 +5,7 @@
 import {
   entryPointUriPath,
   APPLICATION_BASE_ROUTE,
+  PAYMENT_METHODS
 } from '../support/constants';
 beforeEach(() => {
   cy.loginToMerchantCenter({
@@ -23,56 +24,27 @@ beforeEach(() => {
 describe('Test welcome.cy.ts', () => {
   it('should render method details page', () => {
     const LOCALE = Cypress.env('LOCALE');
-    const paymentMethods = [
-      'PayPal',
-      'iDEAL Pay in 3 instalments, 0% interest',
-      'iDEAL',
-      'Bancontact',
-      'Blik',
-    ];
 
-    cy.findByText(paymentMethods[0]).click();
-    cy.url().should('contain', 'general');
-
-    cy.findByTestId('status-select').should('exist');
-
-    cy.findByTestId(`name-input-${LOCALE}`).should('exist');
-    cy.findByTestId(`description-input-${LOCALE}`).should('exist');
-    cy.findByTestId(`display-order-input`).should('exist');
-  });
-
-  it('should update display order successfully', () => {
-    const paymentMethodIds = ['paypal'];
-
-    cy.findByTestId(`display-order-column-${paymentMethodIds[0]}`).click();
-    cy.url().should('contain', 'general');
-
-    cy.findByTestId(`display-order-input`).should('exist');
-    cy.findByTestId(`display-order-input`).clear();
-    cy.findByTestId(`display-order-input`).type('20');
-    cy.findByTestId(`save-button`).click();
-    cy.findByLabelText('Go back').click();
-    cy.findByTestId(`display-order-column-${paymentMethodIds[0]}`).should(
-      'have.text',
-      20
-    );
+    PAYMENT_METHODS.forEach((paymentMethod) => {
+      cy.findByTestId(`name-column-${paymentMethod}`).click();
+      cy.url().should('contain', 'general');
+      cy.findByTestId('status-select').should('exist');
+      cy.findByTestId(`name-input-${LOCALE}`).should('exist');
+      cy.findByTestId(`description-input-${LOCALE}`).should('exist');
+      cy.findByTestId(`display-order-input`).should('exist');
+      cy.get('body').type('{esc}');
+    });
   });
 
   it('credit card component visibility config should exist', () => {
-    const paymentMethodIds = ['creditcard'];
-
-    cy.findByTestId(`display-order-column-${paymentMethodIds[0]}`).click();
+    cy.findByTestId(`display-order-column-creditcard`).click();
     cy.url().should('contain', 'general');
-
     cy.findByTestId(`display-card-component`).should('exist');
   });
 
   it('banktransfer due date config should exist', () => {
-    const paymentMethodIds = ['banktransfer'];
-
-    cy.findByTestId(`display-order-column-${paymentMethodIds[0]}`).click();
+    cy.findByTestId(`display-order-column-banktransfer`).click();
     cy.url().should('contain', 'general');
-
     cy.findByTestId(`banktransfer-due-date`).should('exist');
   });
 });

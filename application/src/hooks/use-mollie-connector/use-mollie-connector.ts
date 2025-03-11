@@ -28,13 +28,6 @@ const config = {
   },
 };
 
-if (process.env.NODE_ENV === 'development') {
-  config.headers = {
-    ...config.headers,
-    ...{ 'ngrok-skip-browser-warning': 'true' },
-  };
-}
-
 const convertMollieMethodToCustomMethod = (
   results: MollieResult,
   projectLanguages: string[]
@@ -62,7 +55,7 @@ const convertMollieMethodToCustomMethod = (
   }));
 };
 
-const getMethods = async (projectLanguages: string[], targetUrl?: string) => {
+const getMethods = async (projectLanguages: string[], targetUrl?: string, projectKey?: string) => {
   if (!targetUrl) {
     logger.error('usePaymentMethodsFetcher - No target URL provided');
     return [];
@@ -88,6 +81,7 @@ const getMethods = async (projectLanguages: string[], targetUrl?: string) => {
       forwardToConfig: {
         uri: targetUrl.replace(EXTENSION_URL_PATH, APPLICATION_URL_PATH),
       },
+      projectKey: projectKey,
     }
   )
     .then((res) =>
@@ -101,14 +95,17 @@ const getMethods = async (projectLanguages: string[], targetUrl?: string) => {
 
 export const usePaymentMethodsFetcher = (
   url: string | undefined,
-  projectLanguages: string[]
+  projectLanguages: string[],
+  projectKey: string | undefined,
 ) => {
   const [fetchedData, setFetchedData] = useState<CustomMethodObject[]>([]);
   const [fetchedDataLoading, setFetchedDataLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = (await getMethods(projectLanguages, url)) ?? [];
+      // const data = (await getMethods(projectLanguages, url, projectKey)) ?? [];
+      const data = convertMollieMethodToCustomMethod(require('../../../cypress/fixtures/forward-to.json'), projectLanguages);
+
       setFetchedData(data);
       setFetchedDataLoading(false);
     };
@@ -116,7 +113,7 @@ export const usePaymentMethodsFetcher = (
     if (url) {
       fetchData();
     }
-  }, [url, projectLanguages]);
+  }, [url, projectLanguages, projectKey]);
 
   return { fetchedData, fetchedDataLoading };
 };

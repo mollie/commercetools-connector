@@ -12,7 +12,8 @@ fi
 
 # Start NGROK in background
 echo "⚡️ Starting ngrok"
-ngrok http 8080 --authtoken ${CONNECTOR_EXTENSION_TOKEN} > /dev/null &
+ngrok authtoken "${CONNECTOR_EXTENSION_TOKEN}" &
+ngrok http 8080 > /dev/null &
 
 # Wait for ngrok to be available
 while ! nc -z localhost 4040; do
