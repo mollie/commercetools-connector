@@ -5,7 +5,7 @@
 import {
   entryPointUriPath,
   APPLICATION_BASE_ROUTE,
-  PAYMENT_METHODS
+  PAYMENT_METHODS,
 } from '../support/constants';
 
 describe('Test welcome.cy.ts', () => {
