@@ -218,9 +218,8 @@ describe('hasValidPaymentMethod', () => {
     expect(hasValidPaymentMethod('test')).toBe(false);
     expect(hasValidPaymentMethod('dummy')).toBe(false);
     expect(hasValidPaymentMethod('eps')).toBe(false);
-    expect(hasValidPaymentMethod('twint')).toBe(false);
-    expect(hasValidPaymentMethod('bancomat')).toBe(false);
-    expect(hasValidPaymentMethod('trustly')).toBe(false);
+    expect(hasValidPaymentMethod('vorkasse')).toBe(false);
+    expect(hasValidPaymentMethod('installment')).toBe(false);
   });
 });
 

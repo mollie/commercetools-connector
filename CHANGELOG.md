@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## v1.4.0
+
+Added
+
+- Support for payment methods `trustly` `bancomatpay` `mbway` `multibanco` `satispay` `twint` `paybybank`
+
 ## v1.3.0
 
 Added
