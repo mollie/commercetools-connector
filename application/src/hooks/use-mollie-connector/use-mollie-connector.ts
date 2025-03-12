@@ -17,11 +17,6 @@ import {
   SupportedPaymentMethods,
 } from '../../types/app';
 
-/**
- * For local development using ngrok forwards the requests to the connector
- * please consider to add 'ngrok-skip-browser-warning': 'true' in your header config below
- * to bypass ERR_NGROK_6024
- */
 const config = {
   headers: {
     'Content-Type': 'application/json',
@@ -55,7 +50,7 @@ const convertMollieMethodToCustomMethod = (
   }));
 };
 
-const getMethods = async (projectLanguages: string[], targetUrl?: string, projectKey?: string) => {
+const getMethods = async (projectLanguages: string[], targetUrl?: string) => {
   if (!targetUrl) {
     logger.error('usePaymentMethodsFetcher - No target URL provided');
     return [];
@@ -81,7 +76,6 @@ const getMethods = async (projectLanguages: string[], targetUrl?: string, projec
       forwardToConfig: {
         uri: targetUrl.replace(EXTENSION_URL_PATH, APPLICATION_URL_PATH),
       },
-      projectKey: projectKey,
     }
   )
     .then((res) =>
@@ -95,17 +89,14 @@ const getMethods = async (projectLanguages: string[], targetUrl?: string, projec
 
 export const usePaymentMethodsFetcher = (
   url: string | undefined,
-  projectLanguages: string[],
-  projectKey: string | undefined,
+  projectLanguages: string[]
 ) => {
   const [fetchedData, setFetchedData] = useState<CustomMethodObject[]>([]);
   const [fetchedDataLoading, setFetchedDataLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      // const data = (await getMethods(projectLanguages, url, projectKey)) ?? [];
-      const data = convertMollieMethodToCustomMethod(require('../../../cypress/fixtures/forward-to.json'), projectLanguages);
-
+      const data = (await getMethods(projectLanguages, url)) ?? [];
       setFetchedData(data);
       setFetchedDataLoading(false);
     };
@@ -113,7 +104,7 @@ export const usePaymentMethodsFetcher = (
     if (url) {
       fetchData();
     }
-  }, [url, projectLanguages, projectKey]);
+  }, [url, projectLanguages]);
 
   return { fetchedData, fetchedDataLoading };
 };

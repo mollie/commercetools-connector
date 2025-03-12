@@ -2,18 +2,16 @@
 PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE[0]}")" || exit ; pwd -P )
 
 # GET AUTH TOKEN FROM ENV.
-CONNECTOR_EXTENSION_TOKEN=$(grep CONNECTOR_EXTENSION_TOKEN ${PARENT_PATH}/../.env | cut -d '=' -f2)
+CONNECTOR_EXTENSION_TOKEN=$(grep '^CONNECTOR_EXTENSION_TOKEN=' ${PARENT_PATH}/../.env | head -n 1 | cut -d '=' -f2 | tr -d '[:space:]')
 if test -z "${CONNECTOR_EXTENSION_TOKEN}"
 then
   echo "❌ ERROR: I haven't been able to recover CONNECTOR_EXTENSION_TOKEN from your local .env variables file."
   exit 1
 fi
 
-
 # Start NGROK in background
 echo "⚡️ Starting ngrok"
-ngrok authtoken "${CONNECTOR_EXTENSION_TOKEN}" &
-ngrok http 8080 > /dev/null &
+ngrok authtoken "${CONNECTOR_EXTENSION_TOKEN}" && ngrok http 8080 > /dev/null
 
 # Wait for ngrok to be available
 while ! nc -z localhost 4040; do
