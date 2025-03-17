@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## v1.3.1
+
+Fixed
+
+- Mollie's line item for shipping information does not include discounts.
+
 ## v1.3.0
 
 Added
