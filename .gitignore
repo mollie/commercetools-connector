@@ -10,3 +10,4 @@ processor/.env
 processor/junit-report.xml
 application/.env
 application/*/.env
+job/.env
