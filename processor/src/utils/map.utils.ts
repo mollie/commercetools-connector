@@ -140,12 +140,26 @@ export const createMollieCreatePaymentParams = (
 
   // Add another line for creating Mollie payment request if shipping cost exists
   if (cart?.shippingInfo?.price) {
+    let shippingPrice = {
+      centAmount: cart.shippingInfo.price.centAmount,
+      fractionDigits: cart.shippingInfo.price.fractionDigits,
+      currencyCode: cart.shippingInfo.price.currencyCode,
+    };
+
+    if (cart.shippingInfo.discountedPrice) {
+      shippingPrice = {
+        centAmount: cart.shippingInfo.discountedPrice.value.centAmount,
+        fractionDigits: cart.shippingInfo.discountedPrice.value.fractionDigits,
+        currencyCode: cart.shippingInfo.discountedPrice.value.currencyCode,
+      };
+    }
+
     mollieLines.push(
       createMollieLineForAdditionalAmount(
         MOLLIE_SHIPPING_LINE_DESCRIPTION,
-        cart.shippingInfo.price.centAmount,
-        cart.shippingInfo.price.fractionDigits,
-        cart.shippingInfo.price.currencyCode,
+        shippingPrice.centAmount,
+        shippingPrice.fractionDigits,
+        shippingPrice.currencyCode,
       ),
     );
   }
