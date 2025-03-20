@@ -22,4 +22,5 @@ export const PAYMENT_METHODS = [
   'satispay',
   'twint',
   'paybybank',
+  'eps',
 ];

@@ -203,7 +203,7 @@
         "id": "paybybank",
         "description": "Pay By Bank",
         "minimumAmount": {
-          "value": "0.00",
+          "value": "0.01",
           "currency": "EUR"
         },
         "maximumAmount": {
