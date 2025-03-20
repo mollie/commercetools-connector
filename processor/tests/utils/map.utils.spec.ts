@@ -1078,6 +1078,121 @@ describe('createMollieCreatePaymentParams', () => {
     });
   });
 
+  it('should able to create a mollie payment params from CommerceTools payment object including a line item with discounted price for shipping amount', async () => {
+    const cart = {
+      id: 'cart-test-id',
+      shippingInfo: {
+        price: {
+          type: 'centPrecision',
+          currencyCode: 'EUR',
+          centAmount: 5000,
+          fractionDigits: 2,
+        },
+        discountedPrice: {
+          value: {
+            type: 'centPrecision',
+            currencyCode: 'EUR',
+            centAmount: 2000,
+            fractionDigits: 2,
+          },
+        },
+      },
+    } as Cart;
+
+    const customFieldObject = {
+      description: 'Test payment',
+      locale: 'en_GB',
+      redirectUrl: 'https://example.com/success',
+      webhookUrl: 'https://example.com/webhook',
+      lines: [
+        {
+          description: 'Item 1',
+          quantity: 1,
+          quantityUnit: 'pcs',
+          unitPrice: { currency: 'EUR', value: '10.00' },
+          totalAmount: { currency: 'EUR', value: '10.00' },
+          sku: 'TEST1',
+          imageUrl: 'https://example.com/image1.jpg',
+          productUrl: 'https://example.com/product1',
+        },
+        {
+          description: 'Item 2',
+          quantity: 1,
+          quantityUnit: 'pcs',
+          unitPrice: { currency: 'EUR', value: '10.00' },
+          totalAmount: { currency: 'EUR', value: '10.00' },
+          sku: 'TEST2',
+          imageUrl: 'https://example.com/image2.jpg',
+          productUrl: 'https://example.com/product2',
+        },
+      ],
+    };
+
+    const mollieLines = Object.assign([], customFieldObject.lines as Array<any>);
+    mollieLines.push({
+      description: MOLLIE_SHIPPING_LINE_DESCRIPTION,
+      quantity: 1,
+      quantityUnit: 'pcs',
+      unitPrice: {
+        currency: 'EUR',
+        value: '20.00',
+      },
+      totalAmount: {
+        currency: 'EUR',
+        value: '20.00',
+      },
+    });
+
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 2000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: PaymentMethod.paypal,
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm_payment',
+        },
+        fields: {
+          sctm_create_payment_request: JSON.stringify(customFieldObject),
+        },
+      },
+    };
+
+    const extensionUrl = 'https://example.com/webhook';
+
+    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(
+      CTPayment,
+      extensionUrl,
+      0,
+      cart,
+    );
+    expect(mollieCreatePaymentParams).toEqual({
+      method: PaymentMethod.paypal,
+      amount: {
+        currency: 'EUR',
+        value: '20.00',
+      },
+      locale: customFieldObject.locale,
+      redirectUrl: customFieldObject.redirectUrl,
+      webhookUrl: extensionUrl,
+      description: customFieldObject.description,
+      lines: mollieLines,
+    });
+  });
+
   it('should able to create a mollie payment params from CommerceTools payment object with method as klarna', async () => {
     const cart = {
       id: 'cart-test-id',

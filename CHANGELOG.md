@@ -10,6 +10,12 @@ Added
 
 - Support for payment methods `trustly` `bancomatpay` `mbway` `multibanco` `satispay` `twint` `paybybank`
 
+## v1.3.1
+
+Fixed
+
+- Mollie's line item for shipping information does not include discounts.
+
 ## v1.3.0
 
 Added
