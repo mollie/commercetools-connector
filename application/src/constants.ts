@@ -12,9 +12,9 @@ export const EXTENSION_KEY = 'sctm-payment-create-update-extension';
 export const EXTENSION_URL_PATH = '/processor';
 export const APPLICATION_URL_PATH = '/application/methods';
 export const USER_AGENT = {
-  name: 'ShopmacherMollieCommercetoolsConnector/1.3.0-build12.03.25.1646',
-  version: '1.3.0-build12.03.25.1646',
+  name: 'ShopmacherMollieCommercetoolsConnector/1.3.1',
+  version: '1.3.1',
   libraryName:
-    'ShopmacherMollieCommercetoolsConnector/1.3.0-build12.03.25.1646',
+    'ShopmacherMollieCommercetoolsConnector/1.3.1',
   contactEmail: 'info@mollie.com',
 };
