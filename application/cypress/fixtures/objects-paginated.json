@@ -703,6 +703,45 @@
         "displayOrder": 0
       },
       "__typename": "CustomObject"
+    },
+    {
+      "id": "f4d82f49-3c90-4ee8-9ab9-e27a4671c275",
+      "container": "sctm-app-methods",
+      "key": "eps",
+      "value": {
+        "id": "eps",
+        "technicalName": "eps",
+        "name": {
+          "en-GB": "eps",
+          "de-DE": "eps",
+          "pl-PL": "eps",
+          "fr-FR": "eps",
+          "de-CH": "eps",
+          "nl-NL": "eps",
+          "de-BE": "eps",
+          "es-ES": "eps",
+          "de-AT": "eps",
+          "pt-PT": "eps",
+          "it-IT": "eps"
+        },
+        "description": {
+          "en-GB": "",
+          "de-DE": "",
+          "pl-PL": "",
+          "fr-FR": "",
+          "de-CH": "",
+          "nl-NL": "",
+          "de-BE": "",
+          "es-ES": "",
+          "de-AT": "",
+          "pt-PT": "",
+          "it-IT": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/eps.svg",
+        "status": "Active",
+        "displayOrder": 0
+      },
+      "__typename": "CustomObject"
     }
   ]
 }

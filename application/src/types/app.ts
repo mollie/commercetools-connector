@@ -73,6 +73,7 @@ export enum SupportedPaymentMethods {
   satispay = 'satispay',
   twint = 'twint',
   paybybank = 'paybybank',
+  eps = 'eps',
 }
 
 export const PaymentsWithResitrctedSurcharge = ['klarna'];

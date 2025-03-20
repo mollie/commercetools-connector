@@ -43,4 +43,5 @@ export enum SupportedPaymentMethods {
   satispay = 'satispay',
   twint = 'twint',
   paybybank = 'paybybank',
+  eps = 'eps',
 }
