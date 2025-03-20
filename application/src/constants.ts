@@ -14,7 +14,6 @@ export const APPLICATION_URL_PATH = '/application/methods';
 export const USER_AGENT = {
   name: 'ShopmacherMollieCommercetoolsConnector/1.3.1',
   version: '1.3.1',
-  libraryName:
-    'ShopmacherMollieCommercetoolsConnector/1.3.1',
+  libraryName: 'ShopmacherMollieCommercetoolsConnector/1.3.1',
   contactEmail: 'info@mollie.com',
 };
