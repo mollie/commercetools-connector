@@ -181,4 +181,4 @@ export enum CaptureModes {
   Automatic = 'automatic',
 }
 
-export type DoCapturePaymentFromMollie = { answer: boolean } & Pick<CTTransaction, 'id'>;
+export type DoCapturePaymentFromMollie = { answer: boolean; hasSurchargeCost: boolean; id?: string };
