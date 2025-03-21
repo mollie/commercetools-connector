@@ -59,3 +59,34 @@ jobs:
         with:
           name: code-coverage-report
           path: processor/coverage/lcov.info
+
+  build-application:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: application
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.9.0'
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Run ESLint check
+        run: yarn run lint
+
+      - name: Run Prettier check
+        run: yarn run format
+
+      - name: Build project
+        run: yarn run build
+
+      - name: Run tests
+        run: yarn run test
