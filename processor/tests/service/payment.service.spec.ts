@@ -39,6 +39,7 @@ import {
   getPaymentById,
   listPaymentMethods,
   createCapturePayment,
+  releaseAuthorizationPayment,
 } from '../../src/mollie/payment.mollie';
 import { cancelPaymentRefund, createPaymentRefund, getPaymentRefund } from '../../src/mollie/refund.mollie';
 import CustomError from '../../src/errors/custom.error';
@@ -93,6 +94,7 @@ jest.mock('../../src/mollie/payment.mollie', () => ({
   getApplePaySession: jest.fn(),
   createPaymentWithCustomMethod: jest.fn(),
   createCapturePayment: jest.fn(),
+  releaseAuthorizationPayment: jest.fn(),
 }));
 
 jest.mock('../../src/mollie/refund.mollie', () => ({
@@ -2753,6 +2755,54 @@ describe('Test handleCancelPayment', () => {
     expect(cancelPayment).toBeCalledWith(molliePayment.id);
 
     expect(removeCartMollieCustomLineItem).toBeCalledTimes(1);
+
+    expect(actual).toEqual({
+      statusCode: 200,
+      actions: [],
+    });
+  });
+
+  it('should return status code for release klarna authorization payment', async () => {
+    const cartService = require('../../src/service/cart.service');
+
+    jest.spyOn(cartService, 'removeCartMollieCustomLineItem');
+
+    const molliePayment: molliePayment = {
+      resource: 'payment',
+      id: 'tr_7UhSN1zuXS',
+      mode: 'live',
+      amount: {
+        value: '10.00',
+        currency: 'EUR',
+      },
+      description: 'Order #12345',
+      sequenceType: 'oneoff',
+      redirectUrl: 'https://webshop.example.org/order/12345/',
+      webhookUrl: 'https://webshop.example.org/payments/webhook/',
+      metadata: '{"order_id":12345}',
+      profileId: 'pfl_QkEhN94Ba',
+      status: 'authorized',
+      method: 'klarna',
+      createdAt: '2024-03-20T09:13:37+00:00',
+      expiresAt: '2024-03-20T09:28:37+00:00',
+      _links: {
+        checkout: {
+          href: 'https://www.mollie.com/checkout/select-method/7UhSN1zuXS',
+          type: 'text/html',
+        },
+      },
+    } as molliePayment;
+
+    (getPaymentById as jest.Mock).mockReturnValueOnce(molliePayment);
+
+    (releaseAuthorizationPayment as jest.Mock).mockReturnValueOnce(molliePayment);
+
+    const actual = await handleCancelPayment(CTPayment);
+
+    expect(getPaymentById).toBeCalledTimes(1);
+    expect(getPaymentById).toBeCalledWith(CTPayment.transactions[0].interactionId);
+    expect(releaseAuthorizationPayment).toBeCalledTimes(1);
+    expect(releaseAuthorizationPayment).toBeCalledWith(molliePayment.id);
 
     expect(actual).toEqual({
       statusCode: 200,
