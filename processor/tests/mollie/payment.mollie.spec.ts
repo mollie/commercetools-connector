@@ -6,6 +6,7 @@ import {
   getPaymentById,
   listPaymentMethods,
   getApplePaySession,
+  releaseAuthorizationPayment,
 } from '../../src/mollie/payment.mollie';
 import { MollieApiError, PaymentCreateParams } from '@mollie/api-client';
 import { logger } from '../../src/utils/logger.utils';
@@ -540,6 +541,121 @@ describe('getApplePaySession', () => {
           error: unexpectedError,
         },
       );
+    }
+  });
+});
+
+describe('releaseAuthorizationPayment', () => {
+  afterEach(() => {
+    jest.clearAllMocks(); // Clear all mocks after each test
+  });
+
+  it('should call release authorized payment with molliePaymentId', async () => {
+    const molliePaymentId = 'tr_test';
+
+    const createPaymentEndpoint = `https://api.mollie.com/v2/payments/${molliePaymentId}/release-authorization`;
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${getApiKey()}`,
+      versionStrings: MOLLIE_VERSION_STRINGS,
+    };
+
+    (fetch as unknown as jest.Mock).mockImplementation(async () =>
+      Promise.resolve({
+        json: () => Promise.resolve({ data: [] }),
+        headers: new Headers(),
+        ok: true,
+        redirected: false,
+        status: 202,
+      }),
+    );
+
+    await releaseAuthorizationPayment(molliePaymentId);
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith(createPaymentEndpoint, {
+      method: 'POST',
+      headers,
+    });
+  });
+
+  it('should throw error when calling release authorized payment with molliePaymentId', async () => {
+    const molliePaymentId = 'tr_test';
+
+    const createPaymentEndpoint = `https://api.mollie.com/v2/payments/${molliePaymentId}/release-authorization`;
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${getApiKey()}`,
+      versionStrings: MOLLIE_VERSION_STRINGS,
+    };
+
+    const errorMessage =
+      'SCTM - releaseAuthorizationPayment - error: The pre-authorized payment has already been reversed';
+
+    (fetch as unknown as jest.Mock).mockImplementation(async () => {
+      throw new MollieApiError('The pre-authorized payment has already been reversed', {
+        field: '',
+        statusCode: 400,
+      });
+    });
+
+    try {
+      await releaseAuthorizationPayment(molliePaymentId);
+    } catch (error: unknown) {
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(fetch).toHaveBeenCalledWith(createPaymentEndpoint, {
+        method: 'POST',
+        headers,
+      });
+
+      expect(logger.error).toHaveBeenCalledTimes(1);
+      expect(logger.error).toHaveBeenCalledWith(errorMessage, {
+        error: new MollieApiError('The pre-authorized payment has already been reversed', {
+          field: '',
+          statusCode: 400,
+        }),
+      });
+
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).statusCode).toBe(400);
+      expect((error as CustomError).message).toBe(errorMessage);
+    }
+  });
+
+  it('should throw a general error when an exception is thrown somewhere in the process', async () => {
+    const molliePaymentId = 'tr_test';
+
+    const createPaymentEndpoint = `https://api.mollie.com/v2/payments/${molliePaymentId}/release-authorization`;
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${getApiKey()}`,
+      versionStrings: MOLLIE_VERSION_STRINGS,
+    };
+
+    const errorMessage =
+      'SCTM - releaseAuthorizationPayment - Failed to release authorization payment with unknown errors';
+
+    const generalError = new Error('General error');
+
+    (fetch as unknown as jest.Mock).mockImplementation(async () => {
+      throw generalError;
+    });
+
+    try {
+      await releaseAuthorizationPayment(molliePaymentId);
+    } catch (error: any) {
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(fetch).toHaveBeenCalledWith(createPaymentEndpoint, {
+        method: 'POST',
+        headers,
+      });
+
+      expect(logger.error).toHaveBeenCalledTimes(1);
+      expect(logger.error).toHaveBeenCalledWith(errorMessage, { error: generalError });
+
+      expect(error).toBeInstanceOf(CustomError);
+      expect((error as CustomError).statusCode).toBe(400);
+      expect((error as CustomError).message).toBe(errorMessage);
     }
   });
 });
