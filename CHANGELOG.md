@@ -10,6 +10,12 @@ Added
 
 - Support for payment methods `trustly` `bancomatpay` `mbway` `multibanco` `satispay` `twint` `paybybank` `eps`
 
+## v1.3.2
+
+Updated
+
+- Allow to cancel an Klarna authorized payment via newly introduce endpoint `/release-authorization` instead of using `DELETE` verb
+
 ## v1.3.1
 
 Fixed
