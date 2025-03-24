@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## v1.4.0
+
+Added
+
+- Support for payment methods `trustly` `bancomatpay` `mbway` `multibanco` `satispay` `twint` `paybybank` `eps`
+
 ## v1.3.2
 
 Updated
@@ -89,8 +95,11 @@ Added
 Fixed
 
 [Create Refund](./docs/CreateRefund.md)
+
 - Handling the Refund Creation for the case that the Payment has more than one Success Charge transaction
+
   - Changing the way to determine the Create Refund action:
+
     - Before
 
     ```Typescript
@@ -160,7 +169,7 @@ Fixed
           custom: {
             type: {
               ...
-            }, 
+            },
             fields: {
               sctm_transaction_refund_for_mollie_payment: 'tr_123456' // Creating a Refund for the Mollie Payment tr_123456
             }
@@ -171,8 +180,11 @@ Fixed
     ```
 
 [Cancel Refund](./docs/CancelPaymentRefund.md)
+
 - Following the changes for creating refund, we also updated the handler for Refund Cancellation to match with the above changes
+
   - Changing the way to determine the Cancel Refund action:
+
     - Before
 
     ```Typescript
@@ -241,7 +253,7 @@ Fixed
     // In this case, this will be considered as a Cancellation request for the Pending Refund with id: refund-transaction-2
     ```
 
-    __*Note:* The above solution is just for supporting the old versions and will be remove in the near future (in next versions). From this version, please follow the below solution.__
+    **_Note:_ The above solution is just for supporting the old versions and will be remove in the near future (in next versions). From this version, please follow the below solution.**
 
   - However, to do it in a correct way, from this version, you should specify the Mollie Refund ID (which stored in the `interactionId` of the Pending Refund transaction) that you want to cancel by putting it in the `interactionId` of the Initial CancelAuthorization. For example:
 
@@ -280,7 +292,7 @@ Fixed
       ]
     }
 
-    // In this case, this will be considered as a Cancellation request for the Pending Refund with id: refund-transaction-1 
+    // In this case, this will be considered as a Cancellation request for the Pending Refund with id: refund-transaction-1
     ```
 
 ## v1.1.2

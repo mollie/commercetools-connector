@@ -1,1847 +1,2002 @@
 {
   "_embedded": {
-      "methods": [
+    "methods": [
+      {
+        "resource": "method",
+        "id": "applepay",
+        "description": "Apple Pay",
+        "minimumAmount": {
+          "value": "0.01",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "10000.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/applepay.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/applepay%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/applepay.svg"
+        },
+        "status": "activated",
+        "pricing": [
           {
-              "resource": "method",
-              "id": "applepay",
-              "description": "Apple Pay",
-              "minimumAmount": {
-                  "value": "0.01",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "10000.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/applepay.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/applepay%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/applepay.svg"
-              },
-              "status": "activated",
-              "pricing": [
-                  {
-                      "description": "American Express",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.9",
-                      "feeRegion": "amex"
-                  },
-                  {
-                      "description": "American Express Intra-EEA",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.9",
-                      "feeRegion": "amex-intra-eea"
-                  },
-                  {
-                      "description": "Credit Card",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "3.25",
-                      "feeRegion": null
-                  },
-                  {
-                      "description": "Domestic Consumer Card",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "1.8",
-                      "feeRegion": "domestic"
-                  },
-                  {
-                      "description": "European Commercial Card",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.9",
-                      "feeRegion": "intra-eu-corporate"
-                  },
-                  {
-                      "description": "European Consumer Card",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "1.8",
-                      "feeRegion": "eu-cards"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/applepay",
-                      "type": "application/hal+json"
-                  }
-              }
+            "description": "American Express",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "2.9",
+            "feeRegion": "amex"
           },
           {
-              "resource": "method",
-              "id": "googlepay",
-              "description": "Google Pay",
-              "minimumAmount": {
-                  "value": "0.01",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "10000.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/googlepay.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/googlepay%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/googlepay.svg"
-              },
-              "status": "activated",
-              "pricing": [
-                  {
-                      "description": "American Express",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.9",
-                      "feeRegion": "amex"
-                  },
-                  {
-                      "description": "American Express Intra-EEA",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.9",
-                      "feeRegion": "amex-intra-eea"
-                  },
-                  {
-                      "description": "Credit Card",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "3.25",
-                      "feeRegion": null
-                  },
-                  {
-                      "description": "Domestic Consumer Card",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "1.8",
-                      "feeRegion": "domestic"
-                  },
-                  {
-                      "description": "European Commercial Card",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.9",
-                      "feeRegion": "intra-eu-corporate"
-                  },
-                  {
-                      "description": "European Consumer Card",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "1.8",
-                      "feeRegion": "eu-cards"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/googlepay",
-                      "type": "application/hal+json"
-                  }
-              }
+            "description": "American Express Intra-EEA",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "2.9",
+            "feeRegion": "amex-intra-eea"
           },
           {
-              "resource": "method",
-              "id": "ideal",
-              "description": "iDEAL",
-              "minimumAmount": {
-                  "value": "0.01",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "50000.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/ideal.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/ideal%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/ideal.svg"
-              },
-              "status": "activated",
-              "pricing": [
-                  {
-                      "description": "iDEAL",
-                      "fixed": {
-                          "value": "0.39",
-                          "currency": "EUR"
-                      },
-                      "variable": "0"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/ideal",
-                      "type": "application/hal+json"
-                  }
-              }
+            "description": "Credit Card",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "3.25",
+            "feeRegion": null
           },
           {
-              "resource": "method",
-              "id": "creditcard",
-              "description": "Card",
-              "minimumAmount": {
-                  "value": "0.01",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "10000.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/creditcard.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/creditcard%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/creditcard.svg"
-              },
-              "status": "activated",
-              "pricing": [
-                  {
-                      "description": "American Express",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.9",
-                      "feeRegion": "amex"
-                  },
-                  {
-                      "description": "American Express Intra-EEA",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.9",
-                      "feeRegion": "amex-intra-eea"
-                  },
-                  {
-                      "description": "Credit Card",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "3.25",
-                      "feeRegion": null
-                  },
-                  {
-                      "description": "Domestic Consumer Card",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "1.8",
-                      "feeRegion": "domestic"
-                  },
-                  {
-                      "description": "European Commercial Card",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.9",
-                      "feeRegion": "intra-eu-corporate"
-                  },
-                  {
-                      "description": "European Consumer Card",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "1.8",
-                      "feeRegion": "eu-cards"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/creditcard",
-                      "type": "application/hal+json"
-                  }
-              }
+            "description": "Domestic Consumer Card",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "1.8",
+            "feeRegion": "domestic"
           },
           {
-              "resource": "method",
-              "id": "in3",
-              "description": "iDEAL Pay in 3 instalments, 0% interest",
-              "minimumAmount": {
-                  "value": "0.00",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "30000.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/in3.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/in3%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/in3.svg"
-              },
-              "status": "activated",
-              "pricing": [
-                  {
-                      "description": "in3",
-                      "fixed": {
-                          "value": "0.95",
-                          "currency": "EUR"
-                      },
-                      "variable": "3.99"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/in3",
-                      "type": "application/hal+json"
-                  }
-              }
+            "description": "European Commercial Card",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "2.9",
+            "feeRegion": "intra-eu-corporate"
           },
           {
-              "resource": "method",
-              "id": "klarnapaylater",
-              "description": "Pay later.",
-              "minimumAmount": {
-                  "value": "0.01",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "4000.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/klarnapaylater.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/klarnapaylater%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/klarnapaylater.svg"
-              },
-              "status": null,
-              "pricing": [
-                  {
-                      "description": "Klarna Pay in 3 (France)",
-                      "fixed": {
-                          "value": "0.20",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Later (Austria)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Later (Belgium)",
-                      "fixed": {
-                          "value": "1.00",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Later (Denmark)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Later (Finland)",
-                      "fixed": {
-                          "value": "0.59",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.79"
-                  },
-                  {
-                      "description": "Klarna Pay Later (Germany)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Later (Italy)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.99"
-                  },
-                  {
-                      "description": "Klarna Pay Later (Netherlands)",
-                      "fixed": {
-                          "value": "1.00",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Later (Norway)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Later (Portugal)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.99"
-                  },
-                  {
-                      "description": "Klarna Pay Later (Spain)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.99"
-                  },
-                  {
-                      "description": "Klarna Pay Later (Sweden)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/klarnapaylater",
-                      "type": "application/hal+json"
-                  }
-              }
-          },
-          {
-              "resource": "method",
-              "id": "klarnapaynow",
-              "description": "Pay now.",
-              "minimumAmount": {
-                  "value": "0.10",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "10000.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/klarnapaynow.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/klarnapaynow%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/klarnapaynow.svg"
-              },
-              "status": null,
-              "pricing": [
-                  {
-                      "description": "Klarna Pay Now (Austria)",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "1.45"
-                  },
-                  {
-                      "description": "Klarna Pay Now (Belgium)",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "1.45"
-                  },
-                  {
-                      "description": "Klarna Pay Now (Finland)",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "1.45"
-                  },
-                  {
-                      "description": "Klarna Pay Now (Germany)",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "1.45"
-                  },
-                  {
-                      "description": "Klarna Pay Now (Italy)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.99"
-                  },
-                  {
-                      "description": "Klarna Pay Now (Netherlands)",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "1.45"
-                  },
-                  {
-                      "description": "Klarna Pay Now (Spain)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.99"
-                  },
-                  {
-                      "description": "Klarna Pay Now (Sweden)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/klarnapaynow",
-                      "type": "application/hal+json"
-                  }
-              }
-          },
-          {
-              "resource": "method",
-              "id": "klarnasliceit",
-              "description": "Slice it.",
-              "minimumAmount": {
-                  "value": "45.00",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "5000.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/klarnasliceit.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/klarnasliceit%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/klarnasliceit.svg"
-              },
-              "status": null,
-              "pricing": [
-                  {
-                      "description": "Klarna Pay in 3 (Italy)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.99"
-                  },
-                  {
-                      "description": "Klarna Pay in 3 (Netherlands)",
-                      "fixed": {
-                          "value": "0.95",
-                          "currency": "EUR"
-                      },
-                      "variable": "3.99"
-                  },
-                  {
-                      "description": "Klarna Pay in 3 (Portugal)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.99"
-                  },
-                  {
-                      "description": "Klarna Pay in 3 (Spain)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.99"
-                  },
-                  {
-                      "description": "Klarna Slice It (Austria)",
-                      "fixed": {
-                          "value": "0.00",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Slice It (Denmark)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Slice It (Finland)",
-                      "fixed": {
-                          "value": "0.59",
-                          "currency": "EUR"
-                      },
-                      "variable": "0.99"
-                  },
-                  {
-                      "description": "Klarna Slice It (Germany)",
-                      "fixed": {
-                          "value": "0.00",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Slice It (Norway)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Slice It (Sweden)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/klarnasliceit",
-                      "type": "application/hal+json"
-                  }
-              }
-          },
-          {
-              "resource": "method",
-              "id": "paypal",
-              "description": "PayPal",
-              "minimumAmount": {
-                  "value": "0.01",
-                  "currency": "EUR"
-              },
-              "maximumAmount": null,
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/paypal.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/paypal%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/paypal.svg"
-              },
-              "status": "activated",
-              "pricing": [
-                  {
-                      "description": "PayPal",
-                      "fixed": {
-                          "value": "0.10",
-                          "currency": "EUR"
-                      },
-                      "variable": "0"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/paypal",
-                      "type": "application/hal+json"
-                  }
-              }
-          },
-          {
-              "resource": "method",
-              "id": "banktransfer",
-              "description": "Bank transfer",
-              "minimumAmount": {
-                  "value": "0.01",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "1000000.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/banktransfer.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/banktransfer%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/banktransfer.svg"
-              },
-              "status": "activated",
-              "pricing": [
-                  {
-                      "description": "Bank Transfer",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "0"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/banktransfer",
-                      "type": "application/hal+json"
-                  }
-              }
-          },
-          {
-              "resource": "method",
-              "id": "giftcard",
-              "description": "Gift cards",
-              "minimumAmount": {
-                  "value": "0.01",
-                  "currency": "EUR"
-              },
-              "maximumAmount": null,
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/giftcard.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/giftcard%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/giftcard.svg"
-              },
-              "status": "pending-boarding",
-              "pricing": [
-                  {
-                      "description": "Giftcard",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "0"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/giftcard",
-                      "type": "application/hal+json"
-                  }
-              }
-          },
-          {
-              "resource": "method",
-              "id": "bancontact",
-              "description": "Bancontact",
-              "minimumAmount": {
-                  "value": "0.02",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "50000.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/bancontact.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/bancontact%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/bancontact.svg"
-              },
-              "status": "activated",
-              "pricing": [
-                  {
-                      "description": "Bancontact",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "1.4"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/bancontact",
-                      "type": "application/hal+json"
-                  }
-              }
-          },
-          {
-              "resource": "method",
-              "id": "eps",
-              "description": "eps",
-              "minimumAmount": {
-                  "value": "1.00",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "50000.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/eps.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/eps%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/eps.svg"
-              },
-              "status": "activated",
-              "pricing": [
-                  {
-                      "description": "EPS",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "1.5"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/eps",
-                      "type": "application/hal+json"
-                  }
-              }
-          },
-          {
-              "resource": "method",
-              "id": "giropay",
-              "description": "giropay",
-              "minimumAmount": {
-                  "value": "1.00",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "10000.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/giropay.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/giropay%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/giropay.svg"
-              },
-              "status": "pending-boarding",
-              "pricing": [
-                  {
-                      "description": "Giropay",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "1.5"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/giropay",
-                      "type": "application/hal+json"
-                  }
-              }
-          },
-          {
-              "resource": "method",
-              "id": "przelewy24",
-              "description": "Przelewy24",
-              "minimumAmount": {
-                  "value": "0.01",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "12815.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/przelewy24.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/przelewy24%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/przelewy24.svg"
-              },
-              "status": "activated",
-              "pricing": [
-                  {
-                      "description": "Przelewy24",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.2"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/przelewy24",
-                      "type": "application/hal+json"
-                  }
-              }
-          },
-          {
-              "resource": "method",
-              "id": "kbc",
-              "description": "KBC/CBC Payment Button",
-              "minimumAmount": {
-                  "value": "0.01",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "50000.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/kbc.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/kbc%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/kbc.svg"
-              },
-              "status": "activated",
-              "pricing": [
-                  {
-                      "description": "KBC/CBC Payment Button",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "0.9"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/kbc",
-                      "type": "application/hal+json"
-                  }
-              }
-          },
-          {
-              "resource": "method",
-              "id": "belfius",
-              "description": "Belfius Pay Button",
-              "minimumAmount": {
-                  "value": "0.01",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "50000.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/belfius.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/belfius%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/belfius.svg"
-              },
-              "status": "activated",
-              "pricing": [
-                  {
-                      "description": "Belfius Pay Button ",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "0.9"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/belfius",
-                      "type": "application/hal+json"
-                  }
-              }
-          },
-          {
-              "resource": "method",
-              "id": "voucher",
-              "description": "Vouchers",
-              "minimumAmount": {
-                  "value": "1.00",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "100000.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/voucher.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/voucher%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/voucher.svg"
-              },
-              "status": "activated",
-              "pricing": [
-                  {
-                      "description": "Vouchers",
-                      "fixed": {
-                          "value": "0.50",
-                          "currency": "EUR"
-                      },
-                      "variable": "0.5"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/voucher",
-                      "type": "application/hal+json"
-                  }
-              }
-          },
-          {
-              "resource": "method",
-              "id": "directdebit",
-              "description": "SEPA Direct Debit",
-              "minimumAmount": {
-                  "value": "0.01",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "1000.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/directdebit.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/directdebit%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/directdebit.svg"
-              },
-              "status": "activated",
-              "pricing": [
-                  {
-                      "description": "SEPA Direct Debit",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "0.9"
-                  },
-                  {
-                      "description": "SEPA Direct: Debit Batch",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "0"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/directdebit",
-                      "type": "application/hal+json"
-                  }
-              }
-          },
-          {
-              "resource": "method",
-              "id": "billie",
-              "description": "Pay by Invoice for Businesses - Billie",
-              "minimumAmount": {
-                  "value": "0.01",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "25000.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/billie.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/billie%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/billie.svg"
-              },
-              "status": "activated",
-              "pricing": [
-                  {
-                      "description": "Billie (Austria)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "3.49"
-                  },
-                  {
-                      "description": "Billie (France)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "3.49"
-                  },
-                  {
-                      "description": "Billie (Germany)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "3.49"
-                  },
-                  {
-                      "description": "Billie (Netherlands)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "3.49"
-                  },
-                  {
-                      "description": "Billie (Sweden)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "3.49"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/billie",
-                      "type": "application/hal+json"
-                  }
-              }
-          },
-          {
-              "resource": "method",
-              "id": "klarna",
-              "description": "Pay with Klarna",
-              "minimumAmount": {
-                  "value": "1.00",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "14000.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/klarna.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/klarna%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/klarna.svg"
-              },
-              "status": "activated",
-              "pricing": [
-                  {
-                      "description": "Klarna Financing (Austria)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Financing (Belgium)",
-                      "fixed": {
-                          "value": "0.45",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Financing (Denmark)",
-                      "fixed": {
-                          "value": "0.40",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Financing (Finland)",
-                      "fixed": {
-                          "value": "0.40",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Financing (France)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.5"
-                  },
-                  {
-                      "description": "Klarna Financing (Germany)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Financing (Ireland)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.99"
-                  },
-                  {
-                      "description": "Klarna Financing (Italy)",
-                      "fixed": {
-                          "value": "0.40",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.99"
-                  },
-                  {
-                      "description": "Klarna Financing (Netherlands)",
-                      "fixed": {
-                          "value": "0.45",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Financing (Norway)",
-                      "fixed": {
-                          "value": "0.40",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Financing (Portugal)",
-                      "fixed": {
-                          "value": "0.40",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.99"
-                  },
-                  {
-                      "description": "Klarna Financing (Spain)",
-                      "fixed": {
-                          "value": "0.40",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.99"
-                  },
-                  {
-                      "description": "Klarna Financing (Sweden)",
-                      "fixed": {
-                          "value": "0.40",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Financing (Switzerland)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Financing (United Kingdom)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.99"
-                  },
-                  {
-                      "description": "Klarna Pay Later (Austria)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Later (Belgium)",
-                      "fixed": {
-                          "value": "0.45",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Later (Denmark)",
-                      "fixed": {
-                          "value": "0.40",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Later (Finland)",
-                      "fixed": {
-                          "value": "0.40",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Later (France)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.5"
-                  },
-                  {
-                      "description": "Klarna Pay Later (Germany)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Later (Ireland)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.99"
-                  },
-                  {
-                      "description": "Klarna Pay Later (Italy)",
-                      "fixed": {
-                          "value": "0.40",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.99"
-                  },
-                  {
-                      "description": "Klarna Pay Later (Netherlands)",
-                      "fixed": {
-                          "value": "0.45",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Later (Norway)",
-                      "fixed": {
-                          "value": "0.40",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Later (Portugal)",
-                      "fixed": {
-                          "value": "0.40",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.99"
-                  },
-                  {
-                      "description": "Klarna Pay Later (Spain)",
-                      "fixed": {
-                          "value": "0.40",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.99"
-                  },
-                  {
-                      "description": "Klarna Pay Later (Sweden)",
-                      "fixed": {
-                          "value": "0.40",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Later (Switzerland)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Later (United Kingdom)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.99"
-                  },
-                  {
-                      "description": "Klarna Pay Now (Austria)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Now (Belgium)",
-                      "fixed": {
-                          "value": "0.45",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Now (Denmark)",
-                      "fixed": {
-                          "value": "0.40",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Now (Finland)",
-                      "fixed": {
-                          "value": "0.40",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Now (France)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.5"
-                  },
-                  {
-                      "description": "Klarna Pay Now (Germany)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Now (Ireland)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.99"
-                  },
-                  {
-                      "description": "Klarna Pay Now (Italy)",
-                      "fixed": {
-                          "value": "0.40",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.99"
-                  },
-                  {
-                      "description": "Klarna Pay Now (Netherlands)",
-                      "fixed": {
-                          "value": "0.45",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Now (Norway)",
-                      "fixed": {
-                          "value": "0.40",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Now (Portugal)",
-                      "fixed": {
-                          "value": "0.40",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.99"
-                  },
-                  {
-                      "description": "Klarna Pay Now (Spain)",
-                      "fixed": {
-                          "value": "0.40",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.99"
-                  },
-                  {
-                      "description": "Klarna Pay Now (Sweden)",
-                      "fixed": {
-                          "value": "0.40",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Now (Switzerland)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Klarna Pay Now (United Kingdom)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.99"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/klarna",
-                      "type": "application/hal+json"
-                  }
-              }
-          },
-          {
-              "resource": "method",
-              "id": "twint",
-              "description": "TWINT",
-              "minimumAmount": {
-                  "value": "0.01",
-                  "currency": "CHF"
-              },
-              "maximumAmount": {
-                  "value": "5000.00",
-                  "currency": "CHF"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/twint.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/twint%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/twint.svg"
-              },
-              "status": "activated",
-              "pricing": [
-                  {
-                      "description": "TWINT",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.3"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/twint",
-                      "type": "application/hal+json"
-                  }
-              }
-          },
-          {
-              "resource": "method",
-              "id": "blik",
-              "description": "Blik",
-              "minimumAmount": {
-                  "value": "0.01",
-                  "currency": "PLN"
-              },
-              "maximumAmount": {
-                  "value": "50000.00",
-                  "currency": "PLN"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/blik.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/blik%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/blik.svg"
-              },
-              "status": "activated",
-              "pricing": [
-                  {
-                      "description": "BLIK",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "1.6"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/blik",
-                      "type": "application/hal+json"
-                  }
-              }
-          },
-          {
-              "resource": "method",
-              "id": "bancomatpay",
-              "description": "Bancomat Pay",
-              "minimumAmount": {
-                  "value": "0.01",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "1000000.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/bancomatpay.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/bancomatpay%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/bancomatpay.svg"
-              },
-              "status": "activated",
-              "pricing": [
-                  {
-                      "description": "BANCOMAT Pay",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "1.5"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/bancomatpay",
-                      "type": "application/hal+json"
-                  }
-              }
-          },
-          {
-              "resource": "method",
-              "id": "alma",
-              "description": "Pay in 3 or 4 installments free of charge",
-              "minimumAmount": {
-                  "value": "50.00",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "2000.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/alma.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/alma%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/alma.svg"
-              },
-              "status": null,
-              "pricing": [
-                  {
-                      "description": "Alma Pay In 3 (Belgium)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.29"
-                  },
-                  {
-                      "description": "Alma Pay In 3 (France)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "4.5"
-                  },
-                  {
-                      "description": "Alma Pay In 4 (France)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "5.5"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/alma",
-                      "type": "application/hal+json"
-                  }
-              }
-          },
-          {
-              "resource": "method",
-              "id": "riverty",
-              "description": "Buy now, pay later with Riverty",
-              "minimumAmount": {
-                  "value": "5.00",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "1500.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/riverty.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/riverty%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/riverty.svg"
-              },
-              "status": null,
-              "pricing": [
-                  {
-                      "description": "Riverty (Austria)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Riverty (Belgium)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Riverty (Germany)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  },
-                  {
-                      "description": "Riverty (Netherlands)",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.99"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/riverty",
-                      "type": "application/hal+json"
-                  }
-              }
-          },
-          {
-              "resource": "method",
-              "id": "satispay",
-              "description": "Satispay",
-              "minimumAmount": {
-                  "value": "0.01",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "99999.99",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/satispay.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/satispay%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/satispay.svg"
-              },
-              "status": null,
-              "pricing": [
-                  {
-                      "description": "Satispay",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "1.5"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/satispay",
-                      "type": "application/hal+json"
-                  }
-              }
-          },
-          {
-              "resource": "method",
-              "id": "trustly",
-              "description": "Pay By Bank",
-              "minimumAmount": {
-                  "value": "0.01",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "50000.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/external/icons/payment-methods/trustly.png",
-                  "size2x": "https://www.mollie.com/external/icons/payment-methods/trustly%402x.png",
-                  "svg": "https://www.mollie.com/external/icons/payment-methods/trustly.svg"
-              },
-              "status": "activated",
-              "pricing": [
-                  {
-                      "description": "Trustly",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "0.9"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/trustly",
-                      "type": "application/hal+json"
-                  }
-              }
-          },
-          {
-              "resource": "method",
-              "id": "mbway",
-              "description": "MB Way",
-              "minimumAmount": {
-                  "value": "0.01",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "5000.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/checkout/files/019391fe-8247-73d1-ba37-69510f022a87",
-                  "size2x": "https://www.mollie.com/checkout/files/019391fe-82b1-7390-8c95-770fc3cbf4b6",
-                  "svg": "https://www.mollie.com/checkout/files/019391fe-8391-715b-a3ac-0736cfe6410f"
-              },
-              "status": null,
-              "pricing": [
-                  {
-                      "description": "MB Way",
-                      "fixed": {
-                          "value": "0.25",
-                          "currency": "EUR"
-                      },
-                      "variable": "1.5"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/mbway",
-                      "type": "application/hal+json"
-                  }
-              }
-          },
-          {
-              "resource": "method",
-              "id": "multibanco",
-              "description": "Multibanco",
-              "minimumAmount": {
-                  "value": "0.01",
-                  "currency": "EUR"
-              },
-              "maximumAmount": {
-                  "value": "5000.00",
-                  "currency": "EUR"
-              },
-              "image": {
-                  "size1x": "https://www.mollie.com/checkout/files/01939207-9094-7296-bdff-88e37d33d0bb",
-                  "size2x": "https://www.mollie.com/checkout/files/01939207-90fb-7297-a128-34276983e9ab",
-                  "svg": "https://www.mollie.com/checkout/files/01939207-91f2-72a6-bb0c-833a7d0a79ab"
-              },
-              "status": null,
-              "pricing": [
-                  {
-                      "description": "Multibanco",
-                      "fixed": {
-                          "value": "0.35",
-                          "currency": "EUR"
-                      },
-                      "variable": "2.1"
-                  }
-              ],
-              "_links": {
-                  "self": {
-                      "href": "https://api.mollie.com/v2/methods/multibanco",
-                      "type": "application/hal+json"
-                  }
-              }
+            "description": "European Consumer Card",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "1.8",
+            "feeRegion": "eu-cards"
           }
-      ]
-  },
-  "count": 30,
-  "_links": {
-      "documentation": {
-          "href": "https://docs.mollie.com/reference/v2/methods-api/list-all-methods",
-          "type": "text/html"
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/applepay",
+            "type": "application/hal+json"
+          }
+        }
       },
-      "self": {
-          "href": "https://api.mollie.com/v2/methods/all?locale=en_US&include=pricing",
-          "type": "application/hal+json"
+      {
+        "resource": "method",
+        "id": "googlepay",
+        "description": "Google Pay",
+        "minimumAmount": {
+          "value": "0.01",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "10000.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/googlepay.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/googlepay%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/googlepay.svg"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "American Express",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "2.9",
+            "feeRegion": "amex"
+          },
+          {
+            "description": "American Express Intra-EEA",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "2.9",
+            "feeRegion": "amex-intra-eea"
+          },
+          {
+            "description": "Credit Card",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "3.25",
+            "feeRegion": null
+          },
+          {
+            "description": "Domestic Consumer Card",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "1.8",
+            "feeRegion": "domestic"
+          },
+          {
+            "description": "European Commercial Card",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "2.9",
+            "feeRegion": "intra-eu-corporate"
+          },
+          {
+            "description": "European Consumer Card",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "1.8",
+            "feeRegion": "eu-cards"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/googlepay",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "ideal",
+        "description": "iDEAL",
+        "minimumAmount": {
+          "value": "0.01",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "50000.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/ideal.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/ideal%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/ideal.svg"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "iDEAL",
+            "fixed": {
+              "value": "0.39",
+              "currency": "EUR"
+            },
+            "variable": "0"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/ideal",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "paybybank",
+        "description": "Pay By Bank",
+        "minimumAmount": {
+          "value": "0.01",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "50000.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/paybybank.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/paybybank%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/paybybank.svg"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "Pay By Bank",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "0.9"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/paybybank",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "creditcard",
+        "description": "Card",
+        "minimumAmount": {
+          "value": "0.01",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "10000.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/creditcard.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/creditcard%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/creditcard.svg"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "American Express",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "2.9",
+            "feeRegion": "amex"
+          },
+          {
+            "description": "American Express Intra-EEA",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "2.9",
+            "feeRegion": "amex-intra-eea"
+          },
+          {
+            "description": "Credit Card",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "3.25",
+            "feeRegion": null
+          },
+          {
+            "description": "Domestic Consumer Card",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "1.8",
+            "feeRegion": "domestic"
+          },
+          {
+            "description": "European Commercial Card",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "2.9",
+            "feeRegion": "intra-eu-corporate"
+          },
+          {
+            "description": "European Consumer Card",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "1.8",
+            "feeRegion": "eu-cards"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/creditcard",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "in3",
+        "description": "iDEAL Pay in 3 instalments, 0% interest",
+        "minimumAmount": {
+          "value": "0.00",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "30000.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/in3.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/in3%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/in3.svg"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "in3",
+            "fixed": {
+              "value": "0.95",
+              "currency": "EUR"
+            },
+            "variable": "3.99"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/in3",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "klarnapaylater",
+        "description": "Pay later.",
+        "minimumAmount": {
+          "value": "0.01",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "4000.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/klarnapaylater.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/klarnapaylater%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/klarnapaylater.svg"
+        },
+        "status": null,
+        "pricing": [
+          {
+            "description": "Klarna Pay in 3 (France)",
+            "fixed": {
+              "value": "0.20",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Later (Austria)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Later (Belgium)",
+            "fixed": {
+              "value": "1.00",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Later (Denmark)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Later (Finland)",
+            "fixed": {
+              "value": "0.59",
+              "currency": "EUR"
+            },
+            "variable": "2.79"
+          },
+          {
+            "description": "Klarna Pay Later (Germany)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Later (Italy)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Pay Later (Netherlands)",
+            "fixed": {
+              "value": "1.00",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Later (Norway)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Later (Portugal)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Pay Later (Spain)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Pay Later (Sweden)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/klarnapaylater",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "klarnapaynow",
+        "description": "Pay now.",
+        "minimumAmount": {
+          "value": "0.10",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "10000.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/klarnapaynow.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/klarnapaynow%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/klarnapaynow.svg"
+        },
+        "status": null,
+        "pricing": [
+          {
+            "description": "Klarna Pay Now (Austria)",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "1.45"
+          },
+          {
+            "description": "Klarna Pay Now (Belgium)",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "1.45"
+          },
+          {
+            "description": "Klarna Pay Now (Finland)",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "1.45"
+          },
+          {
+            "description": "Klarna Pay Now (Germany)",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "1.45"
+          },
+          {
+            "description": "Klarna Pay Now (Italy)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Pay Now (Netherlands)",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "1.45"
+          },
+          {
+            "description": "Klarna Pay Now (Spain)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Pay Now (Sweden)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/klarnapaynow",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "klarnasliceit",
+        "description": "Slice it.",
+        "minimumAmount": {
+          "value": "45.00",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "5000.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/klarnasliceit.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/klarnasliceit%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/klarnasliceit.svg"
+        },
+        "status": null,
+        "pricing": [
+          {
+            "description": "Klarna Pay in 3 (Italy)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Pay in 3 (Netherlands)",
+            "fixed": {
+              "value": "0.95",
+              "currency": "EUR"
+            },
+            "variable": "3.99"
+          },
+          {
+            "description": "Klarna Pay in 3 (Portugal)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Pay in 3 (Spain)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Slice It (Austria)",
+            "fixed": {
+              "value": "0.00",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Slice It (Denmark)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Slice It (Finland)",
+            "fixed": {
+              "value": "0.59",
+              "currency": "EUR"
+            },
+            "variable": "0.99"
+          },
+          {
+            "description": "Klarna Slice It (Germany)",
+            "fixed": {
+              "value": "0.00",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Slice It (Norway)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Slice It (Sweden)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/klarnasliceit",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "paypal",
+        "description": "PayPal",
+        "minimumAmount": {
+          "value": "0.01",
+          "currency": "EUR"
+        },
+        "maximumAmount": null,
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/paypal.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/paypal%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/paypal.svg"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "PayPal",
+            "fixed": {
+              "value": "0.10",
+              "currency": "EUR"
+            },
+            "variable": "0"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/paypal",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "banktransfer",
+        "description": "Bank transfer",
+        "minimumAmount": {
+          "value": "0.01",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "1000000.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/banktransfer.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/banktransfer%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/banktransfer.svg"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "Bank Transfer",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "0"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/banktransfer",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "giftcard",
+        "description": "Gift cards",
+        "minimumAmount": {
+          "value": "0.01",
+          "currency": "EUR"
+        },
+        "maximumAmount": null,
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/giftcard.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/giftcard%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/giftcard.svg"
+        },
+        "status": "pending-boarding",
+        "pricing": [
+          {
+            "description": "Giftcard",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "0"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/giftcard",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "bancontact",
+        "description": "Bancontact",
+        "minimumAmount": {
+          "value": "0.02",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "50000.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/bancontact.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/bancontact%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/bancontact.svg"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "Bancontact",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "1.4"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/bancontact",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "eps",
+        "description": "eps",
+        "minimumAmount": {
+          "value": "1.00",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "50000.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/eps.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/eps%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/eps.svg"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "EPS",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "1.5"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/eps",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "giropay",
+        "description": "giropay",
+        "minimumAmount": {
+          "value": "1.00",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "10000.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/giropay.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/giropay%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/giropay.svg"
+        },
+        "status": "pending-boarding",
+        "pricing": [
+          {
+            "description": "Giropay",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "1.5"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/giropay",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "przelewy24",
+        "description": "Przelewy24",
+        "minimumAmount": {
+          "value": "0.01",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "12815.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/przelewy24.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/przelewy24%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/przelewy24.svg"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "Przelewy24",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "2.2"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/przelewy24",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "kbc",
+        "description": "KBC/CBC Payment Button",
+        "minimumAmount": {
+          "value": "0.01",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "50000.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/kbc.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/kbc%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/kbc.svg"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "KBC/CBC Payment Button",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "0.9"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/kbc",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "belfius",
+        "description": "Belfius Pay Button",
+        "minimumAmount": {
+          "value": "0.01",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "50000.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/belfius.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/belfius%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/belfius.svg"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "Belfius Pay Button ",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "0.9"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/belfius",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "voucher",
+        "description": "Vouchers",
+        "minimumAmount": {
+          "value": "1.00",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "100000.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/voucher.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/voucher%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/voucher.svg"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "Vouchers",
+            "fixed": {
+              "value": "0.50",
+              "currency": "EUR"
+            },
+            "variable": "0.5"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/voucher",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "directdebit",
+        "description": "SEPA Direct Debit",
+        "minimumAmount": {
+          "value": "0.01",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "1000.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/directdebit.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/directdebit%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/directdebit.svg"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "SEPA Direct Debit",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "0.9"
+          },
+          {
+            "description": "SEPA Direct: Debit Batch",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "0"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/directdebit",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "billie",
+        "description": "Pay by Invoice for Businesses - Billie",
+        "minimumAmount": {
+          "value": "0.01",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "25000.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/billie.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/billie%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/billie.svg"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "Billie (Austria)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "3.49"
+          },
+          {
+            "description": "Billie (France)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "3.49"
+          },
+          {
+            "description": "Billie (Germany)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "3.49"
+          },
+          {
+            "description": "Billie (Netherlands)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "3.49"
+          },
+          {
+            "description": "Billie (Sweden)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "3.49"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/billie",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "klarna",
+        "description": "Pay with Klarna",
+        "minimumAmount": {
+          "value": "1.00",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "14000.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/klarna.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/klarna%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/klarna.svg"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "Klarna Financing (Austria)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Financing (Belgium)",
+            "fixed": {
+              "value": "0.45",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Financing (Denmark)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Financing (Finland)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Financing (France)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "4.5"
+          },
+          {
+            "description": "Klarna Financing (Germany)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Financing (Ireland)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Financing (Italy)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Financing (Netherlands)",
+            "fixed": {
+              "value": "0.45",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Financing (Norway)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Financing (Portugal)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Financing (Spain)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Financing (Sweden)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Financing (Switzerland)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Financing (United Kingdom)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Pay In 3 (Austria)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay In 3 (Belgium)",
+            "fixed": {
+              "value": "0.45",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay In 3 (Denmark)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay In 3 (Finland)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay In 3 (France)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "4.5"
+          },
+          {
+            "description": "Klarna Pay In 3 (Germany)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay In 3 (Ireland)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Pay In 3 (Italy)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Pay In 3 (Netherlands)",
+            "fixed": {
+              "value": "0.45",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay In 3 (Norway)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay In 3 (Portugal)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Pay In 3 (Spain)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Pay In 3 (Sweden)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay In 3 (Switzerland)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay In 3 (United Kingdom)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Pay Later (Austria)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Later (Belgium)",
+            "fixed": {
+              "value": "0.45",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Later (Denmark)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Later (Finland)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Later (France)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "4.5"
+          },
+          {
+            "description": "Klarna Pay Later (Germany)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Later (Ireland)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Pay Later (Italy)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Pay Later (Netherlands)",
+            "fixed": {
+              "value": "0.45",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Later (Norway)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Later (Portugal)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Pay Later (Spain)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Pay Later (Sweden)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Later (Switzerland)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Later (United Kingdom)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Pay Now (Austria)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Now (Belgium)",
+            "fixed": {
+              "value": "0.45",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Now (Denmark)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Now (Finland)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Now (France)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "4.5"
+          },
+          {
+            "description": "Klarna Pay Now (Germany)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Now (Ireland)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Pay Now (Italy)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Pay Now (Netherlands)",
+            "fixed": {
+              "value": "0.45",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Now (Norway)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Now (Portugal)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Pay Now (Spain)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          },
+          {
+            "description": "Klarna Pay Now (Sweden)",
+            "fixed": {
+              "value": "0.40",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Now (Switzerland)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Klarna Pay Now (United Kingdom)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "4.99"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/klarna",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "twint",
+        "description": "TWINT",
+        "minimumAmount": {
+          "value": "0.01",
+          "currency": "CHF"
+        },
+        "maximumAmount": {
+          "value": "5000.00",
+          "currency": "CHF"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/twint.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/twint%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/twint.svg"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "TWINT",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "2.3"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/twint",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "blik",
+        "description": "Blik",
+        "minimumAmount": {
+          "value": "0.01",
+          "currency": "PLN"
+        },
+        "maximumAmount": {
+          "value": "50000.00",
+          "currency": "PLN"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/blik.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/blik%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/blik.svg"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "BLIK",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "1.6"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/blik",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "bancomatpay",
+        "description": "Bancomat Pay",
+        "minimumAmount": {
+          "value": "0.01",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "1000000.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/bancomatpay.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/bancomatpay%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/bancomatpay.svg"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "BANCOMAT Pay",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "1.5"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/bancomatpay",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "alma",
+        "description": "Pay in 3 or 4 installments free of charge",
+        "minimumAmount": {
+          "value": "50.00",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "2000.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/alma.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/alma%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/alma.svg"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "Alma Pay In 3 (Belgium)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "4.29"
+          },
+          {
+            "description": "Alma Pay In 3 (France)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "4.5"
+          },
+          {
+            "description": "Alma Pay In 4 (France)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "5.5"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/alma",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "riverty",
+        "description": "Buy now, pay later with Riverty",
+        "minimumAmount": {
+          "value": "5.00",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "1500.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/riverty.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/riverty%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/riverty.svg"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "Riverty (Austria)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Riverty (Belgium)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Riverty (Germany)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          },
+          {
+            "description": "Riverty (Netherlands)",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.99"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/riverty",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "satispay",
+        "description": "Satispay",
+        "minimumAmount": {
+          "value": "0.01",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "99999.99",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/satispay.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/satispay%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/satispay.svg"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "Satispay",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "1.5"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/satispay",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "trustly",
+        "description": "Pay By Bank",
+        "minimumAmount": {
+          "value": "0.01",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "50000.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/external/icons/payment-methods/trustly.png",
+          "size2x": "https://www.mollie.com/external/icons/payment-methods/trustly%402x.png",
+          "svg": "https://www.mollie.com/external/icons/payment-methods/trustly.svg"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "Trustly",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "0.9"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/trustly",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "mbway",
+        "description": "MB Way",
+        "minimumAmount": {
+          "value": "0.01",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "5000.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/checkout/files/019391fe-8247-73d1-ba37-69510f022a87",
+          "size2x": "https://www.mollie.com/checkout/files/019391fe-82b1-7390-8c95-770fc3cbf4b6",
+          "svg": "https://www.mollie.com/checkout/files/019391fe-8391-715b-a3ac-0736cfe6410f"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "MB Way",
+            "fixed": {
+              "value": "0.25",
+              "currency": "EUR"
+            },
+            "variable": "1.5"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/mbway",
+            "type": "application/hal+json"
+          }
+        }
+      },
+      {
+        "resource": "method",
+        "id": "multibanco",
+        "description": "Multibanco",
+        "minimumAmount": {
+          "value": "0.01",
+          "currency": "EUR"
+        },
+        "maximumAmount": {
+          "value": "5000.00",
+          "currency": "EUR"
+        },
+        "image": {
+          "size1x": "https://www.mollie.com/checkout/files/01939207-9094-7296-bdff-88e37d33d0bb",
+          "size2x": "https://www.mollie.com/checkout/files/01939207-90fb-7297-a128-34276983e9ab",
+          "svg": "https://www.mollie.com/checkout/files/01939207-91f2-72a6-bb0c-833a7d0a79ab"
+        },
+        "status": "activated",
+        "pricing": [
+          {
+            "description": "Multibanco",
+            "fixed": {
+              "value": "0.35",
+              "currency": "EUR"
+            },
+            "variable": "2.1"
+          }
+        ],
+        "_links": {
+          "self": {
+            "href": "https://api.mollie.com/v2/methods/multibanco",
+            "type": "application/hal+json"
+          }
+        }
       }
+    ]
+  },
+  "count": 31,
+  "_links": {
+    "documentation": {
+      "href": "https://docs.mollie.com/reference/v2/methods-api/list-all-methods",
+      "type": "text/html"
+    },
+    "self": {
+      "href": "https://api.mollie.com/v2/methods/all?locale=en_US&include=pricing",
+      "type": "application/hal+json"
+    }
   }
 }
