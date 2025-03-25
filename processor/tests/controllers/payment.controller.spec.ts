@@ -388,7 +388,7 @@ describe('Test payment.controller.ts', () => {
         {
           action: 'setTransactionCustomField',
           transactionId: 'tr_123456',
-          name: CustomFieldName.paymentCancelReason,
+          name: CustomFieldName.transactions.fields.cancelPaymentReasonText.name,
           value: transactionCustomFieldValue,
         },
       ],
@@ -504,7 +504,7 @@ describe('Test payment.controller.ts', () => {
         {
           action: 'setTransactionCustomField',
           transactionId: 'tr_123456',
-          name: CustomFieldName.paymentCancelReason,
+          name: CustomFieldName.transactions.fields.cancelPaymentReasonText.name,
           value: transactionCustomFieldValue,
         },
       ],

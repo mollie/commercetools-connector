@@ -37,7 +37,7 @@ describe('Test constant.utils.ts', () => {
     expect(CustomFields?.createPayment?.request).toBeDefined();
     expect(CustomFields?.createPayment?.interfaceInteraction).toBeDefined();
 
-    expect(CustomFields?.paymentCancelReason).toBeDefined();
+    expect(CustomFields?.transactions.fields.cancelPaymentReasonText.name).toBeDefined();
 
     expect(CustomFields?.applePay?.session?.request).toBeDefined();
     expect(CustomFields?.applePay?.session?.response).toBeDefined();
