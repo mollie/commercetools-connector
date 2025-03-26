@@ -36,4 +36,12 @@ export enum SupportedPaymentMethods {
   paypal = 'paypal',
   giftcard = 'giftcard',
   klarna = 'klarna',
+  trustly = 'trustly',
+  bancomatpay = 'bancomatpay',
+  mbway = 'mbway',
+  multibanco = 'multibanco',
+  satispay = 'satispay',
+  twint = 'twint',
+  paybybank = 'paybybank',
+  eps = 'eps',
 }

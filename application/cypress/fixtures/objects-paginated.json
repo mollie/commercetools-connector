@@ -469,6 +469,279 @@
         "status": "Inactive",
         "displayOrder": 0
       }
+    },
+    {
+      "id": "957065da-62d6-404b-863f-33146427c9ad",
+      "container": "sctm-app-methods",
+      "key": "trustly",
+      "value": {
+        "id": "trustly",
+        "technicalName": "Pay By Bank",
+        "name": {
+          "en-GB": "Pay By Bank",
+          "de-DE": "Pay By Bank",
+          "pl-PL": "Pay By Bank",
+          "fr-FR": "Pay By Bank",
+          "de-CH": "Pay By Bank",
+          "nl-NL": "Pay By Bank",
+          "de-BE": "Pay By Bank",
+          "es-ES": "Pay By Bank",
+          "de-AT": "Pay By Bank",
+          "pt-PT": "Pay By Bank",
+          "it-IT": "Pay By Bank"
+        },
+        "description": {
+          "en-GB": "",
+          "de-DE": "",
+          "pl-PL": "",
+          "fr-FR": "",
+          "de-CH": "",
+          "nl-NL": "",
+          "de-BE": "",
+          "es-ES": "",
+          "de-AT": "",
+          "pt-PT": "",
+          "it-IT": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/trustly.svg",
+        "status": "Active",
+        "displayOrder": 0
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "82237504-b4d2-491d-b18c-880179747c56",
+      "container": "sctm-app-methods",
+      "key": "bancomatpay",
+      "value": {
+        "id": "bancomatpay",
+        "technicalName": "Bancomat Pay",
+        "name": {
+          "en-GB": "Bancomat Pay",
+          "de-DE": "Bancomat Pay",
+          "pl-PL": "Bancomat Pay",
+          "fr-FR": "Bancomat Pay",
+          "de-CH": "Bancomat Pay",
+          "nl-NL": "Bancomat Pay",
+          "de-BE": "Bancomat Pay",
+          "es-ES": "Bancomat Pay",
+          "de-AT": "Bancomat Pay",
+          "pt-PT": "Bancomat Pay",
+          "it-IT": "Bancomat Pay"
+        },
+        "description": {
+          "en-GB": "",
+          "de-DE": "",
+          "pl-PL": "",
+          "fr-FR": "",
+          "de-CH": "",
+          "nl-NL": "",
+          "de-BE": "",
+          "es-ES": "",
+          "de-AT": "",
+          "pt-PT": "",
+          "it-IT": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/bancomatpay.svg",
+        "status": "Active",
+        "displayOrder": 0
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "ffd2330d-30e7-4082-93cb-a3d6ec23bc85",
+      "container": "sctm-app-methods",
+      "key": "mbway",
+      "value": {
+        "id": "mbway",
+        "technicalName": "MB Way",
+        "name": {
+          "en-GB": "MB Way",
+          "de-DE": "MB Way",
+          "pl-PL": "MB Way",
+          "fr-FR": "MB Way",
+          "de-CH": "MB Way",
+          "nl-NL": "MB Way",
+          "de-BE": "MB Way",
+          "es-ES": "MB Way",
+          "de-AT": "MB Way",
+          "pt-PT": "MB Way",
+          "it-IT": "MB Way"
+        },
+        "description": {
+          "en-GB": "",
+          "de-DE": "",
+          "pl-PL": "",
+          "fr-FR": "",
+          "de-CH": "",
+          "nl-NL": "",
+          "de-BE": "",
+          "es-ES": "",
+          "de-AT": "",
+          "pt-PT": "",
+          "it-IT": ""
+        },
+        "imageUrl": "https://www.mollie.com/checkout/files/019391fe-8391-715b-a3ac-0736cfe6410f",
+        "status": "Active",
+        "displayOrder": 0
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "e5abb8ad-38f8-41a5-ad19-2d9d974eea37",
+      "container": "sctm-app-methods",
+      "key": "multibanco",
+      "value": {
+        "id": "multibanco",
+        "technicalName": "Multibanco",
+        "name": {
+          "en-GB": "Multibanco",
+          "de-DE": "Multibanco",
+          "pl-PL": "Multibanco",
+          "fr-FR": "Multibanco",
+          "de-CH": "Multibanco",
+          "nl-NL": "Multibanco",
+          "de-BE": "Multibanco",
+          "es-ES": "Multibanco",
+          "de-AT": "Multibanco",
+          "pt-PT": "Multibanco",
+          "it-IT": "Multibanco"
+        },
+        "description": {
+          "en-GB": "",
+          "de-DE": "",
+          "pl-PL": "",
+          "fr-FR": "",
+          "de-CH": "",
+          "nl-NL": "",
+          "de-BE": "",
+          "es-ES": "",
+          "de-AT": "",
+          "pt-PT": "",
+          "it-IT": ""
+        },
+        "imageUrl": "https://www.mollie.com/checkout/files/01939207-91f2-72a6-bb0c-833a7d0a79ab",
+        "status": "Active",
+        "displayOrder": 0
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "dda2e7a0-0773-4e5b-a5e1-8f050e75b717",
+      "container": "sctm-app-methods",
+      "key": "satispay",
+      "value": {
+        "id": "satispay",
+        "technicalName": "Satispay",
+        "name": {
+          "en-GB": "Satispay",
+          "de-DE": "Satispay",
+          "pl-PL": "Satispay",
+          "fr-FR": "Satispay",
+          "de-CH": "Satispay",
+          "nl-NL": "Satispay",
+          "de-BE": "Satispay",
+          "es-ES": "Satispay",
+          "de-AT": "Satispay",
+          "pt-PT": "Satispay",
+          "it-IT": "Satispay"
+        },
+        "description": {
+          "en-GB": "",
+          "de-DE": "",
+          "pl-PL": "",
+          "fr-FR": "",
+          "de-CH": "",
+          "nl-NL": "",
+          "de-BE": "",
+          "es-ES": "",
+          "de-AT": "",
+          "pt-PT": "",
+          "it-IT": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/satispay.svg",
+        "status": "Active",
+        "displayOrder": 0
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "227431cd-f80e-4bad-bd8b-ec22d25a336a",
+      "container": "sctm-app-methods",
+      "key": "twint",
+      "value": {
+        "id": "twint",
+        "technicalName": "TWINT",
+        "name": {
+          "en-GB": "TWINT",
+          "de-DE": "TWINT",
+          "pl-PL": "TWINT",
+          "fr-FR": "TWINT",
+          "de-CH": "TWINT",
+          "nl-NL": "TWINT",
+          "de-BE": "TWINT",
+          "es-ES": "TWINT",
+          "de-AT": "TWINT",
+          "pt-PT": "TWINT",
+          "it-IT": "TWINT"
+        },
+        "description": {
+          "en-GB": "",
+          "de-DE": "",
+          "pl-PL": "",
+          "fr-FR": "",
+          "de-CH": "",
+          "nl-NL": "",
+          "de-BE": "",
+          "es-ES": "",
+          "de-AT": "",
+          "pt-PT": "",
+          "it-IT": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/twint.svg",
+        "status": "Active",
+        "displayOrder": 0
+      },
+      "__typename": "CustomObject"
+    },
+    {
+      "id": "f4d82f49-3c90-4ee8-9ab9-e27a4671c275",
+      "container": "sctm-app-methods",
+      "key": "eps",
+      "value": {
+        "id": "eps",
+        "technicalName": "eps",
+        "name": {
+          "en-GB": "eps",
+          "de-DE": "eps",
+          "pl-PL": "eps",
+          "fr-FR": "eps",
+          "de-CH": "eps",
+          "nl-NL": "eps",
+          "de-BE": "eps",
+          "es-ES": "eps",
+          "de-AT": "eps",
+          "pt-PT": "eps",
+          "it-IT": "eps"
+        },
+        "description": {
+          "en-GB": "",
+          "de-DE": "",
+          "pl-PL": "",
+          "fr-FR": "",
+          "de-CH": "",
+          "nl-NL": "",
+          "de-BE": "",
+          "es-ES": "",
+          "de-AT": "",
+          "pt-PT": "",
+          "it-IT": ""
+        },
+        "imageUrl": "https://www.mollie.com/external/icons/payment-methods/eps.svg",
+        "status": "Active",
+        "displayOrder": 0
+      },
+      "__typename": "CustomObject"
     }
   ]
 }

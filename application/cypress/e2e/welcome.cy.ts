@@ -5,6 +5,7 @@
 import {
   entryPointUriPath,
   APPLICATION_BASE_ROUTE,
+  PAYMENT_METHODS,
 } from '../support/constants';
 
 describe('Test welcome.cy.ts', () => {
@@ -14,6 +15,7 @@ describe('Test welcome.cy.ts', () => {
       initialRoute: APPLICATION_BASE_ROUTE,
     });
   });
+
   it('should render payment methods list', () => {
     cy.fixture('forward-to').then((response) => {
       cy.intercept('GET', '/proxy/forward-to', {
@@ -22,31 +24,22 @@ describe('Test welcome.cy.ts', () => {
       });
     });
 
-    const paymentMethods = [
-      'PayPal',
-      'iDEAL',
-      'Bancontact',
-      'Blik',
-      'Bank transfer',
-      'Pay with Klarna',
-    ];
-
-    const headers = ['Payment method', 'Active', 'Icon', 'Display order'];
+    const headers = ['name', 'status', 'image', 'order'];
 
     cy.findByText('Mollie payment methods').should('exist');
     cy.findByText('Content will follow...').should('not.exist');
 
     headers.forEach((header) => {
-      cy.findByText(header).should('exist');
+      cy.findByTestId(`header-${header}`).should('exist');
     });
 
-    paymentMethods.forEach((paymentMethod) => {
-      cy.findByText(paymentMethod).should('exist');
+    PAYMENT_METHODS.forEach((paymentMethod) => {
+      cy.findByTestId(`name-column-${paymentMethod}`).should('exist');
     });
   });
 
   it('should render no data notification', () => {
-    cy.fixture('forward-to').then((response) => {
+    cy.fixture('forward-to').then(() => {
       cy.intercept('GET', '/proxy/forward-to', {
         statusCode: 200,
         body: {},
