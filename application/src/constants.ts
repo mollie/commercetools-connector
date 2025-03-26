@@ -11,15 +11,21 @@ declare global {
 }
 
 const getConfig = (processKey: string, windowKey: string) => {
-  return typeof window === 'undefined' ? process.env[processKey] : window.app?.[windowKey];
-}
+  return typeof window === 'undefined'
+    ? process.env[processKey]
+    : window.app?.[windowKey];
+};
 
-export const entryPointUriPath = getConfig('ENTRY_POINT_URI_PATH', 'entryPointUriPath') ?? '';
+export const entryPointUriPath =
+  getConfig('ENTRY_POINT_URI_PATH', 'entryPointUriPath') ?? '';
 
 export const PERMISSIONS = entryPointUriPathToPermissionKeys(entryPointUriPath);
-export const CLOUD_IDENTIFIER = getConfig('CLOUD_IDENTIFIER', 'cloudIdentifier') ?? '';
-export const CUSTOM_APPLICATION_ID = getConfig('CUSTOM_APPLICATION_ID', 'customApplicationId') ?? '';
-export const APPLICATION_URL = getConfig('APPLICATION_URL', 'applicationUrl') ?? '';
+export const CLOUD_IDENTIFIER =
+  getConfig('CLOUD_IDENTIFIER', 'cloudIdentifier') ?? '';
+export const CUSTOM_APPLICATION_ID =
+  getConfig('CUSTOM_APPLICATION_ID', 'customApplicationId') ?? '';
+export const APPLICATION_URL =
+  getConfig('APPLICATION_URL', 'applicationUrl') ?? '';
 
 export const OBJECT_CONTAINER_NAME = 'sctm-app-methods';
 export const EXTENSION_KEY = 'sctm-payment-create-update-extension';
