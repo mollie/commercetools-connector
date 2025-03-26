@@ -1,12 +1,26 @@
 // Make sure to import the helper functions from the `ssr` entry point.
 import { entryPointUriPathToPermissionKeys } from '@commercetools-frontend/application-shell/ssr';
 
-export const entryPointUriPath = process.env.ENTRY_POINT_URI_PATH ?? 'mollie';
+declare global {
+  interface Window {
+    app?: {
+      [key: string]: string;
+      entryPointUriPath: string;
+    };
+  }
+}
+
+const getConfig = (processKey: string, windowKey: string) => {
+  return typeof window === 'undefined' ? process.env[processKey] : window.app?.[windowKey];
+}
+
+export const entryPointUriPath = getConfig('ENTRY_POINT_URI_PATH', 'entryPointUriPath') ?? '';
+
 export const PERMISSIONS = entryPointUriPathToPermissionKeys(entryPointUriPath);
-export const CLOUD_IDENTIFIER = process.env.CLOUD_IDENTIFIER ?? 'gcp-eu';
-export const CUSTOM_APPLICATION_ID = process.env.CUSTOM_APPLICATION_ID ?? '';
-export const APPLICATION_URL =
-  process.env.APPLICATION_URL ?? 'https://mollie.app';
+export const CLOUD_IDENTIFIER = getConfig('CLOUD_IDENTIFIER', 'cloudIdentifier') ?? '';
+export const CUSTOM_APPLICATION_ID = getConfig('CUSTOM_APPLICATION_ID', 'customApplicationId') ?? '';
+export const APPLICATION_URL = getConfig('APPLICATION_URL', 'applicationUrl') ?? '';
+
 export const OBJECT_CONTAINER_NAME = 'sctm-app-methods';
 export const EXTENSION_KEY = 'sctm-payment-create-update-extension';
 export const EXTENSION_URL_PATH = '/processor';
