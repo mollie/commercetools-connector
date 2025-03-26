@@ -17,11 +17,11 @@ const getConfig = (processKey: string, windowKey: string) => {
 };
 
 export const entryPointUriPath =
-  getConfig('ENTRY_POINT_URI_PATH', 'entryPointUriPath') ?? '';
+  getConfig('ENTRY_POINT_URI_PATH', 'entryPointUriPath') ?? 'mollie';
 
 export const PERMISSIONS = entryPointUriPathToPermissionKeys(entryPointUriPath);
 export const CLOUD_IDENTIFIER =
-  getConfig('CLOUD_IDENTIFIER', 'cloudIdentifier') ?? '';
+  getConfig('CLOUD_IDENTIFIER', 'cloudIdentifier') ?? 'gcp-eu';
 export const CUSTOM_APPLICATION_ID =
   getConfig('CUSTOM_APPLICATION_ID', 'customApplicationId') ?? '';
 export const APPLICATION_URL =
