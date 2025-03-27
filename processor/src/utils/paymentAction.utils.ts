@@ -32,7 +32,7 @@ const getTransactionGroups = (transactions: Transaction[]) => {
         break;
       case CTTransactionState.Pending:
         if (transaction.type === CTTransactionType.Charge) {
-          transaction.custom?.fields?.[CustomFields.surchargeAndCapture.fields.shouldCapture.name]
+          transaction.custom?.fields?.[CustomFields.transactions.fields.shouldCapturePayment.name]
             ? groups.pendingCapture.push(transaction)
             : groups.pendingCharge.push(transaction);
         } else if (transaction.type === CTTransactionType.Refund) {
@@ -49,8 +49,8 @@ const getTransactionGroups = (transactions: Transaction[]) => {
       case CTTransactionState.Failure:
         if (
           (transaction.type === CTTransactionType.Charge &&
-            transaction.custom?.fields?.[CustomFields.surchargeAndCapture.fields.captureErrors.name]?.length >= 1) ||
-          transaction.custom?.fields?.[CustomFields.surchargeAndCapture.fields.shouldCapture.name]
+            transaction.custom?.fields?.[CustomFields.transactions.fields.capturePaymentErrors.name]?.length >= 1) ||
+          transaction.custom?.fields?.[CustomFields.transactions.fields.shouldCapturePayment.name]
         ) {
           groups.failureCapture.push(transaction);
         }
@@ -77,7 +77,11 @@ const determineAction = (groups: ReturnType<typeof getTransactionGroups>): Deter
     return ConnectorActions.CreatePayment;
   }
 
-  if (groups.successAuthorization.length === 1 && groups.initialCancelAuthorization.length === 1) {
+  if (
+    groups.successAuthorization.length === 1 &&
+    groups.initialCancelAuthorization.length === 1 &&
+    groups.pendingRefund.length !== 1
+  ) {
     return ConnectorActions.CancelPayment;
   }
 

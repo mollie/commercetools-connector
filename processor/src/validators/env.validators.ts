@@ -122,6 +122,12 @@ const envValidators = [
       max: 1,
     },
   ),
+
+  optional(standardString)(['transactionCustomTypeKey'], {
+    code: 'InvalidTransactionCustomTypeKey',
+    message: 'Transaction custom type key should be a valid string.',
+    referencedBy: 'environmentVariables',
+  }),
 ];
 
 export default envValidators;

@@ -16,6 +16,7 @@ The target Mollie endpoint will be [Cancel Payment Refund](https://docs.mollie.c
 
 In order to use this functionality, the customer must have a charged-successfully payment and a refund created which is in-progress for that payment.
 Technically, the CommerceTools Payment object needs to include 3 transactions:
+
 - 1 transaction with type = `Charge`, state = `Success`. This transaction should also store the targeted Mollie Payment ID in `interactionId`.
 - 1 transaction with type = `Refund`, state = `Pending`. This transaction should also store the targeted Mollie Refund ID in `interactionId`.
 - 1 transaction with type = `CancelAuthorization`, state = `Initial`. This transaction is to point out that the customer is wanting to cancel the Refund.

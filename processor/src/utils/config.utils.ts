@@ -2,6 +2,7 @@ import { ConnectorEnvVars } from '../types/index.types';
 import CustomError from '../errors/custom.error';
 import envValidators from '../validators/env.validators';
 import { getValidateMessages } from '../validators/helpers.validators';
+import { CustomFields } from './constant.utils';
 /**
  * Read the configuration env vars
  * (Add yours accordingly)
@@ -20,6 +21,7 @@ export const readConfiguration = () => {
       authMode: process.env.AUTHENTICATION_MODE as string,
       sessionAudience: (process.env.CTP_SESSION_AUDIENCE as string) || 'https://mc.europe-west1.gcp.commercetools.com',
       sessionIssuer: (process.env.CTP_SESSION_ISSUER as string) || 'gcp-eu',
+      transactionCustomTypeKey: process.env.CTP_TRANSACTION_CUSTOM_TYPE_KEY as string,
     },
     mollie: {
       testApiKey: process.env.MOLLIE_API_TEST_KEY as string,
@@ -47,4 +49,12 @@ export const getApiKey = (): string => {
     return process.env.MOLLIE_API_TEST_KEY as string;
   }
   return process.env.MOLLIE_API_LIVE_KEY as string;
+};
+
+export const getTransactionCustomTypeKey = (): string => {
+  if (process.env.CTP_TRANSACTION_CUSTOM_TYPE_KEY) {
+    return process.env.CTP_TRANSACTION_CUSTOM_TYPE_KEY;
+  }
+
+  return CustomFields.transactions.defaultCustomTypeKey;
 };
