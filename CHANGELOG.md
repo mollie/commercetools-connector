@@ -12,6 +12,14 @@ Added
 
 ## v1.3.2
 
+Added
+
+- A new connector setting named `CTP_TRANSACTION_CUSTOM_TYPE_KEY` for adding/updating new custom fields - the custom field key and logic would stay the same
+
+  - IF set, new custom fields will be updated into the defined custom type key
+  - IF not, new custom fields will be added into a default custom type with key `sctm_transactions_custom_type`
+
+
 Updated
 
 - Allow to cancel an Klarna authorized payment via newly introduce endpoint `/release-authorization` instead of using `DELETE` verb
