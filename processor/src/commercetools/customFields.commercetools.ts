@@ -1,7 +1,6 @@
 import { CustomFields } from '../utils/constant.utils';
 import { createApiRoot } from '../client/create.client';
 import { FieldDefinition, TypeUpdateAction } from '@commercetools/platform-sdk';
-import { readConfiguration } from '../utils/config.utils';
 const PAYMENT_TYPE_KEY = 'sctm-payment-custom-type';
 
 export async function createCustomPaymentType(): Promise<void> {
@@ -239,9 +238,8 @@ export async function createCustomPaymentInterfaceInteractionType(): Promise<voi
 
 export async function createCustomTransactionType(): Promise<void> {
   const transactionCustomTypeKey =
-    readConfiguration().commerceTools.transactionCustomTypeKey &&
-    readConfiguration().commerceTools.transactionCustomTypeKey.length > 0
-      ? readConfiguration().commerceTools.transactionCustomTypeKey
+    process.env?.CTP_TRANSACTION_CUSTOM_TYPE_KEY && process.env.CTP_TRANSACTION_CUSTOM_TYPE_KEY?.length > 0
+      ? process.env.CTP_TRANSACTION_CUSTOM_TYPE_KEY
       : CustomFields.transactions.defaultCustomTypeKey;
 
   const apiRoot = createApiRoot();
