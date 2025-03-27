@@ -239,7 +239,8 @@ export async function createCustomPaymentInterfaceInteractionType(): Promise<voi
 
 export async function createCustomTransactionType(): Promise<void> {
   const transactionCustomTypeKey =
-    readConfiguration().commerceTools.transactionCustomTypeKey !== ''
+    readConfiguration().commerceTools.transactionCustomTypeKey &&
+    readConfiguration().commerceTools.transactionCustomTypeKey.length > 0
       ? readConfiguration().commerceTools.transactionCustomTypeKey
       : CustomFields.transactions.defaultCustomTypeKey;
 
