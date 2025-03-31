@@ -60,7 +60,7 @@ import {
   setTransactionCustomField,
   setTransactionCustomType,
 } from '../commercetools/action.commercetools';
-import { readConfiguration } from '../utils/config.utils';
+import { getTransactionCustomTypeKey, readConfiguration } from '../utils/config.utils';
 import { getPaymentExtension } from '../commercetools/extensions.commercetools';
 import { HttpDestination } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/extension';
 import { cancelPaymentRefund, createPaymentRefund, getPaymentRefund } from '../mollie/refund.mollie';
@@ -196,7 +196,7 @@ const filterMethodsByPricingConstraints = (
 
 const isCaptureFromMollie = (
   manualCapture: boolean,
-  ctTransactions: CTTransaction[],
+  ctTransactions: Transaction[],
   molliePayment: MPayment,
 ): DoCapturePaymentFromMollie => {
   const hasSuccessAuthorizedTransaction = ctTransactions.some((transaction) => {
@@ -233,8 +233,12 @@ const isCaptureFromMollie = (
       transaction.interactionId === molliePayment.id,
   );
 
+  const hasSurchargeCost =
+    pendingChargeTransaction?.custom?.fields?.[CustomFields.transactions.fields.surchargeCost.name] !== undefined;
+
   return {
     answer,
+    hasSurchargeCost,
     id: pendingChargeTransaction?.id,
   };
 };
@@ -334,7 +338,7 @@ export const handlePaymentWebhook = async (paymentId: string): Promise<boolean> 
     return false;
   }
 
-  const action = getPaymentStatusUpdateAction(ctPayment.transactions as CTTransaction[], molliePayment);
+  const action = getPaymentStatusUpdateAction(ctPayment.transactions as Transaction[], molliePayment);
 
   // If refunds are present, update their status
   const refunds = molliePayment._embedded?.refunds;
@@ -361,7 +365,7 @@ export const handlePaymentWebhook = async (paymentId: string): Promise<boolean> 
 };
 
 export const getPaymentStatusUpdateAction = (
-  ctTransactions: CTTransaction[],
+  ctTransactions: Transaction[],
   molliePayment: MPayment,
 ): UpdateAction[] => {
   const updateActions: UpdateAction[] = [];
@@ -439,23 +443,34 @@ export const getPaymentStatusUpdateAction = (
     logger.debug(
       `SCTM - getPaymentStatusUpdateAction - Capture payment triggered from Mollie paymentID: ${molliePaymentId}`,
     );
-    updateActions.push(
-      setTransactionCustomField(
-        CustomFields.surchargeAndCapture.fields.shouldCapture.name,
-        true,
-        doCaptureInMollie.id as string,
-      ),
-      setTransactionCustomField(
-        CustomFields.surchargeAndCapture.fields.descriptionCapture.name,
-        'Payment is captured from Mollie.',
-        doCaptureInMollie.id as string,
-      ),
-      setTransactionCustomField(
-        CustomFields.surchargeAndCapture.fields.captureErrors.name,
-        '',
-        doCaptureInMollie.id as string,
-      ),
-    );
+
+    if (doCaptureInMollie.hasSurchargeCost) {
+      updateActions.push(
+        setTransactionCustomField(
+          CustomFields.transactions.fields.shouldCapturePayment.name,
+          true,
+          doCaptureInMollie.id as string,
+        ),
+        setTransactionCustomField(
+          CustomFields.transactions.fields.capturePaymentDescription.name,
+          'Payment is captured from Mollie.',
+          doCaptureInMollie.id as string,
+        ),
+        setTransactionCustomField(
+          CustomFields.transactions.fields.capturePaymentErrors.name,
+          '',
+          doCaptureInMollie.id as string,
+        ),
+      );
+    } else {
+      updateActions.push(
+        setTransactionCustomType(doCaptureInMollie.id as string, getTransactionCustomTypeKey(), {
+          [CustomFields.transactions.fields.shouldCapturePayment.name]: true,
+          [CustomFields.transactions.fields.capturePaymentDescription.name]: 'Payment is captured from Mollie.',
+          [CustomFields.transactions.fields.capturePaymentErrors.name]: '',
+        }),
+      );
+    }
   }
 
   return updateActions;
@@ -589,7 +604,7 @@ export const getCreatePaymentUpdateAction = async (
     if (surchargeAmountInCent > 0) {
       // Add surcharge amount to the custom field of the transaction
       actions.push(
-        setTransactionCustomType(originalTransaction.id, CustomFields.surchargeAndCapture.typeKey, {
+        setTransactionCustomType(originalTransaction.id, getTransactionCustomTypeKey(), {
           surchargeAmountInCent,
         }),
       );
@@ -610,7 +625,7 @@ export const handleCreateRefund = async (ctPayment: Payment): Promise<Controller
     (transaction) => transaction.type === CTTransactionType.Refund && transaction.state === CTTransactionState.Initial,
   );
 
-  if (initialRefundTransaction?.custom?.fields[CustomFields.transactionRefundForMolliePayment]) {
+  if (initialRefundTransaction?.custom?.fields[CustomFields.transactions.fields.molliePaymentIdToRefund.name]) {
     logger.debug('SCTM - handleCreateRefund - creating a refund with specific payment id');
 
     successChargeTransaction = ctPayment.transactions.find(
@@ -618,7 +633,7 @@ export const handleCreateRefund = async (ctPayment: Payment): Promise<Controller
         transaction.type === CTTransactionType.Charge &&
         transaction.state === CTTransactionState.Success &&
         transaction.interactionId ===
-          initialRefundTransaction?.custom?.fields[CustomFields.transactionRefundForMolliePayment],
+          initialRefundTransaction?.custom?.fields[CustomFields.transactions.fields.molliePaymentIdToRefund.name],
     );
   } else {
     logger.debug('SCTM - handleCreateRefund - creating a refund for the latest success charge transaction');
@@ -634,8 +649,8 @@ export const handleCreateRefund = async (ctPayment: Payment): Promise<Controller
     );
 
     updateActions.push(
-      setTransactionCustomType(initialRefundTransaction?.id as string, CustomFields.transactionRefundForMolliePayment, {
-        [CustomFields.transactionRefundForMolliePayment]: successChargeTransaction?.interactionId,
+      setTransactionCustomType(initialRefundTransaction?.id as string, getTransactionCustomTypeKey(), {
+        [CustomFields.transactions.fields.molliePaymentIdToRefund.name]: successChargeTransaction?.interactionId,
       }),
     );
   }
@@ -692,7 +707,7 @@ export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<Con
           transaction.type === CTTransactionType.Charge &&
           transaction.state === CTTransactionState.Success &&
           transaction.interactionId ===
-            pendingRefundTransaction?.custom?.fields[CustomFields.transactionRefundForMolliePayment],
+            pendingRefundTransaction?.custom?.fields[CustomFields.transactions.fields.molliePaymentIdToRefund.name],
       ) as Transaction;
     }
 
@@ -773,11 +788,11 @@ export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<Con
  * @param triggerTransaction
  */
 export const getPaymentCancelActions = (targetTransaction: Transaction, triggerTransaction: Transaction) => {
-  const transactionCustomFieldName = CustomFields?.paymentCancelReason;
+  const transactionCustomFieldName = CustomFields?.transactions?.fields?.cancelPaymentReasonText.name;
 
   const newTransactionCustomFieldValue = {
-    reasonText: triggerTransaction?.custom?.fields?.reasonText,
-    statusText: CancelStatusText,
+    [CustomFields.transactions.fields.cancelPaymentReasonText.name]: triggerTransaction?.custom?.fields?.reasonText,
+    [CustomFields.transactions.fields.cancelPaymentStatusText.name]: CancelStatusText,
   };
 
   // Update transaction state to failure
@@ -798,7 +813,7 @@ export const getPaymentCancelActions = (targetTransaction: Transaction, triggerT
   // Set transaction custom field value
   if (transactionCustomFieldName) {
     actions.push(
-      setTransactionCustomType(targetTransaction?.id, transactionCustomFieldName, newTransactionCustomFieldValue),
+      setTransactionCustomType(targetTransaction?.id, getTransactionCustomTypeKey(), newTransactionCustomFieldValue),
     );
   }
 
@@ -915,7 +930,7 @@ export const handleCapturePayment = async (ctPayment: Payment): Promise<Controll
     (transaction) =>
       transaction.type === CTTransactionType.Charge &&
       (transaction.state === CTTransactionState.Pending || transaction.state === CTTransactionState.Failure) &&
-      transaction.custom?.fields?.[CustomFields.surchargeAndCapture.fields.shouldCapture.name],
+      transaction.custom?.fields?.[CustomFields.transactions.fields.shouldCapturePayment.name],
   );
 
   if (!pendingChargeTransaction) {
@@ -955,7 +970,7 @@ export const handleCapturePayment = async (ctPayment: Payment): Promise<Controll
     paymentId: molliePayment.id,
     amount: molliePayment.amount,
     description:
-      pendingChargeTransaction?.custom?.fields?.[CustomFields.surchargeAndCapture.fields.descriptionCapture.name] || '',
+      pendingChargeTransaction?.custom?.fields?.[CustomFields.transactions.fields.capturePaymentDescription.name] || '',
   };
 
   const captureResponse: Capture | CustomError = await createCapturePayment(createParams);
@@ -964,7 +979,7 @@ export const handleCapturePayment = async (ctPayment: Payment): Promise<Controll
   if (captureResponse instanceof CustomError) {
     ctActions.push(
       setTransactionCustomField(
-        CustomFields.surchargeAndCapture.fields.captureErrors.name,
+        CustomFields.transactions.fields.capturePaymentErrors.name,
         JSON.stringify({
           errorMessage: captureResponse.message,
           submitData: createParams,

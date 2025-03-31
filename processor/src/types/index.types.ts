@@ -25,6 +25,7 @@ export type ConnectorEnvVars = {
     authMode: string;
     sessionAudience: string;
     sessionIssuer: string;
+    transactionCustomTypeKey: string;
   };
   mollie: {
     testApiKey: string;

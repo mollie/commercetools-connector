@@ -27,6 +27,9 @@ deployAs:
           description: To enable secure mode for connector requests using OAuth authentication (0 or 1)
           required: true
           default: "0"
+        - key: CTP_TRANSACTION_CUSTOM_TYPE_KEY
+          description: Custom type key for transactions in commercetools
+          required: false
       securedConfiguration:
         - key: MOLLIE_API_TEST_KEY
           description: Mollie PSP test API key

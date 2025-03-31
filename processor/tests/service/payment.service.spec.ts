@@ -1214,7 +1214,7 @@ describe('Test getCreatePaymentUpdateAction', () => {
     expect(actual[4]).toEqual({
       action: 'setTransactionCustomType',
       type: {
-        key: 'sctm_transaction_surcharge_and_capture',
+        key: CustomFieldName.transactions.defaultCustomTypeKey,
       },
       fields: {
         surchargeAmountInCent: 1000,
@@ -1431,7 +1431,7 @@ describe('Test handleCreatePayment', () => {
       {
         action: 'setTransactionCustomType',
         type: {
-          key: 'sctm_transaction_surcharge_and_capture',
+          key: CustomFieldName.transactions.defaultCustomTypeKey,
         },
         fields: {
           surchargeAmountInCent: 1020,
@@ -1519,11 +1519,11 @@ describe('Test handleCreateRefund', () => {
       {
         action: 'setTransactionCustomType',
         type: {
-          key: CustomFieldName.transactionRefundForMolliePayment,
+          key: CustomFieldName.transactions.defaultCustomTypeKey,
         },
         transactionId: 'test_refund',
         fields: {
-          [CustomFieldName.transactionRefundForMolliePayment]: 'tr_123123',
+          [CustomFieldName.transactions.fields.molliePaymentIdToRefund.name]: 'tr_123123',
         },
       },
       {
@@ -1626,11 +1626,11 @@ describe('Test handleCreateRefund', () => {
       {
         action: 'setTransactionCustomType',
         type: {
-          key: CustomFieldName.transactionRefundForMolliePayment,
+          key: CustomFieldName.transactions.defaultCustomTypeKey,
         },
         transactionId: 'test_refund',
         fields: {
-          [CustomFieldName.transactionRefundForMolliePayment]: targetedMolliePaymentId,
+          [CustomFieldName.transactions.fields.molliePaymentIdToRefund.name]: targetedMolliePaymentId,
         },
       },
       {
@@ -1702,7 +1702,7 @@ describe('Test handleCreateRefund', () => {
               id: 'custom-type-id',
             },
             fields: {
-              [CustomFieldName.transactionRefundForMolliePayment]: targetedMolliePaymentId,
+              [CustomFieldName.transactions.fields.molliePaymentIdToRefund.name]: targetedMolliePaymentId,
             },
           },
         },
@@ -1853,7 +1853,7 @@ describe('Test getPaymentCancelActions', () => {
     expect(actual[2]).toEqual({
       action: 'setTransactionCustomType',
       type: {
-        key: CustomFieldName.paymentCancelReason,
+        key: CustomFieldName.transactions.defaultCustomTypeKey,
       },
       transactionId: CTPayment.transactions[0].id,
       fields: {
@@ -2093,7 +2093,7 @@ describe('Test handlePaymentCancelRefund', () => {
               id: 'custom-type',
             },
             fields: {
-              [CustomFieldName.transactionRefundForMolliePayment]: 'tr_123123',
+              [CustomFieldName.transactions.fields.molliePaymentIdToRefund.name]: 'tr_123123',
             },
           },
         },
@@ -2238,7 +2238,7 @@ describe('Test handlePaymentCancelRefund', () => {
               id: 'custom-type',
             },
             fields: {
-              [CustomFieldName.transactionRefundForMolliePayment]: 'tr_123123',
+              [CustomFieldName.transactions.fields.molliePaymentIdToRefund.name]: 'tr_123123',
             },
           },
         },
@@ -2464,7 +2464,7 @@ describe('Test handlePaymentWebhook', () => {
       {
         action: 'setTransactionCustomType',
         type: {
-          key: 'sctm_payment_cancel_reason',
+          key: CustomFieldName.transactions.defaultCustomTypeKey,
         },
         fields: {
           reasonText: ctPayment.transactions[1].custom?.fields.reasonText,
@@ -3067,13 +3067,13 @@ describe('Test handleGetApplePaySession', () => {
             interactionId: 'tr_7UhSN1zuXS',
             custom: {
               fields: {
-                sctm_should_capture: true,
+                [CustomFieldName.transactions.fields.shouldCapturePayment.name]: true,
               },
             } as unknown as CustomFields,
           },
           {
             id: '5c8b0375-305a-4f19-ae8e-07806b101299',
-            type: 'Athorization',
+            type: 'Authorization',
             amount: {
               type: 'centPrecision',
               currencyCode: 'EUR',
@@ -3243,7 +3243,7 @@ describe('Test handleGetApplePaySession', () => {
             interactionId: 'tr_7UhSN1zuXS',
             custom: {
               fields: {
-                sctm_should_capture: true,
+                [CustomFieldName.transactions.fields.shouldCapturePayment.name]: true,
               },
             } as unknown as CustomFields,
           },
@@ -3341,7 +3341,7 @@ describe('Test handleGetApplePaySession', () => {
             interactionId: 'tr_7UhSN2zuXS',
             custom: {
               fields: {
-                sctm_should_capture: true,
+                [CustomFieldName.transactions.fields.shouldCapturePayment.name]: true,
               },
             } as unknown as CustomFields,
           },
@@ -3429,7 +3429,7 @@ describe('Test handleGetApplePaySession', () => {
             interactionId: 'tr_7UhSN2zuXS',
             custom: {
               fields: {
-                sctm_should_capture: true,
+                [CustomFieldName.transactions.fields.shouldCapturePayment.name]: true,
               },
             } as unknown as CustomFields,
           },
@@ -3517,7 +3517,7 @@ describe('Test handleGetApplePaySession', () => {
             interactionId: 'tr_7UhSN2zuXS',
             custom: {
               fields: {
-                sctm_should_capture: true,
+                [CustomFieldName.transactions.fields.shouldCapturePayment.name]: true,
               },
             } as unknown as CustomFields,
           },
@@ -3582,7 +3582,7 @@ describe('Test handleGetApplePaySession', () => {
         actions: [
           {
             action: 'setTransactionCustomField',
-            name: 'sctm_capture_errors',
+            name: CustomFieldName.transactions.fields.capturePaymentErrors.name,
             value:
               '{"errorMessage":"Capture failed","submitData":{"paymentId":"tr_7UhSN2zuXS","amount":{"value":"10.00","currency":"EUR"},"description":""}}',
             transactionId: '5c8b0375-305a-4f19-ae8e-07806b101999',

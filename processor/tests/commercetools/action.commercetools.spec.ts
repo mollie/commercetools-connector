@@ -185,7 +185,7 @@ describe('Test actions.utils.ts', () => {
   });
 
   test('should be able to return the correct setTransactionCustomField action', () => {
-    const name = CustomFields.surchargeAndCapture.fields.surchargeCode.name;
+    const name = CustomFields.transactions.fields.surchargeCost.name;
     const surchargeInCentAmount = {
       surchargeInCentAmount: 12345,
     };
