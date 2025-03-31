@@ -211,3 +211,32 @@ export const createCapturePayment = async (options: CreateParameters): Promise<C
     return new CustomError(400, errorMessage);
   }
 };
+
+export const releaseAuthorizationPayment = async (molliePaymentId: string): Promise<void> => {
+  try {
+    const response = await fetch(`https://api.mollie.com/v2/payments/${molliePaymentId}/release-authorization`, {
+      method: 'POST',
+      headers: HEADER,
+    });
+
+    if (response.status === 202) {
+      logger.debug(
+        `SCTM - releaseAuthorizationPayment - Authorization payment released successfully for payment ${molliePaymentId}`,
+      );
+    }
+    return;
+  } catch (error: unknown) {
+    let errorMessage;
+
+    if (error instanceof MollieApiError) {
+      errorMessage = `SCTM - releaseAuthorizationPayment - error: ${error.message}`;
+    } else {
+      errorMessage = `SCTM - releaseAuthorizationPayment - Failed to release authorization payment with unknown errors`;
+    }
+
+    logger.error(errorMessage, {
+      error,
+    });
+    throw new CustomError(400, errorMessage);
+  }
+};

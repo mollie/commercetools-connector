@@ -23,6 +23,7 @@ import {
   getApplePaySession,
   getPaymentById,
   listPaymentMethods,
+  releaseAuthorizationPayment,
 } from '../mollie/payment.mollie';
 import {
   AddTransaction,
@@ -352,7 +353,7 @@ export const handlePaymentWebhook = async (paymentId: string): Promise<boolean> 
 
   await updatePayment(ctPayment, action as PaymentUpdateAction[]);
 
-  if (molliePayment.status === PaymentStatus.canceled) {
+  if (molliePayment.status === PaymentStatus.canceled && molliePayment.method !== PaymentMethod.klarna) {
     await removeCartMollieCustomLineItem(ctPayment);
   }
 
@@ -873,21 +874,12 @@ export const handleCancelPayment = async (ctPayment: Payment): Promise<Controlle
 
   const molliePayment = await getPaymentById(successAuthorizationTransaction?.interactionId as string);
 
-  if (!molliePayment.isCancelable) {
-    logger.error(`SCTM - handleCancelPayment - Payment is not cancelable, Mollie Payment ID: ${molliePayment.id}`, {
-      molliePaymentId: molliePayment.id,
-      commerceToolsPaymentId: ctPayment.id,
-    });
-
-    throw new CustomError(
-      400,
-      `SCTM - handleCancelPayment - Payment is not cancelable, Mollie Payment ID: ${molliePayment.id}`,
-    );
+  if (molliePayment.method === PaymentMethod.klarna && molliePayment.status === PaymentStatus.authorized) {
+    await releaseAuthorizationPayment(molliePayment.id);
+  } else {
+    await cancelPayment(molliePayment.id);
+    await removeCartMollieCustomLineItem(ctPayment);
   }
-
-  await cancelPayment(molliePayment.id);
-
-  await removeCartMollieCustomLineItem(ctPayment);
 
   return {
     statusCode: 200,
