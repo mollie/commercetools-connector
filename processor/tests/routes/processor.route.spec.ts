@@ -6,9 +6,7 @@ import { createPaymentExtension, deletePaymentExtension } from '../../src/commer
 import {
   createCustomPaymentType,
   createCustomPaymentInterfaceInteractionType,
-  createCustomPaymentTransactionCancelReasonType,
-  createTransactionSurchargeCustomType,
-  createTransactionRefundForMolliePaymentCustomType,
+  createCustomTransactionType,
 } from '../../src/commercetools/customFields.commercetools';
 import { getAccessToken } from '../../src/commercetools/auth.commercetools';
 
@@ -20,9 +18,7 @@ jest.mock('../../src/commercetools/extensions.commercetools', () => ({
 jest.mock('../../src/commercetools/customFields.commercetools', () => ({
   createCustomPaymentType: jest.fn(),
   createCustomPaymentInterfaceInteractionType: jest.fn(),
-  createCustomPaymentTransactionCancelReasonType: jest.fn(),
-  createTransactionSurchargeCustomType: jest.fn(),
-  createTransactionRefundForMolliePaymentCustomType: jest.fn(),
+  createCustomTransactionType: jest.fn(),
 }));
 
 jest.mock('../../src/commercetools/auth.commercetools', () => ({
@@ -155,13 +151,12 @@ describe('Test src/route/processor.route.ts', () => {
       //@ts-expect-error handler should be always available
       const handler = layer.route.stack[0].handle;
 
+      expect(handler).toBeDefined();
+
       (createPaymentExtension as jest.Mock).mockReturnValueOnce(Promise.resolve());
       (createCustomPaymentType as jest.Mock).mockReturnValueOnce(Promise.resolve());
       (createCustomPaymentInterfaceInteractionType as jest.Mock).mockReturnValueOnce(Promise.resolve());
-      (createCustomPaymentTransactionCancelReasonType as jest.Mock).mockReturnValueOnce(Promise.resolve());
-      (createTransactionSurchargeCustomType as jest.Mock).mockReturnValueOnce(Promise.resolve());
-      (createTransactionRefundForMolliePaymentCustomType as jest.Mock).mockReturnValueOnce(Promise.resolve());
-      (createTransactionRefundForMolliePaymentCustomType as jest.Mock).mockReturnValueOnce(Promise.resolve());
+      (createCustomTransactionType as jest.Mock).mockReturnValueOnce(Promise.resolve());
 
       (getAccessToken as jest.Mock).mockReturnValueOnce(Promise.resolve());
 

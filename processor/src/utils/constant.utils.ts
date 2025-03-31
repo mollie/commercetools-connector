@@ -31,50 +31,102 @@ export const CustomFields = {
       },
     },
   },
-  paymentCancelReason: 'sctm_payment_cancel_reason',
   applePay: {
     session: {
       request: 'sctm_apple_pay_session_request',
       response: 'sctm_apple_pay_session_response',
     },
   },
-  transactionSurchargeCost: 'sctm_transaction_surcharge_cost',
-  transactionRefundForMolliePayment: 'sctm_transaction_refund_for_mollie_payment',
-  surchargeAndCapture: {
-    typeKey: 'sctm_transaction_surcharge_and_capture',
-    name: {
-      en: '(SCTM) Transaction surcharge & capture control',
-      de: '(SCTM) Transaktionszuschlag & Erfassungskontrolle',
-    },
+  transactions: {
+    defaultCustomTypeKey: 'sctm_transactions_custom_type',
     resourceTypeId: 'transaction',
+    name: {
+      en: '(SCTM) Custom transaction type',
+      de: '(SCTM) Benutzerdefinierter Transaktionstyp',
+    },
     fields: {
-      surchargeCode: {
+      cancelPaymentReasonText: {
+        name: 'reasonText',
+        label: {
+          en: 'The reason of cancelling the refund, include the user name',
+          de: 'Der Grund für die Stornierung der Rückerstattung, den Benutzernamen einschließen',
+        },
+        required: false,
+        type: {
+          name: 'String',
+        },
+        inputHint: 'MultiLine',
+      },
+      cancelPaymentStatusText: {
+        name: 'statusText',
+        label: {
+          en: 'To differentiate between the “failure” from CommerceTools and the real status',
+          de: 'Um zwischen dem „Fehler“ von CommerceTools und dem tatsächlichen Status zu unterscheiden',
+        },
+        required: false,
+        type: {
+          name: 'String',
+        },
+        inputHint: 'MultiLine',
+      },
+      molliePaymentIdToRefund: {
+        name: 'sctm_transaction_refund_for_mollie_payment',
+        label: {
+          en: 'Identify the Mollie payment which is being refunded by its ID',
+          de: 'Identifizieren Sie die Mollie-Zahlung, die zurückerstattet wird durch seine ID',
+        },
+        required: false,
+        type: {
+          name: 'String',
+        },
+        inputHint: 'MultiLine',
+      },
+      surchargeCost: {
         name: 'surchargeAmountInCent',
         label: {
           en: 'Total surcharge amount in cent',
           de: 'Gesamtbetrag des Zuschlags in Cent',
         },
+        required: false,
+        type: {
+          name: 'Number',
+        },
+        inputHint: 'MultiLine',
       },
-      shouldCapture: {
+      shouldCapturePayment: {
         name: 'sctm_should_capture',
         label: {
           en: 'Should capture money for this transaction',
           de: 'Soll das Geld für diese Transaktion eingezogen werden',
         },
+        required: false,
+        type: {
+          name: 'Boolean',
+        },
       },
-      descriptionCapture: {
+      capturePaymentDescription: {
         name: 'sctm_capture_description',
         label: {
           en: 'Capture description',
           de: 'Beschreibung der Einziehung',
         },
+        required: false,
+        type: {
+          name: 'String',
+        },
+        inputHint: 'MultiLine',
       },
-      captureErrors: {
+      capturePaymentErrors: {
         name: 'sctm_capture_errors',
         label: {
           en: 'Capture errors',
           de: 'Fehler bei der Einziehung',
         },
+        required: false,
+        type: {
+          name: 'String',
+        },
+        inputHint: 'MultiLine',
       },
     },
   },

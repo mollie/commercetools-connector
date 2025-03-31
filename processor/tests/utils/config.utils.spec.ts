@@ -16,6 +16,7 @@ describe('Test src/utils/config.utils.ts', () => {
         authMode: process.env.AUTHENTICATION_MODE,
         sessionAudience: process.env.CTP_SESSION_AUDIENCE,
         sessionIssuer: process.env.CTP_SESSION_ISSUER,
+        transactionCustomTypeKey: process.env.CTP_TRANSACTION_CUSTOM_TYPE_KEY,
       },
       mollie: {
         liveApiKey: process.env.MOLLIE_API_LIVE_KEY,
@@ -75,5 +76,26 @@ describe('Test src/utils/config.utils.ts', () => {
   test('should throw an error when AUTHENTICATION_MODE is invalid', () => {
     process.env.AUTHENTICATION_MODE = 'dummy';
     expect(() => readConfiguration()).toThrow(CustomError);
+  });
+
+  test('should return CTP_TRANSACTION_CUSTOM_TYPE_KEY', () => {
+    process.env.CTP_CLIENT_ID = '123456789012345678901234';
+    process.env.CTP_CLIENT_SECRET = '12345678901234567890123456789012';
+    process.env.CTP_PROJECT_KEY = 'custom_type_key';
+    process.env.CTP_SCOPE = 'custom_type_key';
+    process.env.CTP_REGION = 'europe-west1.gcp';
+    process.env.CTP_AUTH_URL = 'custom_type_key';
+    process.env.AUTHENTICATION_MODE = '0';
+    process.env.CTP_SESSION_AUDIENCE = 'custom_type_key';
+    process.env.CTP_SESSION_ISSUER = 'custom_type_key';
+    process.env.CTP_TRANSACTION_CUSTOM_TYPE_KEY = 'custom_type_key';
+    process.env.MOLLIE_API_LIVE_KEY = 'custom_type_key';
+    process.env.MOLLIE_API_TEST_KEY = 'custom_type_key';
+    process.env.CONNECTOR_MODE = 'test';
+    process.env.DEBUG = '0';
+    process.env.MOLLIE_PROFILE_ID = 'custom_type_key';
+    const config = readConfiguration();
+
+    expect(config.commerceTools.transactionCustomTypeKey).toBe('custom_type_key');
   });
 });

@@ -5,6 +5,7 @@ dist
 .DS_Store
 .vscode
 .idea
+.connect
 build/
 processor/.env
 processor/junit-report.xml

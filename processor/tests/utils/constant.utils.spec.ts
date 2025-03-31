@@ -37,7 +37,16 @@ describe('Test constant.utils.ts', () => {
     expect(CustomFields?.createPayment?.request).toBeDefined();
     expect(CustomFields?.createPayment?.interfaceInteraction).toBeDefined();
 
-    expect(CustomFields?.paymentCancelReason).toBeDefined();
+    expect(CustomFields?.transactions.defaultCustomTypeKey).toBeDefined();
+    expect(CustomFields?.transactions.resourceTypeId).toBeDefined();
+    expect(CustomFields?.transactions.name).toBeDefined();
+    expect(CustomFields?.transactions.fields.cancelPaymentReasonText.name).toBeDefined();
+    expect(CustomFields?.transactions.fields.cancelPaymentStatusText.name).toBeDefined();
+    expect(CustomFields?.transactions.fields.molliePaymentIdToRefund.name).toBeDefined();
+    expect(CustomFields?.transactions.fields.surchargeCost.name).toBeDefined();
+    expect(CustomFields?.transactions.fields.shouldCapturePayment.name).toBeDefined();
+    expect(CustomFields?.transactions.fields.capturePaymentDescription.name).toBeDefined();
+    expect(CustomFields?.transactions.fields.capturePaymentErrors.name).toBeDefined();
 
     expect(CustomFields?.applePay?.session?.request).toBeDefined();
     expect(CustomFields?.applePay?.session?.response).toBeDefined();
