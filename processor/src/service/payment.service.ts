@@ -648,11 +648,21 @@ export const handleCreateRefund = async (ctPayment: Payment): Promise<Controller
         transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Success,
     );
 
-    updateActions.push(
-      setTransactionCustomType(initialRefundTransaction?.id as string, getTransactionCustomTypeKey(), {
-        [CustomFields.transactions.fields.molliePaymentIdToRefund.name]: successChargeTransaction?.interactionId,
-      }),
-    );
+    if (initialRefundTransaction?.custom?.type?.id) {
+      updateActions.push(
+        setTransactionCustomField(
+          CustomFields.transactions.fields.molliePaymentIdToRefund.name,
+          successChargeTransaction?.interactionId as string,
+          initialRefundTransaction?.id as string,
+        ),
+      );
+    } else {
+      updateActions.push(
+        setTransactionCustomType(initialRefundTransaction?.id as string, getTransactionCustomTypeKey(), {
+          [CustomFields.transactions.fields.molliePaymentIdToRefund.name]: successChargeTransaction?.interactionId,
+        }),
+      );
+    }
   }
 
   if (!successChargeTransaction) {
