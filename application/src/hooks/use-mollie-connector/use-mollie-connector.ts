@@ -17,23 +17,11 @@ import {
   SupportedPaymentMethods,
 } from '../../types/app';
 
-/**
- * For local development using ngrok forwards the requests to the connector
- * please consider to add 'ngrok-skip-browser-warning': 'true' in your header config below
- * to bypass ERR_NGROK_6024
- */
 const config = {
   headers: {
     'Content-Type': 'application/json',
   },
 };
-
-if (process.env.NODE_ENV === 'development') {
-  config.headers = {
-    ...config.headers,
-    ...{ 'ngrok-skip-browser-warning': 'true' },
-  };
-}
 
 const convertMollieMethodToCustomMethod = (
   results: MollieResult,

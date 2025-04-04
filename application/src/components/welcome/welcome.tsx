@@ -176,10 +176,14 @@ const Welcome = () => {
           itemRenderer={(item, column) => {
             switch (column.key) {
               case 'status':
-                return item.status === 'Active' ? (
-                  <CheckActiveIcon color="success"></CheckActiveIcon>
-                ) : (
-                  <CheckInactiveIcon color="neutral60"></CheckInactiveIcon>
+                return (
+                  <div data-testid={`status-column-${item.id}`}>
+                    {item.status === 'Active' ? (
+                      <CheckActiveIcon color="success"></CheckActiveIcon>
+                    ) : (
+                      <CheckInactiveIcon color="neutral60"></CheckInactiveIcon>
+                    )}
+                  </div>
                 );
               case 'name':
                 return (
@@ -190,6 +194,7 @@ const Welcome = () => {
               case 'image':
                 return (
                   <IconButton
+                    data-testid={`image-column-${item.id}`}
                     style={{ cursor: 'pointer' }}
                     isDisabled={true}
                     icon={
