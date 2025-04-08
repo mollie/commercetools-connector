@@ -32,11 +32,6 @@ const config = {
     labelAllLocales: [],
     permissions: [PERMISSIONS.Manage],
   },
-  headers: {
-    csp: {
-      'connect-src': ['*.euope-west1.gcp.commercetoolsr.app'],
-    },
-  },
 };
 
 export default config;
