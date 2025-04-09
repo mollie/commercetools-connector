@@ -29,8 +29,7 @@ export const makeCTMoney = (mollieAmount: Amount): CTMoney => {
     type: 'centPrecision',
     currencyCode: mollieAmount.currency,
     // If the value is negative, round down, else round up
-    centAmount:
-      convertedMollieAmountValue > 0 ? Math.ceil(convertedMollieAmountValue) : Math.floor(convertedMollieAmountValue),
+    centAmount: Math.round(convertedMollieAmountValue),
     fractionDigits,
   };
 };
