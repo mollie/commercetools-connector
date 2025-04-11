@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## v1.4.1
+
+- Support for payment methods `in3`
+
 ## v1.4.0
 
 Added
@@ -18,7 +22,6 @@ Added
 
   - IF set, new custom fields will be updated into the defined custom type key
   - IF not, new custom fields will be added into a default custom type with key `sctm_transactions_custom_type`
-
 
 Updated
 
