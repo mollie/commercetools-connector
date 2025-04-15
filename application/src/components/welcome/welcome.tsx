@@ -223,10 +223,9 @@ const Welcome = () => {
           onSortChange={tableSorting.onChange}
           onRowClick={(row) => {
             push(
-              `${match.url}/${
-                customObjectsPaginatedResult?.results.filter(
-                  (obj) => obj.key === row.id
-                )?.[0]?.id
+              `${match.url}/${customObjectsPaginatedResult?.results.filter(
+                (obj) => obj.key === row.id
+              )?.[0]?.id
               }/general`
             );
           }}
