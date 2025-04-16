@@ -184,6 +184,19 @@ describe('Test actions.utils.ts', () => {
     });
   });
 
+  test('should return a action for adding transaction custom fields', () => {
+    const name = 'customFieldName';
+    const value = 'customFieldValue';
+    const transactionId = 'transactionId';
+
+    expect(setTransactionCustomField(name, value, transactionId)).toStrictEqual({
+      action: 'setTransactionCustomField',
+      name,
+      value,
+      transactionId,
+    });
+  });
+
   test('should be able to return the correct setTransactionCustomField action', () => {
     const name = CustomFields.transactions.fields.surchargeCost.name;
     const surchargeInCentAmount = {

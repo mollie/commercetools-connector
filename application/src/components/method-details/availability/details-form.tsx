@@ -54,10 +54,16 @@ const AvailabilityDetailsForm = (props: TAvailabilityDetailsFormProps) => {
   });
 
   let surchargeRestrictionMessage = '';
+
   switch (props.currentMethod.id) {
     case 'klarna':
       surchargeRestrictionMessage = intl.formatMessage(
         messages.fieldSurchargeRestrictionNotificationKlarna
+      );
+      break;
+    case 'in3':
+      surchargeRestrictionMessage = intl.formatMessage(
+        messages.fieldSurchargeRestrictionNotificationIn3
       );
       break;
     case 'alma':
