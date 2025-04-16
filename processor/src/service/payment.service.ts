@@ -503,9 +503,9 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
   logger.debug(`SCTM - handleCreatePayment - Calculating total surcharge amount`);
   const surchargeAmountInCent = pricingConstraint
     ? roundSurchargeAmountToCent(
-      calculateTotalSurchargeAmount(ctPayment, pricingConstraint.surchargeCost),
-      ctPayment.amountPlanned.fractionDigits,
-    )
+        calculateTotalSurchargeAmount(ctPayment, pricingConstraint.surchargeCost),
+        ctPayment.amountPlanned.fractionDigits,
+      )
     : 0;
 
   const paymentParams = createMollieCreatePaymentParams(
@@ -633,7 +633,7 @@ export const handleCreateRefund = async (ctPayment: Payment): Promise<Controller
         transaction.type === CTTransactionType.Charge &&
         transaction.state === CTTransactionState.Success &&
         transaction.interactionId ===
-        initialRefundTransaction?.custom?.fields[CustomFields.transactions.fields.molliePaymentIdToRefund.name],
+          initialRefundTransaction?.custom?.fields[CustomFields.transactions.fields.molliePaymentIdToRefund.name],
     );
   } else {
     logger.debug('SCTM - handleCreateRefund - creating a refund for the latest success charge transaction');
@@ -717,7 +717,7 @@ export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<Con
           transaction.type === CTTransactionType.Charge &&
           transaction.state === CTTransactionState.Success &&
           transaction.interactionId ===
-          pendingRefundTransaction?.custom?.fields[CustomFields.transactions.fields.molliePaymentIdToRefund.name],
+            pendingRefundTransaction?.custom?.fields[CustomFields.transactions.fields.molliePaymentIdToRefund.name],
       ) as Transaction;
     }
 
