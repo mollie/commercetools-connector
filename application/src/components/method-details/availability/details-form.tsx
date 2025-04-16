@@ -66,6 +66,11 @@ const AvailabilityDetailsForm = (props: TAvailabilityDetailsFormProps) => {
         messages.fieldSurchargeRestrictionNotificationIn3
       );
       break;
+    case 'alma':
+      surchargeRestrictionMessage = intl.formatMessage(
+        messages.fieldSurchargeRestrictionNotificationAlma
+      );
+      break;
     default:
       surchargeRestrictionMessage = '';
   }
