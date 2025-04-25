@@ -106,7 +106,7 @@ describe('Test mollie.utils.ts', () => {
       const expected: CTMoney = {
         type: 'centPrecision',
         currencyCode: 'EUR',
-        centAmount: Math.ceil(12.345 * 1000),
+        centAmount: Math.round(12.345 * 1000),
         fractionDigits: 3,
       };
 
