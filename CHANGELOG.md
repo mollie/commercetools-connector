@@ -6,7 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## v1.4.1
 
-- Support for payment methods `in3`
+Fixed
+
+- Wrong amount returned in the connector webhook for Klarna orders
 
 ## v1.4.0
 
