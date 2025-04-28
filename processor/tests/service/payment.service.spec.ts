@@ -50,6 +50,7 @@ import { createCartUpdateActions, createMollieCreatePaymentParams } from '../../
 import { changeTransactionState } from '../../src/commercetools/action.commercetools';
 import { makeCTMoney, shouldRefundStatusUpdate } from '../../src/utils/mollie.utils';
 import { getCartFromPayment, updateCart } from '../../src/commercetools/cart.commercetools';
+import { getOrderByPaymentId } from '../../src/commercetools/order.commercetools';
 import { calculateTotalSurchargeAmount } from '../../src/utils/app.utils';
 import { removeCartMollieCustomLineItem } from '../../src/service/cart.service';
 import { CreateParameters } from '@mollie/api-client/dist/types/binders/payments/refunds/parameters';
@@ -77,6 +78,10 @@ jest.mock('../../src/commercetools/cart.commercetools', () => ({
 jest.mock('../../src/commercetools/customObjects.commercetools', () => ({
   getMethodConfigObjects: jest.fn(),
   getSingleMethodConfigObject: jest.fn(),
+}));
+
+jest.mock('../../src/commercetools/order.commercetools', () => ({
+  getOrderByPaymentId: jest.fn(),
 }));
 
 jest.mock('../../src/service/payment.service.ts', () => ({
@@ -1502,12 +1507,18 @@ describe('Test handleCreateRefund', () => {
       id: 'fake_refund_id',
     });
 
+    (getOrderByPaymentId as jest.Mock).mockReturnValueOnce({
+      orderNumber: 'order123',
+    });
+
+    const refundDesc = 'TEST | order123 | full-refund';
     const paymentCreateRefundParams: CreateParameters = {
       paymentId: 'tr_123123',
       amount: {
         value: '10.00',
         currency: 'EUR',
       },
+      description: refundDesc,
     };
 
     const result = await handleCreateRefund(CTPayment);
@@ -1535,6 +1546,12 @@ describe('Test handleCreateRefund', () => {
         action: 'changeTransactionState',
         transactionId: 'test_refund',
         state: 'Pending',
+      },
+      {
+        action: 'setTransactionCustomField',
+        name: 'reasonText',
+        value: refundDesc,
+        transactionId: 'test_refund',
       },
     ]);
   });
@@ -1591,6 +1608,15 @@ describe('Test handleCreateRefund', () => {
             fractionDigits: 2,
           },
           state: 'Initial',
+          custom: {
+            type: {
+              typeId: 'type',
+              id: '',
+            },
+            fields: {
+              reasonText: 'my refund reason 123',
+            },
+          },
         },
       ],
       interfaceInteractions: [],
@@ -1609,12 +1635,14 @@ describe('Test handleCreateRefund', () => {
       id: 'fake_refund_id',
     });
 
+    const refundDesc = 'TEST | full-refund | my refund reason 123';
     const paymentCreateRefundParams: CreateParameters = {
       paymentId: targetedMolliePaymentId,
       amount: {
         value: '10.00',
         currency: 'EUR',
       },
+      description: refundDesc,
     };
 
     const result = await handleCreateRefund(CTPayment);
@@ -1622,28 +1650,36 @@ describe('Test handleCreateRefund', () => {
     expect(createPaymentRefund).toBeCalledTimes(1);
     expect(createPaymentRefund).toBeCalledWith(paymentCreateRefundParams);
     expect(result.statusCode).toBe(201);
-    expect(result.actions).toStrictEqual([
-      {
-        action: 'setTransactionCustomType',
-        type: {
-          key: CustomFieldName.transactions.defaultCustomTypeKey,
+    expect(result.actions).toEqual(
+      expect.arrayContaining([
+        {
+          action: 'setTransactionCustomType',
+          type: {
+            key: CustomFieldName.transactions.defaultCustomTypeKey,
+          },
+          transactionId: 'test_refund',
+          fields: {
+            [CustomFieldName.transactions.fields.molliePaymentIdToRefund.name]: targetedMolliePaymentId,
+          },
         },
-        transactionId: 'test_refund',
-        fields: {
-          [CustomFieldName.transactions.fields.molliePaymentIdToRefund.name]: targetedMolliePaymentId,
+        {
+          action: 'changeTransactionInteractionId',
+          transactionId: 'test_refund',
+          interactionId: 'fake_refund_id',
         },
-      },
-      {
-        action: 'changeTransactionInteractionId',
-        transactionId: 'test_refund',
-        interactionId: 'fake_refund_id',
-      },
-      {
-        action: 'changeTransactionState',
-        transactionId: 'test_refund',
-        state: 'Pending',
-      },
-    ]);
+        {
+          action: 'changeTransactionState',
+          transactionId: 'test_refund',
+          state: 'Pending',
+        },
+        {
+          action: 'setTransactionCustomField',
+          name: 'reasonText',
+          value: refundDesc,
+          transactionId: 'test_refund',
+        },
+      ]),
+    );
   });
 
   it('should return status code and array of actions (more than 1 success charge transaction, with Mollie payment that need to be refunded is specified)', async () => {
@@ -1723,12 +1759,14 @@ describe('Test handleCreateRefund', () => {
       id: 'fake_refund_id',
     });
 
+    const refundDesc = 'TEST | full-refund';
     const paymentCreateRefundParams: CreateParameters = {
       paymentId: targetedMolliePaymentId,
       amount: {
         value: '10.00',
         currency: 'EUR',
       },
+      description: refundDesc,
     };
 
     const result = await handleCreateRefund(CTPayment);
@@ -1746,6 +1784,12 @@ describe('Test handleCreateRefund', () => {
         action: 'changeTransactionState',
         transactionId: 'test_refund',
         state: 'Pending',
+      },
+      {
+        action: 'setTransactionCustomField',
+        name: 'reasonText',
+        value: refundDesc,
+        transactionId: 'test_refund',
       },
     ]);
   });
