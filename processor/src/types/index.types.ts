@@ -1,3 +1,5 @@
+import { Amount } from '@mollie/api-client/dist/types/data/global';
+
 export type Message = {
   code: string;
   message: string;
@@ -26,6 +28,7 @@ export type ConnectorEnvVars = {
     sessionAudience: string;
     sessionIssuer: string;
     transactionCustomTypeKey: string;
+    brandName: string;
   };
   mollie: {
     testApiKey: string;
@@ -34,4 +37,11 @@ export type ConnectorEnvVars = {
     profileId: string;
     debug: string;
   };
+};
+
+export type RefundDescriptionParams = {
+  paymentId: string;
+  totalAmount: Amount;
+  refundAmount: Amount;
+  customerMessage: string;
 };
