@@ -44,4 +44,6 @@ export enum SupportedPaymentMethods {
   twint = 'twint',
   paybybank = 'paybybank',
   eps = 'eps',
+  alma = 'alma',
+  payconiq = 'payconiq',
 }
