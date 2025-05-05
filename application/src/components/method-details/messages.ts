@@ -112,4 +112,14 @@ export default defineMessages({
     defaultMessage:
       'Payment surcharge for BNPL payment methods are restricted by law in the Netherlands.',
   },
+  fieldSurchargeRestrictionNotificationIn3: {
+    id: 'MethodDetails.fieldSurchargeRestrictionNotificationIn3',
+    defaultMessage:
+      'Payment surcharge for BNPL payment methods are restricted by law in the Netherlands.',
+  },
+  fieldSurchargeRestrictionNotificationAlma: {
+    id: 'MethodDetails.fieldSurchargeRestrictionNotificationAlma',
+    defaultMessage:
+      'Payment surcharge for BNPL payment methods are restricted by law in the Netherlands.',
+  },
 });
