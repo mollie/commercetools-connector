@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 Fixed
 
-- Failed to the process key during custom application initialization
+- Failed to get the process key during custom application initialization
 
 ## v1.4.2
 
