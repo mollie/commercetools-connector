@@ -250,7 +250,7 @@ const isCaptureFromMollie = (
  * @return {Promise<{ statusCode: number, actions?: UpdateAction[] }>} - A promise that resolves to an object containing the status code and optional update actions.
  */
 export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Promise<ControllerResponseType> => {
-  logger.debug(`SCTM - listPaymentMethodsByPayment - ctPaymentId:${JSON.stringify(ctPayment?.id)}`);
+  logger.debug(`SCTM - listPaymentMethodsByPayment - ctPaymentId:${ctPayment?.id}`);
   try {
     const mollieOptions = await mapCommercetoolsPaymentCustomFieldsToMollieListParams(ctPayment);
     const methods: Method[] = await listPaymentMethods(mollieOptions);
