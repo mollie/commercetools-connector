@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## v1.4.3
+
+Fixed
+
+- Failed to the process key during custom application initialization
+
 ## v1.4.2
 
 - Support for payment methods `in3`, `alma`, `payconiq`
