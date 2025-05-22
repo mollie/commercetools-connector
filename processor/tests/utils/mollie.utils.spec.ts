@@ -1,5 +1,5 @@
-import { CentPrecisionMoney } from '@commercetools/platform-sdk';
-import { PaymentStatus, RefundStatus } from '@mollie/api-client';
+import { CentPrecisionMoney, Customer } from '@commercetools/platform-sdk';
+import { PaymentStatus, RefundStatus, PaymentCreateParams } from '@mollie/api-client';
 import { CTMoney, CTTransactionState } from '../../src/types/commercetools.types';
 import {
   makeMollieAmount,
@@ -8,11 +8,17 @@ import {
   shouldPaymentStatusUpdate,
   shouldRefundStatusUpdate,
   calculateDueDate,
+  appendCompanyInfoToPaymentParams,
 } from '../../src/utils/mollie.utils';
 import { expect, describe, it, test, jest } from '@jest/globals';
 import { logger } from '../../src/utils/logger.utils';
 import CustomError from '../../src/errors/custom.error';
 import { Amount } from '@mollie/api-client/dist/types/data/global';
+import { getCustomerById } from '../../src/commercetools/customer.commercetools';
+
+jest.mock('../../src/commercetools/customer.commercetools', () => ({
+  getCustomerById: jest.fn(),
+}));
 
 describe('Test mollie.utils.ts', () => {
   describe('convertCTToMollieAmountValue', () => {
@@ -222,6 +228,140 @@ describe('Test mollie.utils.ts', () => {
 
         expect(error).toBeInstanceOf(CustomError);
       }
+    });
+  });
+
+  describe('appendCompanyInfoToPaymentParams', () => {
+    // Common test data
+    const DEFAULT_CUSTOMER_ID = 'customer-123';
+    const getDefaultPaymentParams = (): PaymentCreateParams => {
+      return {
+        amount: { currency: 'EUR', value: '100.00' },
+        description: 'Test payment',
+        redirectUrl: 'https://example.com/redirect',
+        billingAddress: {
+          streetAndNumber: '123 Main St',
+          postalCode: '12345',
+          city: 'Amsterdam',
+          country: 'NL',
+          givenName: 'John',
+          familyName: 'Doe',
+          email: 'john.doe@example.com',
+        },
+      };
+    };
+    // Helper function to create a customer object
+    const createCustomer = (customerId: string, companyName?: string): Customer =>
+      ({
+        id: customerId,
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+        isEmailVerified: true,
+        version: 1,
+        createdAt: '2021-01-01T00:00:00.000Z',
+        lastModifiedAt: '2021-01-01T00:00:00.000Z',
+        addresses: [],
+        authenticationMode: 'Password',
+        ...(companyName ? { companyName } : {}),
+      }) as Customer;
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      (getCustomerById as jest.Mock).mockReset();
+    });
+
+    it('should append company name to billing address when customer has company name', async () => {
+      // Arrange
+      const customerId = DEFAULT_CUSTOMER_ID;
+      const paymentParams = getDefaultPaymentParams();
+      const companyName = 'Acme Inc';
+
+      // Mock the getCustomerById function to return a customer with company name
+      (getCustomerById as jest.Mock).mockReturnValueOnce(createCustomer(customerId, companyName));
+
+      // Act
+      const result = await appendCompanyInfoToPaymentParams(customerId, paymentParams);
+
+      // Assert
+      expect(getCustomerById as jest.Mock).toHaveBeenCalledTimes(1);
+      expect(getCustomerById as jest.Mock).toHaveBeenCalledWith(customerId);
+      expect(result.billingAddress?.organizationName).toBe(companyName);
+      expect(result).toEqual({
+        ...paymentParams,
+        billingAddress: {
+          ...paymentParams.billingAddress,
+          organizationName: companyName,
+        },
+      });
+    });
+
+    it('should not append company name when customer does not have company name', async () => {
+      // Arrange
+      const customerId = DEFAULT_CUSTOMER_ID;
+      const paymentParams = getDefaultPaymentParams();
+
+      // Mock the getCustomerById function to return a customer without company name
+      (getCustomerById as jest.Mock).mockReturnValueOnce(createCustomer(customerId));
+
+      // Act
+      const result = await appendCompanyInfoToPaymentParams(customerId, paymentParams);
+
+      // Assert
+      expect(getCustomerById as jest.Mock).toHaveBeenCalledTimes(1);
+      expect(getCustomerById as jest.Mock).toHaveBeenCalledWith(customerId);
+      expect(result.billingAddress?.organizationName).toBeUndefined();
+      expect(result).toEqual(paymentParams);
+    });
+
+    it('should not append company name when billing address is not provided', async () => {
+      // Arrange
+      const customerId = DEFAULT_CUSTOMER_ID;
+      const paymentParams: PaymentCreateParams = {
+        amount: { currency: 'EUR', value: '100.00' },
+        description: 'Test payment',
+        redirectUrl: 'https://example.com/redirect',
+        // No billingAddress
+      };
+
+      // Mock the getCustomerById function to return a customer with company name
+      (getCustomerById as jest.Mock).mockReturnValueOnce(createCustomer(customerId, 'Acme Inc'));
+
+      // Act
+      const result = await appendCompanyInfoToPaymentParams(customerId, paymentParams);
+
+      // Assert
+      expect(getCustomerById as jest.Mock).toHaveBeenCalledTimes(1);
+      expect(getCustomerById as jest.Mock).toHaveBeenCalledWith(customerId);
+      expect(result.billingAddress).toBeUndefined();
+      expect(result).toEqual(paymentParams);
+    });
+
+    it('should return payment params unchanged when customer ID is not provided', async () => {
+      // Arrange
+      const customerId = '';
+      const paymentParams = getDefaultPaymentParams();
+
+      // Act
+      const result = await appendCompanyInfoToPaymentParams(customerId, paymentParams);
+
+      // Assert
+      expect(getCustomerById as jest.Mock).not.toHaveBeenCalled();
+      expect(result).toEqual(paymentParams);
+    });
+
+    it('should handle errors from getCustomerById', async () => {
+      // Arrange
+      const customerId = DEFAULT_CUSTOMER_ID;
+      const paymentParams = getDefaultPaymentParams();
+      const error = new Error('Customer not found');
+
+      (getCustomerById as jest.Mock<any>).mockRejectedValueOnce(error);
+
+      // Act & Assert
+      await expect(appendCompanyInfoToPaymentParams(customerId, paymentParams)).rejects.toThrow('Customer not found');
+      expect(getCustomerById as jest.Mock).toHaveBeenCalledTimes(1);
+      expect(getCustomerById as jest.Mock).toHaveBeenCalledWith(customerId);
     });
   });
 });

@@ -40,6 +40,8 @@ import {
   DoCapturePaymentFromMollie,
 } from '../types/commercetools.types';
 import {
+  appendCompanyInfoToPaymentParams,
+  isBusinessCustomer,
   makeCTMoney,
   makeMollieAmount,
   shouldPaymentStatusUpdate,
@@ -250,10 +252,10 @@ const isCaptureFromMollie = (
  * @return {Promise<{ statusCode: number, actions?: UpdateAction[] }>} - A promise that resolves to an object containing the status code and optional update actions.
  */
 export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Promise<ControllerResponseType> => {
-  logger.debug(`SCTM - listPaymentMethodsByPayment - ctPaymentId:${JSON.stringify(ctPayment?.id)}`);
+  logger.debug(`SCTM - listPaymentMethodsByPayment - ctPaymentId:${ctPayment?.id}`);
   try {
     const mollieOptions = await mapCommercetoolsPaymentCustomFieldsToMollieListParams(ctPayment);
-    const methods: Method[] = await listPaymentMethods(mollieOptions);
+    let methods: Method[] = await listPaymentMethods(mollieOptions);
     const configObjects: CustomObject[] = await getMethodConfigObjects();
 
     const billingCountry = getBillingCountry(ctPayment);
@@ -263,6 +265,19 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
         commerceToolsPaymentId: ctPayment.id,
       });
       throw new CustomError(400, 'billingCountry is not provided.');
+    }
+
+    try {
+      const cart = await getCartFromPayment(ctPayment.id);
+      const billiePayment = methods.find((method) => method.id === PaymentMethod.billie);
+      if (billiePayment && cart.customerId) {
+        const isBusiness = await isBusinessCustomer(cart.customerId);
+        if (!isBusiness) {
+          methods = methods.filter((method) => method.id !== PaymentMethod.billie);
+        }
+      }
+    } catch (error) {
+      logger.info('SCTM - listPaymentMethodsByPayment - customer - error', error);
     }
 
     const customMethods = methods.map(mapMollieMethodToCustomMethod);
@@ -515,6 +530,10 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
     cart,
     banktransferDueDate,
   );
+
+  if (method === PaymentMethod.billie && cart.customerId) {
+    await appendCompanyInfoToPaymentParams(cart.customerId, paymentParams);
+  }
 
   let molliePayment;
   if (PaymentMethod[paymentParams.method as PaymentMethod]) {

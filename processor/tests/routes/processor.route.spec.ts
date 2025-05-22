@@ -9,6 +9,7 @@ import {
   createCustomTransactionType,
 } from '../../src/commercetools/customFields.commercetools';
 import { getAccessToken } from '../../src/commercetools/auth.commercetools';
+import { createCustomCustomerTypes } from '../../src/commercetools/customer.commercetools';
 
 jest.mock('../../src/commercetools/extensions.commercetools', () => ({
   deletePaymentExtension: jest.fn(),
@@ -19,6 +20,10 @@ jest.mock('../../src/commercetools/customFields.commercetools', () => ({
   createCustomPaymentType: jest.fn(),
   createCustomPaymentInterfaceInteractionType: jest.fn(),
   createCustomTransactionType: jest.fn(),
+}));
+
+jest.mock('../../src/commercetools/customer.commercetools.ts', () => ({
+  createCustomCustomerTypes: jest.fn(),
 }));
 
 jest.mock('../../src/commercetools/auth.commercetools', () => ({
@@ -157,6 +162,7 @@ describe('Test src/route/processor.route.ts', () => {
       (createCustomPaymentType as jest.Mock).mockReturnValueOnce(Promise.resolve());
       (createCustomPaymentInterfaceInteractionType as jest.Mock).mockReturnValueOnce(Promise.resolve());
       (createCustomTransactionType as jest.Mock).mockReturnValueOnce(Promise.resolve());
+      (createCustomCustomerTypes as jest.Mock).mockReturnValueOnce(Promise.resolve());
 
       (getAccessToken as jest.Mock).mockReturnValueOnce(Promise.resolve());
 

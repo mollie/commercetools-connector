@@ -1,10 +1,11 @@
 import { CentPrecisionMoney } from '@commercetools/platform-sdk';
 import { CTMoney, CTTransactionState } from '../types/commercetools.types';
-import { PaymentStatus, RefundStatus } from '@mollie/api-client';
-import { DEFAULT_DUE_DATE, DUE_DATE_PATTERN } from './constant.utils';
+import { PaymentCreateParams, PaymentStatus, RefundStatus } from '@mollie/api-client';
+import { CustomFields, DEFAULT_DUE_DATE, DUE_DATE_PATTERN } from './constant.utils';
 import { logger } from './logger.utils';
 import CustomError from '../errors/custom.error';
 import { Amount } from '@mollie/api-client/dist/types/data/global';
+import { getCustomerById } from '../commercetools/customer.commercetools';
 
 export const convertCTToMollieAmountValue = (ctValue: number, fractionDigits = 2): string => {
   const divider = Math.pow(10, fractionDigits);
@@ -120,4 +121,30 @@ export const calculateDueDate = (input?: string): string => {
   logger.error(errorMessage);
 
   throw new CustomError(400, errorMessage);
+};
+
+export const isBusinessCustomer = async (customerId: string) => {
+  if (customerId) {
+    const customer = await getCustomerById(customerId);
+    return !!customer?.companyName;
+  }
+
+  return false;
+};
+
+export const appendCompanyInfoToPaymentParams = async (customerId: string, paymentParams: PaymentCreateParams) => {
+  if (customerId) {
+    const customer = await getCustomerById(customerId);
+    if (customer?.companyName && paymentParams.billingAddress) {
+      paymentParams.billingAddress.organizationName = customer.companyName;
+      const registrationNumber = customer.custom?.fields[CustomFields.customer.registrationNumber];
+      const company = {
+        vatNumber: customer.vatId,
+        ...(registrationNumber ? { registrationNumber } : undefined),
+      };
+      paymentParams.company = company as any;
+    }
+  }
+
+  return paymentParams;
 };
