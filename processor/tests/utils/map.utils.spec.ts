@@ -1316,7 +1316,9 @@ describe('createMollieCreatePaymentParams', () => {
       redirectUrl: customFieldObject.redirectUrl,
       webhookUrl: extensionUrl,
       description: customFieldObject.description,
-      organizationName: companyName,
+      billingAddress: {
+        organizationName: companyName,
+      },
       lines: [],
     });
   });

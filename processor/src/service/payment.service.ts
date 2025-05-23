@@ -1,5 +1,12 @@
 import { ControllerResponseType } from '../types/controller.types';
-import { CancelStatusText, ConnectorActions, CustomFields, PAY_LATER_ENUMS } from '../utils/constant.utils';
+import {
+  CancelStatusText,
+  ConnectorActions,
+  CustomFields,
+  FULL_REFUND,
+  PARTIAL_REFUND,
+  PAY_LATER_ENUMS,
+} from '../utils/constant.utils';
 import { Capture, Method, Payment as MPayment, PaymentMethod, PaymentStatus, Refund } from '@mollie/api-client';
 import {
   createCartUpdateActions,
@@ -79,6 +86,8 @@ import { CancelParameters, CreateParameters } from '@mollie/api-client/dist/type
 import ApplePaySession from '@mollie/api-client/dist/types/data/applePaySession/ApplePaySession';
 import { CreateParameters as CreateCaptureParameters } from '@mollie/api-client/dist/types/binders/payments/captures/parameters';
 import { logger } from '../utils/logger.utils';
+import { getOrderByPaymentId } from '../commercetools/order.commercetools';
+import { RefundDescriptionParams } from '../types/index.types';
 
 /**
  * Validates and sorts the payment methods.
@@ -648,20 +657,38 @@ export const handleCreateRefund = async (ctPayment: Payment): Promise<Controller
         transaction.type === CTTransactionType.Charge && transaction.state === CTTransactionState.Success,
     );
 
-    updateActions.push(
-      setTransactionCustomType(initialRefundTransaction?.id as string, getTransactionCustomTypeKey(), {
-        [CustomFields.transactions.fields.molliePaymentIdToRefund.name]: successChargeTransaction?.interactionId,
-      }),
-    );
+    if (initialRefundTransaction?.custom?.type?.id) {
+      updateActions.push(
+        setTransactionCustomField(
+          CustomFields.transactions.fields.molliePaymentIdToRefund.name,
+          successChargeTransaction?.interactionId as string,
+          initialRefundTransaction?.id as string,
+        ),
+      );
+    } else {
+      updateActions.push(
+        setTransactionCustomType(initialRefundTransaction?.id as string, getTransactionCustomTypeKey(), {
+          [CustomFields.transactions.fields.molliePaymentIdToRefund.name]: successChargeTransaction?.interactionId,
+        }),
+      );
+    }
   }
 
   if (!successChargeTransaction) {
     throw new CustomError(400, 'SCTM - handleCreateRefund - Cannot find valid success charge transaction');
   }
 
+  const refundAmount = makeMollieAmount(initialRefundTransaction?.amount as CentPrecisionMoney);
+  const refundDesc = await generateRefundDescription({
+    paymentId: ctPayment.id,
+    totalAmount: makeMollieAmount(successChargeTransaction.amount as CentPrecisionMoney),
+    refundAmount,
+    customerMessage: initialRefundTransaction?.custom?.fields.reasonText || '',
+  });
   const paymentCreateRefundParams: CreateParameters = {
     paymentId: successChargeTransaction?.interactionId as string,
-    amount: makeMollieAmount(initialRefundTransaction?.amount as CentPrecisionMoney),
+    amount: refundAmount,
+    description: refundDesc,
   };
 
   const refund = await createPaymentRefund(paymentCreateRefundParams);
@@ -671,10 +698,32 @@ export const handleCreateRefund = async (ctPayment: Payment): Promise<Controller
     changeTransactionState(initialRefundTransaction?.id as string, CTTransactionState.Pending),
   );
 
+  updateActions.push(
+    setTransactionCustomField(
+      CustomFields.transactions.fields.cancelPaymentReasonText.name, // TODO add more field for refund
+      refundDesc,
+      initialRefundTransaction?.id as string,
+    ),
+  );
+
   return {
     statusCode: 201,
     actions: updateActions,
   };
+};
+
+export const generateRefundDescription = async ({
+  paymentId,
+  totalAmount,
+  refundAmount,
+  customerMessage,
+}: RefundDescriptionParams): Promise<string> => {
+  const config = readConfiguration().commerceTools;
+  const brandName = config.brandName || config.projectKey;
+  const order = await getOrderByPaymentId(paymentId);
+  const refundType = totalAmount.value === refundAmount.value ? FULL_REFUND : PARTIAL_REFUND;
+
+  return [brandName, order?.orderNumber, refundType, customerMessage].filter(Boolean).join(' | ');
 };
 
 /**

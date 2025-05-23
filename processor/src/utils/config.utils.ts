@@ -22,6 +22,7 @@ export const readConfiguration = () => {
       sessionAudience: (process.env.CTP_SESSION_AUDIENCE as string) || 'https://mc.europe-west1.gcp.commercetools.com',
       sessionIssuer: (process.env.CTP_SESSION_ISSUER as string) || 'gcp-eu',
       transactionCustomTypeKey: process.env.CTP_TRANSACTION_CUSTOM_TYPE_KEY as string,
+      brandName: process.env.BRAND_NAME as string,
     },
     mollie: {
       testApiKey: process.env.MOLLIE_API_TEST_KEY as string,

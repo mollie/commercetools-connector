@@ -166,3 +166,6 @@ export const MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM = 'mollie-surcharge-line-item';
 export const MOLLIE_SURCHARGE_LINE_DESCRIPTION = 'Total surcharge amount';
 
 export const MOLLIE_SHIPPING_LINE_DESCRIPTION = 'Shipping amount';
+
+export const FULL_REFUND = 'full-refund';
+export const PARTIAL_REFUND = 'partial-refund';

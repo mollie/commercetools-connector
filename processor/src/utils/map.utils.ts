@@ -102,10 +102,6 @@ const getSpecificPaymentParams = (
       };
     case PaymentMethod.creditcard:
       return { cardToken: paymentRequest.cardToken ?? '' };
-    case PaymentMethod.billie:
-      return {
-        organizationName: paymentRequest.organizationName,
-      };
     default:
       return {};
   }
@@ -200,6 +196,13 @@ export const createMollieCreatePaymentParams = (
     lines: mollieLines,
     ...getSpecificPaymentParams(method as PaymentMethod, paymentRequest, banktransferDueDate ?? ''),
   };
+
+  if (method === PaymentMethod.billie) {
+    createPaymentParams.billingAddress = {
+      ...(createPaymentParams.billingAddress || {}),
+      organizationName: paymentRequest.organizationName,
+    };
+  }
 
   return removeEmptyProperties(createPaymentParams) as PaymentCreateParams;
 };
