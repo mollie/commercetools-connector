@@ -1254,6 +1254,74 @@ describe('createMollieCreatePaymentParams', () => {
       lines: [],
     });
   });
+
+  it('should able to create a mollie payment params from CommerceTools payment object with Billie method', async () => {
+    const cart = {
+      id: 'cart-test-id',
+    } as Cart;
+
+    const companyName = 'ACB Bakery';
+
+    const customFieldObject = {
+      description: 'Test payment',
+      locale: 'en_GB',
+      redirectUrl: 'https://example.com/success',
+      webhookUrl: 'https://example.com/webhook',
+      organizationName: companyName,
+    };
+
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: PaymentMethod.billie,
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm_payment',
+        },
+        fields: {
+          sctm_create_payment_request: JSON.stringify(customFieldObject),
+        },
+      },
+    };
+    const extensionUrl = 'https://example.com/webhook';
+
+    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(
+      CTPayment,
+      extensionUrl,
+      0,
+      cart,
+    );
+
+    expect(mollieCreatePaymentParams).toEqual({
+      method: PaymentMethod.billie,
+      amount: {
+        currency: 'EUR',
+        value: '10.00',
+      },
+      locale: customFieldObject.locale,
+      redirectUrl: customFieldObject.redirectUrl,
+      webhookUrl: extensionUrl,
+      description: customFieldObject.description,
+      billingAddress: {
+        organizationName: companyName,
+      },
+      lines: [],
+    });
+  });
 });
 
 describe('Test createCartUpdateActions', () => {

@@ -77,6 +77,7 @@ export enum SupportedPaymentMethods {
   in3 = 'in3',
   alma = 'alma',
   payconiq = 'payconiq',
+  billie = 'billie',
 }
 
 export const PaymentsWithResitrctedSurcharge = ['klarna', 'in3', 'alma'];
