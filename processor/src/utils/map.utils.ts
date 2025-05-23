@@ -102,6 +102,10 @@ const getSpecificPaymentParams = (
       };
     case PaymentMethod.creditcard:
       return { cardToken: paymentRequest.cardToken ?? '' };
+    case PaymentMethod.billie:
+      return {
+        organizationName: paymentRequest.organizationName,
+      };
     default:
       return {};
   }
