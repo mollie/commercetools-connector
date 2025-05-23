@@ -1,6 +1,6 @@
 {
   "name": "shopmacher-mollie-application",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "Integration application between commercetools and mollie payment service provider",
   "private": true,
   "scripts": {
