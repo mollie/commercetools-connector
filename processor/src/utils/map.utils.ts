@@ -102,10 +102,6 @@ const getSpecificPaymentParams = (
       };
     case PaymentMethod.creditcard:
       return { cardToken: paymentRequest.cardToken ?? '' };
-    case PaymentMethod.billie:
-      return {
-        organizationName: paymentRequest.organizationName,
-      };
     default:
       return {};
   }
@@ -170,7 +166,7 @@ export const createMollieCreatePaymentParams = (
 
   const defaultWebhookEndpoint = new URL(extensionUrl).origin + '/webhook';
 
-  let billingAddress = paymentRequest.billingAddress;
+  let billingAddress = paymentRequest.billingAddress || {};
   if (
     (method === CustomPaymentMethod.blik || method === PaymentMethod.przelewy24) &&
     !billingAddress?.email &&
@@ -179,6 +175,13 @@ export const createMollieCreatePaymentParams = (
     billingAddress = {
       ...paymentRequest.billingAddress,
       email: paymentRequest.billingEmail,
+    };
+  }
+
+  if (method === PaymentMethod.billie) {
+    billingAddress = {
+      ...billingAddress,
+      organizationName: paymentRequest.billingAddress.organizationName,
     };
   }
 
