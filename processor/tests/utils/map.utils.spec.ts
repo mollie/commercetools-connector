@@ -1267,7 +1267,9 @@ describe('createMollieCreatePaymentParams', () => {
       locale: 'en_GB',
       redirectUrl: 'https://example.com/success',
       webhookUrl: 'https://example.com/webhook',
-      organizationName: companyName,
+      billingAddress: {
+        organizationName: companyName,
+      },
     };
 
     const CTPayment: Payment = {
