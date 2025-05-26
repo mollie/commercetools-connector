@@ -12,6 +12,10 @@ export const VERSION_STRING = `${LIBRARY_NAME}/${LIBRARY_VERSION}`;
 export const MOLLIE_VERSION_STRINGS = [VERSION_STRING, MOLLIE_AGENT_INFO];
 
 export const CustomFields = {
+  customer: {
+    key: 'sctm_customer_custom_types',
+    registrationNumber: 'sctm_customer_registration_number',
+  },
   payment: {
     error: 'sctm_payment_methods_error',
     request: 'sctm_payment_methods_request',

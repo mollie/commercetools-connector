@@ -24,7 +24,7 @@ import {
   CustomFields as CustomFieldName,
   MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
 } from '../../src/utils/constant.utils';
-import { Payment as molliePayment, PaymentStatus, Refund, RefundStatus } from '@mollie/api-client';
+import { Payment as MolliePayment, PaymentStatus, Refund, RefundStatus } from '@mollie/api-client';
 import {
   ChangeTransactionState,
   CTTransaction,
@@ -987,9 +987,9 @@ describe('Test getCreatePaymentUpdateAction', () => {
       },
     };
 
-    const molliePayment: molliePayment = {
+    const molliePayment: MolliePayment = {
       amount: { currency: 'USD', value: '10.00' },
-    } as molliePayment;
+    } as MolliePayment;
 
     (getCreatePaymentUpdateAction as jest.Mock).mockImplementationOnce(() => {
       const paymentService = jest.requireActual(
@@ -1039,7 +1039,7 @@ describe('Test getCreatePaymentUpdateAction', () => {
       },
     };
 
-    const molliePayment: molliePayment = {
+    const molliePayment: MolliePayment = {
       resource: 'payment',
       id: 'tr_7UhSN1zuXS',
       amount: { currency: 'USD', value: '10.00' },
@@ -1054,7 +1054,7 @@ describe('Test getCreatePaymentUpdateAction', () => {
           type: 'https://api.mollie.com/v2/payments/tr_7UhSN1zuXS',
         },
       },
-    } as molliePayment;
+    } as MolliePayment;
 
     (getCreatePaymentUpdateAction as jest.Mock).mockImplementationOnce(() => {
       const paymentService = jest.requireActual(
@@ -1144,7 +1144,7 @@ describe('Test getCreatePaymentUpdateAction', () => {
       },
     };
 
-    const molliePayment: molliePayment = {
+    const molliePayment: MolliePayment = {
       resource: 'payment',
       id: 'tr_7UhSN1zuXS',
       amount: { currency: 'USD', value: '10.00' },
@@ -1159,7 +1159,7 @@ describe('Test getCreatePaymentUpdateAction', () => {
           type: 'https://api.mollie.com/v2/payments/tr_7UhSN1zuXS',
         },
       },
-    } as molliePayment;
+    } as MolliePayment;
 
     (getCreatePaymentUpdateAction as jest.Mock).mockImplementationOnce(() => {
       const paymentService = jest.requireActual(
@@ -1272,6 +1272,38 @@ describe('Test handleCreatePayment', () => {
     },
   };
 
+  const molliePayment: MolliePayment = {
+    resource: 'payment',
+    id: 'tr_7UhSN1zuXS',
+    amount: {
+      value: '10.00',
+      currency: 'EUR',
+    },
+    description: 'Order #12345',
+    redirectUrl: 'https://webshop.example.org/order/12345/',
+    webhookUrl: 'https://webshop.example.org/payments/webhook/',
+    metadata: '{"order_id":12345}',
+    profileId: 'pfl_QkEhN94Ba',
+    status: PaymentStatus.open,
+    isCancelable: false,
+    createdAt: '2024-03-20T09:13:37+00:00',
+    expiresAt: '2024-03-20T09:28:37+00:00',
+    _links: {
+      self: {
+        href: '...',
+        type: 'application/hal+json',
+      },
+      checkout: {
+        href: 'https://www.mollie.com/checkout/select-method/7UhSN1zuXS',
+        type: 'text/html',
+      },
+      documentation: {
+        href: '...',
+        type: 'text/html',
+      },
+    },
+  } as MolliePayment;
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -1281,38 +1313,6 @@ describe('Test handleCreatePayment', () => {
   });
 
   it('should return status code and array of actions', async () => {
-    const molliePayment: molliePayment = {
-      resource: 'payment',
-      id: 'tr_7UhSN1zuXS',
-      amount: {
-        value: '10.00',
-        currency: 'EUR',
-      },
-      description: 'Order #12345',
-      redirectUrl: 'https://webshop.example.org/order/12345/',
-      webhookUrl: 'https://webshop.example.org/payments/webhook/',
-      metadata: '{"order_id":12345}',
-      profileId: 'pfl_QkEhN94Ba',
-      status: PaymentStatus.open,
-      isCancelable: false,
-      createdAt: '2024-03-20T09:13:37+00:00',
-      expiresAt: '2024-03-20T09:28:37+00:00',
-      _links: {
-        self: {
-          href: '...',
-          type: 'application/hal+json',
-        },
-        checkout: {
-          href: 'https://www.mollie.com/checkout/select-method/7UhSN1zuXS',
-          type: 'text/html',
-        },
-        documentation: {
-          href: '...',
-          type: 'text/html',
-        },
-      },
-    } as molliePayment;
-
     const customLineItem = {
       id: 'custom-line',
       key: MOLLIE_SURCHARGE_CUSTOM_LINE_ITEM,
@@ -2712,7 +2712,7 @@ describe('Test handleCancelPayment', () => {
   });
 
   it('should throw an error if the Mollie Payment is not cancelable', async () => {
-    const molliePayment: molliePayment = {
+    const molliePayment: MolliePayment = {
       resource: 'payment',
       id: 'tr_7UhSN1zuXS',
       mode: 'live',
@@ -2736,7 +2736,7 @@ describe('Test handleCancelPayment', () => {
           type: 'text/html',
         },
       },
-    } as molliePayment;
+    } as MolliePayment;
 
     (getPaymentById as jest.Mock).mockReturnValueOnce(molliePayment);
 
@@ -2761,7 +2761,7 @@ describe('Test handleCancelPayment', () => {
 
     jest.spyOn(cartService, 'removeCartMollieCustomLineItem');
 
-    const molliePayment: molliePayment = {
+    const molliePayment: MolliePayment = {
       resource: 'payment',
       id: 'tr_7UhSN1zuXS',
       mode: 'live',
@@ -2785,7 +2785,7 @@ describe('Test handleCancelPayment', () => {
           type: 'text/html',
         },
       },
-    } as molliePayment;
+    } as MolliePayment;
 
     (getPaymentById as jest.Mock).mockReturnValueOnce(molliePayment);
 
@@ -2811,7 +2811,7 @@ describe('Test handleCancelPayment', () => {
 
     jest.spyOn(cartService, 'removeCartMollieCustomLineItem');
 
-    const molliePayment: molliePayment = {
+    const molliePayment: MolliePayment = {
       resource: 'payment',
       id: 'tr_7UhSN1zuXS',
       mode: 'live',
@@ -2835,7 +2835,7 @@ describe('Test handleCancelPayment', () => {
           type: 'text/html',
         },
       },
-    } as molliePayment;
+    } as MolliePayment;
 
     (getPaymentById as jest.Mock).mockReturnValueOnce(molliePayment);
 
@@ -3134,7 +3134,7 @@ describe('Test handleGetApplePaySession', () => {
         },
       };
 
-      const molliePayment: molliePayment = {
+      const molliePayment: MolliePayment = {
         resource: 'payment',
         id: 'tr_7UhSN1zuXS',
         mode: 'live',
@@ -3159,7 +3159,7 @@ describe('Test handleGetApplePaySession', () => {
             type: 'text/html',
           },
         },
-      } as molliePayment;
+      } as MolliePayment;
 
       const createCaptureParams: CreateCaptureParameters = {
         paymentId: molliePayment.id,
@@ -3310,7 +3310,7 @@ describe('Test handleGetApplePaySession', () => {
         },
       };
 
-      const molliePayment: molliePayment = {
+      const molliePayment: MolliePayment = {
         resource: 'payment',
         id: 'tr_7UhSN1zuXS',
         mode: 'live',
@@ -3335,7 +3335,7 @@ describe('Test handleGetApplePaySession', () => {
             type: 'text/html',
           },
         },
-      } as molliePayment;
+      } as MolliePayment;
 
       (getPaymentById as jest.Mock).mockReturnValueOnce(molliePayment);
 
@@ -3408,7 +3408,7 @@ describe('Test handleGetApplePaySession', () => {
         },
       };
 
-      const molliePayment: molliePayment = {
+      const molliePayment: MolliePayment = {
         resource: 'payment',
         id: 'tr_7UhSN2zuXS',
         mode: 'live',
@@ -3433,7 +3433,7 @@ describe('Test handleGetApplePaySession', () => {
             type: 'text/html',
           },
         },
-      } as molliePayment;
+      } as MolliePayment;
 
       (getPaymentById as jest.Mock).mockReturnValueOnce(molliePayment);
 
@@ -3496,7 +3496,7 @@ describe('Test handleGetApplePaySession', () => {
         },
       };
 
-      const molliePayment: molliePayment = {
+      const molliePayment: MolliePayment = {
         resource: 'payment',
         id: 'tr_7UhSN2zuXS',
         mode: 'live',
@@ -3521,7 +3521,7 @@ describe('Test handleGetApplePaySession', () => {
             type: 'text/html',
           },
         },
-      } as molliePayment;
+      } as MolliePayment;
 
       (getPaymentById as jest.Mock).mockReturnValueOnce(molliePayment);
 
@@ -3584,7 +3584,7 @@ describe('Test handleGetApplePaySession', () => {
         },
       };
 
-      const molliePayment: molliePayment = {
+      const molliePayment: MolliePayment = {
         resource: 'payment',
         id: 'tr_7UhSN2zuXS',
         mode: 'live',
@@ -3609,7 +3609,7 @@ describe('Test handleGetApplePaySession', () => {
             type: 'text/html',
           },
         },
-      } as molliePayment;
+      } as MolliePayment;
 
       (getPaymentById as jest.Mock).mockReturnValueOnce(molliePayment);
 
