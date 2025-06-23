@@ -15,6 +15,9 @@ deployAs:
           description: Commercetools Auth URL
           default: https://auth.europe-west1.gcp.commercetools.com
           required: true
+        - key: BRAND_NAME
+          description: Brand name of the Commercetools project
+          required: false
         - key: CONNECTOR_MODE
           description: Either test or live
           required: true
@@ -78,7 +81,7 @@ deployAs:
     applicationType: job
     endpoint: /job
     properties:
-      schedule: "0 */4 * * *"
+      schedule: "*/15 * * * *"
     configuration:
       standardConfiguration:
         - key: CTP_REGION

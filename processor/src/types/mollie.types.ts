@@ -49,4 +49,5 @@ export enum SupportedPaymentMethods {
   payconiq = 'payconiq',
   riverty = 'riverty',
   swish = 'swish',
+  billie = 'billie',
 }
