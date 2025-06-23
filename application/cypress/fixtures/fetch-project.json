@@ -16,7 +16,8 @@
         "ES",
         "BE",
         "FR",
-        "PT"
+        "PT",
+        "SE"
       ],
       "currencies": ["EUR", "GBP", "PLN", "CHF"],
       "languages": [
@@ -30,7 +31,8 @@
         "es-ES",
         "de-AT",
         "pt-PT",
-        "it-IT"
+        "it-IT",
+        "sv-SE"
       ],
       "initialized": true,
       "expiry": {
