@@ -1,16 +1,20 @@
 import { createApiRoot } from '../client/create.client';
 import { Extension } from '@commercetools/platform-sdk';
+import { readConfiguration } from '../utils/config.utils';
 
 export const PAYMENT_EXTENSION_KEY = 'sctm-payment-create-update-extension';
 
-export async function createPaymentExtension(applicationUrl: string, accessToken: string): Promise<void> {
+export async function createPaymentExtension(applicationUrl: string): Promise<void> {
   const apiRoot = createApiRoot();
+  const { clientId, clientSecret } = readConfiguration().commerceTools;
 
   const extension = await getPaymentExtension();
 
   if (extension) {
     await deletePaymentExtension(extension);
   }
+
+  const basicAuthToken = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
 
   await apiRoot
     .extensions()
@@ -22,7 +26,7 @@ export async function createPaymentExtension(applicationUrl: string, accessToken
           url: applicationUrl,
           authentication: {
             type: 'AuthorizationHeader',
-            headerValue: `Bearer ${accessToken}`,
+            headerValue: `Basic ${basicAuthToken}`,
           },
         },
         triggers: [
