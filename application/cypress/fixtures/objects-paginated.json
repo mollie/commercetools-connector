@@ -742,6 +742,50 @@
         "displayOrder": 0
       },
       "__typename": "CustomObject"
-    }
+    },
+    {
+      "id": "63a4eb21-1893-483b-90d3-0931fb16bd87",
+      "container": "sctm-app-methods",
+      "key": "swish",
+      "value": {
+          "id": "swish",
+          "technicalName": "Swish",
+          "name": {
+              "de-DE": "Swish",
+              "pl-PL": "Swish",
+              "it-IT": "Swish",
+              "fr-FR": "Swish",
+              "de-CH": "Swish",
+              "nl-NL": "Swish",
+              "de-BE": "Swish",
+              "es-ES": "Swish",
+              "de-AT": "Swish",
+              "en-GB": "Swish",
+              "pt-PT": "Swish",
+              "sv-SE": "Swish"
+          },
+          "description": {
+              "de-DE": "",
+              "pl-PL": "",
+              "it-IT": "",
+              "fr-FR": "",
+              "de-CH": "",
+              "nl-NL": "",
+              "de-BE": "",
+              "es-ES": "",
+              "de-AT": "",
+              "en-GB": "",
+              "pt-PT": "",
+              "sv-SE": ""
+          },
+          "imageUrl": "https://www.mollie.com/external/icons/payment-methods/swish.svg",
+          "status": "Active",
+          "displayOrder": 0
+      },
+      "version": 2,
+      "createdAt": "2025-06-23T04:09:11.120Z",
+      "lastModifiedAt": "2025-06-23T04:09:25.178Z",
+      "__typename": "CustomObject"
+  }
   ]
 }
