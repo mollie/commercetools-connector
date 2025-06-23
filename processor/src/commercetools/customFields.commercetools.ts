@@ -254,7 +254,7 @@ export async function createCustomTransactionType(): Promise<void> {
     })
     .execute();
 
-  if (types.length <= 0) {
+  if (types.length === 0) {
     await apiRoot
       .types()
       .post({
@@ -269,27 +269,27 @@ export async function createCustomTransactionType(): Promise<void> {
         },
       })
       .execute();
-  }
+  } else {
+    const type = types[0];
+    const existingDefinitions = type.fieldDefinitions.map((field) => field.name);
+    const fieldDefinitions = Object.values(CustomFields.transactions.fields).filter(
+      (field) => !existingDefinitions.includes(field.name),
+    ) as FieldDefinition[];
 
-  const type = types[0];
-  const existingDefinitions = type.fieldDefinitions.map((field) => field.name);
-  const fieldDefinitions = Object.values(CustomFields.transactions.fields).filter(
-    (field) => !existingDefinitions.includes(field.name),
-  ) as FieldDefinition[];
-
-  if (fieldDefinitions.length > 0) {
-    await apiRoot
-      .types()
-      .withKey({ key: transactionCustomTypeKey })
-      .post({
-        body: {
-          version: type.version,
-          actions: fieldDefinitions.map((field) => ({
-            action: 'addFieldDefinition',
-            fieldDefinition: field,
-          })),
-        },
-      })
-      .execute();
+    if (fieldDefinitions.length > 0) {
+      await apiRoot
+        .types()
+        .withKey({ key: transactionCustomTypeKey })
+        .post({
+          body: {
+            version: type.version,
+            actions: fieldDefinitions.map((field) => ({
+              action: 'addFieldDefinition',
+              fieldDefinition: field,
+            })),
+          },
+        })
+        .execute();
+    }
   }
 }
