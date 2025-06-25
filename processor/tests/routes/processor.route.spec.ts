@@ -8,8 +8,6 @@ import {
   createCustomPaymentInterfaceInteractionType,
   createCustomTransactionType,
 } from '../../src/commercetools/customFields.commercetools';
-import { getAccessToken } from '../../src/commercetools/auth.commercetools';
-
 jest.mock('../../src/commercetools/extensions.commercetools', () => ({
   deletePaymentExtension: jest.fn(),
   createPaymentExtension: jest.fn(),
@@ -19,10 +17,6 @@ jest.mock('../../src/commercetools/customFields.commercetools', () => ({
   createCustomPaymentType: jest.fn(),
   createCustomPaymentInterfaceInteractionType: jest.fn(),
   createCustomTransactionType: jest.fn(),
-}));
-
-jest.mock('../../src/commercetools/auth.commercetools', () => ({
-  getAccessToken: jest.fn(),
 }));
 
 describe('Test src/route/processor.route.ts', () => {
@@ -157,8 +151,6 @@ describe('Test src/route/processor.route.ts', () => {
       (createCustomPaymentType as jest.Mock).mockReturnValueOnce(Promise.resolve());
       (createCustomPaymentInterfaceInteractionType as jest.Mock).mockReturnValueOnce(Promise.resolve());
       (createCustomTransactionType as jest.Mock).mockReturnValueOnce(Promise.resolve());
-
-      (getAccessToken as jest.Mock).mockReturnValueOnce(Promise.resolve());
 
       req = {
         hostname: 'test.com',
