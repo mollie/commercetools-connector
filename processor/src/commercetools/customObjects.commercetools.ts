@@ -15,7 +15,11 @@ export const getMethodConfigObjects = async (): Promise<CustomObject[]> => {
       .withContainer({
         container: CUSTOM_OBJECT_CONTAINER_NAME,
       })
-      .get()
+      .get({
+        queryArgs: {
+          limit: 50,
+        },
+      })
       .execute();
 
     return methodObjects;

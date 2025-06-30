@@ -6,10 +6,15 @@ import {
 } from '../commercetools/customFields.commercetools';
 
 export const createExtensionAndCustomFields = async (extensionUrl: string): Promise<void> => {
-  await createPaymentExtension(extensionUrl);
-  await createCustomPaymentType();
-  await createCustomPaymentInterfaceInteractionType();
-  await createCustomTransactionType();
+  try {
+    await createPaymentExtension(extensionUrl);
+    await createCustomPaymentType();
+    await createCustomPaymentInterfaceInteractionType();
+    await createCustomTransactionType();
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    throw new Error(`Failed to create extension and custom fields: ${errorMessage}`);
+  }
 };
 
 export const removeExtension = async (): Promise<void> => {

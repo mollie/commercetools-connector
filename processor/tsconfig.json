@@ -15,5 +15,5 @@
     "rootDir": "./src",
     "outDir": "./dist"
   },
-  "compileOnSave": true,
+  "compileOnSave": true
 }
