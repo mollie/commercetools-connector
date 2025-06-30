@@ -17,7 +17,6 @@ jobs:
       matrix:
         directory:
           - processor
-          - job
 
     steps:
       - name: Checkout code

@@ -4,12 +4,10 @@ import {
   createCustomPaymentInterfaceInteractionType,
   createCustomTransactionType,
 } from '../commercetools/customFields.commercetools';
-import { getAccessToken } from '../commercetools/auth.commercetools';
 
 export const createExtensionAndCustomFields = async (extensionUrl: string): Promise<void> => {
-  const response = await getAccessToken();
   try {
-    await createPaymentExtension(extensionUrl, response?.access_token as string);
+    await createPaymentExtension(extensionUrl);
     await createCustomPaymentType();
     await createCustomPaymentInterfaceInteractionType();
     await createCustomTransactionType();

@@ -6,18 +6,18 @@ This guide explains how to connect to the Mollie client and verify the connectio
 
 ## Securing connector endpoints
 
-To called our connector endpoint esp. the processor endpoint (/processor/*), a valid access token (with client credentials grant type) is required. This token must be updated into the extension destination.
+To call our connector endpoint esp. the processor endpoint (/processor/*), Basic Authentication using commercetools client credentials is required. This authentication is configured in the extension destination.
 
 ``` MD
-CREAT/UPDATE Extension 
+CREATE/UPDATE Extension 
 {
     ...
     "destination": {
         "type": "HTTP",
-        "url": "https://efd6-115-74-115-119.ngrok-free.app/processor",
-        "authorization": {
+        "url": "https://your-connector-url.com/processor",
+        "authentication": {
             "type": "AuthorizationHeader",
-            "headerValue": "***tAjsIR2!srt"
+            "headerValue": "Basic <base64-encoded-clientId:clientSecret>"
         }
     }
     ...
@@ -25,7 +25,7 @@ CREAT/UPDATE Extension
 
 ```
 
-Kindly recheck your extension record if facing unauthorized error when communicating with the connector. Also the token do expire after a time, please consider to implement a scheduled job to update this token.
+The connector uses Basic Authentication with your commercetools client ID and client secret. These credentials are automatically used when creating extensions during deployment.
 
 ## Connecting to Mollie
 
