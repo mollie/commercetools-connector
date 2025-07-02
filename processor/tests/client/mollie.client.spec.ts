@@ -21,7 +21,7 @@ describe('Test mollie.client.ts', () => {
   const mockCreateMollieClient = createMollieClient as jest.Mock;
   const mockGetApiKey = getApiKey as jest.Mock;
   const mockReadConfiguration = readConfiguration as jest.Mock;
-  let mockMollieClient: MollieClient;
+  const mockMollieClient: MollieClient = {} as MollieClient;
 
   it('should initialize and return a MollieClient instance with the correct API key', () => {
     mockCreateMollieClient.mockReturnValue(mockMollieClient);
