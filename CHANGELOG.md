@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## v1.4.3
 
+Added
+
+- Support Riverty and Swish payment methods
+
 Fixed
 
 - Failed to get the process key during custom application initialization

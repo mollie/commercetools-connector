@@ -8,6 +8,15 @@ import {
 } from '../../src/commercetools/extensions.commercetools';
 import { Extension } from '@commercetools/platform-sdk';
 
+jest.mock('../../src/utils/config.utils', () => ({
+  readConfiguration: jest.fn().mockReturnValue({
+    commerceTools: {
+      clientId: 'test-client-id',
+      clientSecret: 'test-client-secret',
+    },
+  }),
+}));
+
 jest.mock('../../src/client/create.client', () => ({
   createApiRoot: jest.fn(),
 }));
@@ -29,7 +38,7 @@ describe('Test extension.commercetools', () => {
       url: mockUrl,
       authentication: {
         type: 'AuthorizationHeader',
-        headerValue: 'Bearer _token_',
+        headerValue: 'Basic dGVzdC1jbGllbnQtaWQ6dGVzdC1jbGllbnQtc2VjcmV0',
       },
     },
     triggers: [
@@ -170,9 +179,7 @@ describe('Test extension.commercetools', () => {
       }),
     );
 
-    const accessToken = 'token123';
-
-    await createPaymentExtension(mockUrl, accessToken);
+    await createPaymentExtension(mockUrl);
 
     expect(getExtensions).toHaveBeenCalledTimes(1);
     expect(withKey).toHaveBeenCalledTimes(1);
@@ -192,7 +199,7 @@ describe('Test extension.commercetools', () => {
           url: mockUrl,
           authentication: {
             type: 'AuthorizationHeader',
-            headerValue: `Bearer ${accessToken}`,
+            headerValue: 'Basic dGVzdC1jbGllbnQtaWQ6dGVzdC1jbGllbnQtc2VjcmV0',
           },
         },
         triggers: [
@@ -215,9 +222,7 @@ describe('Test extension.commercetools', () => {
       }),
     );
 
-    const accessToken = 'token123';
-
-    await createPaymentExtension(mockUrl, accessToken);
+    await createPaymentExtension(mockUrl);
 
     expect(getExtensions).toHaveBeenCalledTimes(1);
     expect(createMock).toHaveBeenCalledTimes(1);
@@ -229,7 +234,7 @@ describe('Test extension.commercetools', () => {
           url: mockUrl,
           authentication: {
             type: 'AuthorizationHeader',
-            headerValue: `Bearer ${accessToken}`,
+            headerValue: 'Basic dGVzdC1jbGllbnQtaWQ6dGVzdC1jbGllbnQtc2VjcmV0',
           },
         },
         triggers: [
