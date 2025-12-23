@@ -119,7 +119,7 @@ describe('Test method details - availability tab', () => {
       customObjects.results[0].value.pricingConstraints ?? [];
     updatedPricingConstraints.push(newAvailability);
 
-    let updatedMethodDetailsObject = Object.assign(
+    const updatedMethodDetailsObject = Object.assign(
       {},
       customObjects.results[0]
     );

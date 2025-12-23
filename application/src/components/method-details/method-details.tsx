@@ -88,7 +88,7 @@ const MethodDetails = (props: TMethodDetailsProps) => {
   ) => {
     try {
       if (method?.container && method?.key && formikValues) {
-        let clonedValues = { ...formikValues, ...{ status: status } };
+        const clonedValues = { ...formikValues, ...{ status: status } };
         await customObjectUpdater.execute({
           container: method?.container,
           key: method?.key,
