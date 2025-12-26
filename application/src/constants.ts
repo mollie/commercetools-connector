@@ -26,6 +26,7 @@ export const CUSTOM_APPLICATION_ID =
   getConfig('CUSTOM_APPLICATION_ID', 'customApplicationId') ?? '';
 export const APPLICATION_URL =
   getConfig('APPLICATION_URL', 'applicationUrl') ?? 'https://your-app-url.com';
+export const PROJECT_KEY = getConfig('PROJECT_KEY', 'projectKey') ?? 'your-project-key';
 
 export const OBJECT_CONTAINER_NAME = 'sctm-app-methods';
 export const EXTENSION_KEY = 'sctm-payment-create-update-extension';

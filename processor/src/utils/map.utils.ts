@@ -100,10 +100,7 @@ const createWebhookUrl = (extensionUrl: string): string => {
   return new URL(extensionUrl).origin + '/webhook';
 };
 
-const buildBillingAddress = (
-  method: PaymentMethod | CustomPaymentMethod,
-  paymentRequest: any,
-): Record<string, any> => {
+const buildBillingAddress = (method: PaymentMethod | CustomPaymentMethod, paymentRequest: any): Record<string, any> => {
   const needsEmailInBillingAddress = method === CustomPaymentMethod.blik || method === PaymentMethod.przelewy24;
   const hasEmailInRequest = paymentRequest.billingEmail && !paymentRequest.billingAddress?.email;
 

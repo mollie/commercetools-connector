@@ -84,5 +84,8 @@
     "titleTemplate": "{classname}-{title}",
     "ancestorSeparator": " › ",
     "usePathForSuiteName": "true"
+  },
+  "overrides": {
+    "qs": "6.14.1"
   }
 }
