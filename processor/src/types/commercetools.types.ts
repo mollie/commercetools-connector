@@ -1,4 +1,5 @@
 import { ConnectorActions } from '../utils/constant.utils';
+import { Transaction } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/payment';
 
 export enum CTEnumErrors {
   General = 'General',
@@ -182,3 +183,15 @@ export enum CaptureModes {
 }
 
 export type DoCapturePaymentFromMollie = { answer: boolean; hasSurchargeCost: boolean; id?: string };
+
+export type TransactionGroups = {
+  initialCharge: Transaction[];
+  pendingCharge: Transaction[];
+  successCharge: Transaction[];
+  initialRefund: Transaction[];
+  pendingRefund: Transaction[];
+  initialCancelAuthorization: Transaction[];
+  successAuthorization: Transaction[];
+  failureCapture: Transaction[];
+  pendingCapture: Transaction[];
+};
