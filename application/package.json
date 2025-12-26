@@ -116,7 +116,13 @@
     "@types/react-router": "<6",
     "@types/react-router-dom": "<6",
     "headers-polyfill": "3.2.5",
-    "nwsapi": "2.2.7"
+    "nwsapi": "2.2.7",
+    "form-data": "^4.0.4",
+    "cross-spawn": "^7.0.6",
+    "minimatch": "^3.1.2",
+    "node-fetch": "^2.7.0",
+    "node-forge": "^1.3.2",
+    "ws": "^7.5.10"
   },
   "devDependencies": {
     "@testing-library/cypress": "^10.0.2",
