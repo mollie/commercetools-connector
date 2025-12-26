@@ -4,6 +4,7 @@ import {
   CLOUD_IDENTIFIER,
   CUSTOM_APPLICATION_ID,
   APPLICATION_URL,
+  PROJECT_KEY,
 } from './src/constants';
 
 /**
@@ -15,7 +16,7 @@ const config = {
   cloudIdentifier: CLOUD_IDENTIFIER,
   env: {
     development: {
-      initialProjectKey: 'your_project_key',
+      initialProjectKey: PROJECT_KEY,
     },
     production: {
       applicationId: CUSTOM_APPLICATION_ID,
