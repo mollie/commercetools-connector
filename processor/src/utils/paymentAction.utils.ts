@@ -16,8 +16,7 @@ const hasCaptureErrors = (transaction: Transaction): boolean => {
 
 const isFailedCapture = (transaction: Transaction): boolean => {
   return (
-    (transaction.type === CTTransactionType.Charge && hasCaptureErrors(transaction)) ||
-    isMarkedForCapture(transaction)
+    (transaction.type === CTTransactionType.Charge && hasCaptureErrors(transaction)) || isMarkedForCapture(transaction)
   );
 };
 
@@ -125,8 +124,7 @@ const shouldCancelRefund = (groups: TransactionGroups): boolean => {
 
 const shouldCapturePayment = (groups: TransactionGroups): boolean => {
   return (
-    (groups.failureCapture.length >= 1 || groups.pendingCapture.length >= 1) &&
-    groups.successAuthorization.length >= 1
+    (groups.failureCapture.length >= 1 || groups.pendingCapture.length >= 1) && groups.successAuthorization.length >= 1
   );
 };
 
