@@ -178,12 +178,12 @@ const AvailabilityDetails = (props: TAvailabilityDetailFormProps) => {
   };
 
   const handleSubmit = async (formikValues: TAmountPerCountry) => {
-    let updateObject = Object.assign({}, props.method);
+    const updateObject = Object.assign({}, props.method);
 
     const newPricingConstraints = generatePricingConstraints(formikValues);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let clonedValue: any = Object.assign({}, updateObject.value);
+    const clonedValue: any = Object.assign({}, updateObject.value);
     clonedValue.pricingConstraints = newPricingConstraints;
 
     if (props.method?.container && props.method?.key && formikValues) {
