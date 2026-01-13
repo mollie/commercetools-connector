@@ -1,3 +1,4 @@
+import React from 'react';
 import { useApplicationContext } from '@commercetools-frontend/application-shell-connectors';
 import SelectField from '@commercetools-uikit/select-field';
 import messages from '../messages';

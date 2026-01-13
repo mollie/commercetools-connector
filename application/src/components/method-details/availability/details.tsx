@@ -1,3 +1,4 @@
+import React from 'react';
 import { useApplicationContext } from '@commercetools-frontend/application-shell-connectors';
 import messages from '../messages';
 import { useIntl } from 'react-intl';
