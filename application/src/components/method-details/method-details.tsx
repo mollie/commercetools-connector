@@ -1,3 +1,4 @@
+import React from 'react';
 import { useIntl } from 'react-intl';
 import { Route, Switch, useParams, useRouteMatch } from 'react-router-dom';
 import {
