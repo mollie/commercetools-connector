@@ -76,6 +76,44 @@ export const mapCommercetoolsPaymentCustomFieldsToMollieListParams = async (
   }
 };
 
+const getShippingPrice = (cart: Cart) => {
+  if (!cart?.shippingInfo?.price) {
+    return null;
+  }
+
+  if (cart.shippingInfo.discountedPrice) {
+    return {
+      centAmount: cart.shippingInfo.discountedPrice.value.centAmount,
+      fractionDigits: cart.shippingInfo.discountedPrice.value.fractionDigits,
+      currencyCode: cart.shippingInfo.discountedPrice.value.currencyCode,
+    };
+  }
+
+  return {
+    centAmount: cart.shippingInfo.price.centAmount,
+    fractionDigits: cart.shippingInfo.price.fractionDigits,
+    currencyCode: cart.shippingInfo.price.currencyCode,
+  };
+};
+
+const createWebhookUrl = (extensionUrl: string): string => {
+  return new URL(extensionUrl).origin + '/webhook';
+};
+
+const buildBillingAddress = (method: PaymentMethod | CustomPaymentMethod, paymentRequest: any): Record<string, any> => {
+  const needsEmailInBillingAddress = method === CustomPaymentMethod.blik || method === PaymentMethod.przelewy24;
+  const hasEmailInRequest = paymentRequest.billingEmail && !paymentRequest.billingAddress?.email;
+
+  if (needsEmailInBillingAddress && hasEmailInRequest) {
+    return {
+      ...paymentRequest.billingAddress,
+      email: paymentRequest.billingEmail,
+    };
+  }
+
+  return paymentRequest.billingAddress ?? {};
+};
+
 const getSpecificPaymentParams = (
   method: PaymentMethod | CustomPaymentMethod,
   paymentRequest: any,
@@ -115,8 +153,8 @@ export const createMollieCreatePaymentParams = (
   banktransferDueDate?: string,
 ): PaymentCreateParams => {
   const { amountPlanned, paymentMethodInfo } = payment;
-
   const [method, issuer] = paymentMethodInfo?.method?.split(',') ?? [null, null];
+
   const paymentRequest = parseStringToJsonObject(
     payment.custom?.fields?.[CustomFields.createPayment.request],
     CustomFields.createPayment.request,
@@ -126,7 +164,6 @@ export const createMollieCreatePaymentParams = (
 
   const mollieLines = paymentRequest.lines ?? [];
 
-  // Add another line for creating Mollie payment request if surcharge exists
   if (surchargeAmountInCent > 0) {
     mollieLines.push(
       createMollieLineForAdditionalAmount(
@@ -138,22 +175,8 @@ export const createMollieCreatePaymentParams = (
     );
   }
 
-  // Add another line for creating Mollie payment request if shipping cost exists
-  if (cart?.shippingInfo?.price) {
-    let shippingPrice = {
-      centAmount: cart.shippingInfo.price.centAmount,
-      fractionDigits: cart.shippingInfo.price.fractionDigits,
-      currencyCode: cart.shippingInfo.price.currencyCode,
-    };
-
-    if (cart.shippingInfo.discountedPrice) {
-      shippingPrice = {
-        centAmount: cart.shippingInfo.discountedPrice.value.centAmount,
-        fractionDigits: cart.shippingInfo.discountedPrice.value.fractionDigits,
-        currencyCode: cart.shippingInfo.discountedPrice.value.currencyCode,
-      };
-    }
-
+  const shippingPrice = getShippingPrice(cart);
+  if (shippingPrice) {
     mollieLines.push(
       createMollieLineForAdditionalAmount(
         MOLLIE_SHIPPING_LINE_DESCRIPTION,
@@ -164,26 +187,12 @@ export const createMollieCreatePaymentParams = (
     );
   }
 
-  const defaultWebhookEndpoint = new URL(extensionUrl).origin + '/webhook';
-
-  let billingAddress = paymentRequest.billingAddress;
-  if (
-    (method === CustomPaymentMethod.blik || method === PaymentMethod.przelewy24) &&
-    !billingAddress?.email &&
-    paymentRequest.billingEmail
-  ) {
-    billingAddress = {
-      ...paymentRequest.billingAddress,
-      email: paymentRequest.billingEmail,
-    };
-  }
-
   const createPaymentParams = {
     amount: makeMollieAmount(amountPlanned, surchargeAmountInCent),
     description: paymentRequest.description ?? '',
     redirectUrl: paymentRequest.redirectUrl ?? null,
-    webhookUrl: defaultWebhookEndpoint,
-    billingAddress: billingAddress ?? {},
+    webhookUrl: createWebhookUrl(extensionUrl),
+    billingAddress: buildBillingAddress(method as PaymentMethod | CustomPaymentMethod, paymentRequest),
     shippingAddress: paymentRequest.shippingAddress ?? {},
     locale: paymentRequest.locale ?? null,
     method: method as PaymentMethod,

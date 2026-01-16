@@ -1,3 +1,4 @@
+import React from 'react';
 import { useIntl } from 'react-intl';
 import { Route, Switch, useParams, useRouteMatch } from 'react-router-dom';
 import {
@@ -88,7 +89,7 @@ const MethodDetails = (props: TMethodDetailsProps) => {
   ) => {
     try {
       if (method?.container && method?.key && formikValues) {
-        let clonedValues = { ...formikValues, ...{ status: status } };
+        const clonedValues = { ...formikValues, ...{ status: status } };
         await customObjectUpdater.execute({
           container: method?.container,
           key: method?.key,

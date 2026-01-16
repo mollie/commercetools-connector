@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## v1.4.4
+
+Fixed
+
+- Resolved dependency vulnerabilities in security audit
+- Reduced code complexity to improve maintainability
+- Fixed React import error in payment method details components for Commercetools platform deployment compatibility
+
 ## v1.4.3
 
 Added
