@@ -1254,6 +1254,104 @@ describe('createMollieCreatePaymentParams', () => {
       lines: [],
     });
   });
+
+  it('should able to create a mollie payment params including both surcharge and shipping lines', async () => {
+    const cart = {
+      id: 'cart-test-id',
+      shippingInfo: {
+        price: {
+          type: 'centPrecision',
+          currencyCode: 'EUR',
+          centAmount: 5000,
+          fractionDigits: 2,
+        },
+      },
+    } as Cart;
+
+    const customFieldObject = {
+      description: 'Test payment',
+      locale: 'en_GB',
+      redirectUrl: 'https://example.com/success',
+      webhookUrl: 'https://example.com/webhook',
+    };
+
+    const CTPayment: Payment = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      version: 1,
+      createdAt: '2024-07-04T14:07:35.625Z',
+      lastModifiedAt: '2024-07-04T14:07:35.625Z',
+      amountPlanned: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      paymentStatus: {},
+      transactions: [],
+      interfaceInteractions: [],
+      paymentMethodInfo: {
+        method: PaymentMethod.klarna,
+      },
+      custom: {
+        type: {
+          typeId: 'type',
+          id: 'sctm_payment',
+        },
+        fields: {
+          sctm_create_payment_request: JSON.stringify(customFieldObject),
+        },
+      },
+    };
+    const extensionUrl = 'https://example.com/webhook';
+    const surchargeAmountInCent = 1500;
+
+    const mollieCreatePaymentParams: PaymentCreateParams = createMollieCreatePaymentParams(
+      CTPayment,
+      extensionUrl,
+      surchargeAmountInCent,
+      cart,
+    );
+
+    expect(mollieCreatePaymentParams).toEqual({
+      method: PaymentMethod.klarna,
+      amount: {
+        currency: 'EUR',
+        value: '25.00',
+      },
+      locale: customFieldObject.locale,
+      redirectUrl: customFieldObject.redirectUrl,
+      webhookUrl: extensionUrl,
+      description: customFieldObject.description,
+      lines: [
+        {
+          description: MOLLIE_SURCHARGE_LINE_DESCRIPTION,
+          quantity: 1,
+          quantityUnit: 'pcs',
+          unitPrice: {
+            currency: 'EUR',
+            value: '15.00',
+          },
+          totalAmount: {
+            currency: 'EUR',
+            value: '15.00',
+          },
+        },
+        {
+          description: MOLLIE_SHIPPING_LINE_DESCRIPTION,
+          quantity: 1,
+          quantityUnit: 'pcs',
+          unitPrice: {
+            currency: 'EUR',
+            value: '50.00',
+          },
+          totalAmount: {
+            currency: 'EUR',
+            value: '50.00',
+          },
+        },
+      ],
+    });
+  });
 });
 
 describe('Test createCartUpdateActions', () => {

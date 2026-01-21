@@ -145,6 +145,37 @@ const getSpecificPaymentParams = (
   }
 };
 
+const addAdditionalMollieLines = (
+  mollieLines: any[],
+  surchargeAmountInCent: number,
+  cart: Cart,
+  fractionDigits: number,
+  currencyCode: string,
+): void => {
+  if (surchargeAmountInCent > 0) {
+    mollieLines.push(
+      createMollieLineForAdditionalAmount(
+        MOLLIE_SURCHARGE_LINE_DESCRIPTION,
+        surchargeAmountInCent,
+        fractionDigits,
+        currencyCode,
+      ),
+    );
+  }
+
+  const shippingPrice = getShippingPrice(cart);
+  if (shippingPrice) {
+    mollieLines.push(
+      createMollieLineForAdditionalAmount(
+        MOLLIE_SHIPPING_LINE_DESCRIPTION,
+        shippingPrice.centAmount,
+        shippingPrice.fractionDigits,
+        shippingPrice.currencyCode,
+      ),
+    );
+  }
+};
+
 export const createMollieCreatePaymentParams = (
   payment: Payment,
   extensionUrl: string,
@@ -163,29 +194,13 @@ export const createMollieCreatePaymentParams = (
   );
 
   const mollieLines = paymentRequest.lines ?? [];
-
-  if (surchargeAmountInCent > 0) {
-    mollieLines.push(
-      createMollieLineForAdditionalAmount(
-        MOLLIE_SURCHARGE_LINE_DESCRIPTION,
-        surchargeAmountInCent,
-        amountPlanned.fractionDigits,
-        amountPlanned.currencyCode,
-      ),
-    );
-  }
-
-  const shippingPrice = getShippingPrice(cart);
-  if (shippingPrice) {
-    mollieLines.push(
-      createMollieLineForAdditionalAmount(
-        MOLLIE_SHIPPING_LINE_DESCRIPTION,
-        shippingPrice.centAmount,
-        shippingPrice.fractionDigits,
-        shippingPrice.currencyCode,
-      ),
-    );
-  }
+  addAdditionalMollieLines(
+    mollieLines,
+    surchargeAmountInCent,
+    cart,
+    amountPlanned.fractionDigits,
+    amountPlanned.currencyCode,
+  );
 
   const createPaymentParams = {
     amount: makeMollieAmount(amountPlanned, surchargeAmountInCent),
