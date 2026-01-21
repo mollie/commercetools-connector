@@ -6,7 +6,7 @@ export const basicAuthMiddleware = (req: Request, res: Response, next: NextFunct
 
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith('Basic ')) {
+  if (!authHeader?.startsWith('Basic ')) {
     return res.status(401).json({ error: 'Missing or invalid Authorization header' });
   }
 

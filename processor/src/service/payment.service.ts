@@ -6,14 +6,7 @@ import {
   createMollieCreatePaymentParams,
   mapCommercetoolsPaymentCustomFieldsToMollieListParams,
 } from '../utils/map.utils';
-import {
-  CartUpdateAction,
-  CentPrecisionMoney,
-  CustomObject,
-  Extension,
-  Payment,
-  UpdateAction,
-} from '@commercetools/platform-sdk';
+import { CentPrecisionMoney, CustomObject, Extension, Payment, UpdateAction } from '@commercetools/platform-sdk';
 import CustomError from '../errors/custom.error';
 import {
   cancelPayment,
@@ -141,7 +134,7 @@ const mapMethodToCustomMethod = (method: CustomMethod, configObjects: CustomObje
  * @return {boolean} - True if the card component should be enabled, false otherwise.
  */
 const shouldEnableCardComponent = (validatedMethods: CustomMethod[], configObjects: CustomObject[]): boolean => {
-  if (!configObjects || !configObjects.length) {
+  if (!configObjects?.length) {
     return false;
   }
 
@@ -174,7 +167,7 @@ const filterMethodsByPricingConstraints = (
   configObjects.forEach((item: CustomObject) => {
     const pricingConstraint = item.value.pricingConstraints?.find((constraint: PricingConstraintItem) => {
       return constraint.countryCode === billingCountry && constraint.currencyCode === currencyCode;
-    }) as PricingConstraintItem;
+    });
 
     if (pricingConstraint) {
       const surchargeAmount = calculateTotalSurchargeAmount(ctPayment, pricingConstraint.surchargeCost);
@@ -498,7 +491,7 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
     return (
       constraint.countryCode === billingCountry && constraint.currencyCode === ctPayment.amountPlanned.currencyCode
     );
-  }) as PricingConstraintItem;
+  });
 
   logger.debug(`SCTM - handleCreatePayment - Calculating total surcharge amount`);
   const surchargeAmountInCent = pricingConstraint
@@ -531,7 +524,7 @@ export const handleCreatePayment = async (ctPayment: Payment): Promise<Controlle
 
   const cartUpdateActions = createCartUpdateActions(cart, ctPayment, surchargeAmountInCent);
   if (cartUpdateActions.length > 0) {
-    await updateCart(cart, cartUpdateActions as CartUpdateAction[]);
+    await updateCart(cart, cartUpdateActions);
   }
 
   const ctActions = await getCreatePaymentUpdateAction(molliePayment, ctPayment, surchargeAmountInCent);

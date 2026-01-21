@@ -102,7 +102,7 @@ export const checkPaymentInterface = (ctPayment: CTPayment): true | SkipError =>
  * @return {boolean} Returns true if the method is supported by Mollie
  */
 export const hasValidPaymentMethod: (method: string | undefined) => boolean = (method: string | undefined): boolean => {
-  return !!SupportedPaymentMethods[method as SupportedPaymentMethods];
+  return !!method && !!SupportedPaymentMethods[method as SupportedPaymentMethods];
 };
 
 /**
