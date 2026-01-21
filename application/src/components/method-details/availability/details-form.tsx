@@ -1,11 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState, ReactElement } from 'react';
 import { useApplicationContext } from '@commercetools-frontend/application-shell-connectors';
 import SelectField from '@commercetools-uikit/select-field';
 import messages from '../messages';
 import { useIntl } from 'react-intl';
 import MoneyField from '@commercetools-uikit/money-field';
 import { type TCurrencyCode } from '@commercetools-uikit/money-input';
-import { useEffect, useState, ReactElement } from 'react';
 import Spacings from '@commercetools-uikit/spacings';
 import TextField from '@commercetools-uikit/text-field';
 import { useFormik, type FormikHelpers } from 'formik';
