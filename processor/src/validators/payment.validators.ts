@@ -249,7 +249,7 @@ export const checkPaymentMethodSpecificParameters = async (ctPayment: CTPayment,
     ctPayment.id,
   );
 
-  const paymentMethodConfig = await getSingleMethodConfigObject(method as string);
+  const paymentMethodConfig = await getSingleMethodConfigObject(method);
 
   if (method === MolliePaymentMethods.creditcard) {
     const cardComponentEnabled = paymentMethodConfig.value.banktransferDueDate;

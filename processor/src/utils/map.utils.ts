@@ -100,7 +100,7 @@ const createWebhookUrl = (extensionUrl: string): string => {
   return new URL(extensionUrl).origin + '/webhook';
 };
 
-const buildBillingAddress = (method: PaymentMethod | CustomPaymentMethod, paymentRequest: any): Record<string, any> => {
+const buildBillingAddress = (method: string, paymentRequest: any): Record<string, any> => {
   const needsEmailInBillingAddress = method === CustomPaymentMethod.blik || method === PaymentMethod.przelewy24;
   const hasEmailInRequest = paymentRequest.billingEmail && !paymentRequest.billingAddress?.email;
 
@@ -192,7 +192,7 @@ export const createMollieCreatePaymentParams = (
     description: paymentRequest.description ?? '',
     redirectUrl: paymentRequest.redirectUrl ?? null,
     webhookUrl: createWebhookUrl(extensionUrl),
-    billingAddress: buildBillingAddress(method as PaymentMethod | CustomPaymentMethod, paymentRequest),
+    billingAddress: method ? buildBillingAddress(method, paymentRequest) : {},
     shippingAddress: paymentRequest.shippingAddress ?? {},
     locale: paymentRequest.locale ?? null,
     method: method as PaymentMethod,
