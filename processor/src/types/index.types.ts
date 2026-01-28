@@ -26,6 +26,7 @@ export type ConnectorEnvVars = {
     sessionAudience: string;
     sessionIssuer: string;
     transactionCustomTypeKey: string;
+    paymentCustomTypeKey: string;
   };
   mollie: {
     testApiKey: string;

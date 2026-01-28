@@ -1,4 +1,8 @@
-import { readConfiguration } from '../../src/utils/config.utils';
+import {
+  readConfiguration,
+  getPaymentCustomTypeKey,
+  getInterfaceInteractionCustomTypeKey,
+} from '../../src/utils/config.utils';
 import CustomError from '../../src/errors/custom.error';
 import { describe, expect, test } from '@jest/globals';
 
@@ -17,6 +21,7 @@ describe('Test src/utils/config.utils.ts', () => {
         sessionAudience: process.env.CTP_SESSION_AUDIENCE,
         sessionIssuer: process.env.CTP_SESSION_ISSUER,
         transactionCustomTypeKey: process.env.CTP_TRANSACTION_CUSTOM_TYPE_KEY,
+        paymentCustomTypeKey: process.env.CTP_PAYMENT_CUSTOM_TYPE_KEY,
       },
       mollie: {
         liveApiKey: process.env.MOLLIE_API_LIVE_KEY,
@@ -97,5 +102,61 @@ describe('Test src/utils/config.utils.ts', () => {
     const config = readConfiguration();
 
     expect(config.commerceTools.transactionCustomTypeKey).toBe('custom_type_key');
+  });
+
+  test('should return CTP_PAYMENT_CUSTOM_TYPE_KEY from config', () => {
+    process.env.CTP_CLIENT_ID = '123456789012345678901234';
+    process.env.CTP_CLIENT_SECRET = '12345678901234567890123456789012';
+    process.env.CTP_PROJECT_KEY = 'custom_type_key';
+    process.env.CTP_SCOPE = 'custom_type_key';
+    process.env.CTP_REGION = 'europe-west1.gcp';
+    process.env.CTP_AUTH_URL = 'custom_type_key';
+    process.env.AUTHENTICATION_MODE = '0';
+    process.env.CTP_SESSION_AUDIENCE = 'custom_type_key';
+    process.env.CTP_SESSION_ISSUER = 'custom_type_key';
+    process.env.CTP_TRANSACTION_CUSTOM_TYPE_KEY = 'custom_type_key';
+    process.env.CTP_PAYMENT_CUSTOM_TYPE_KEY = 'custom_payment_type_key';
+    process.env.MOLLIE_API_LIVE_KEY = 'custom_type_key';
+    process.env.MOLLIE_API_TEST_KEY = 'custom_type_key';
+    process.env.CONNECTOR_MODE = 'test';
+    process.env.DEBUG = '0';
+    process.env.MOLLIE_PROFILE_ID = 'custom_type_key';
+    const config = readConfiguration();
+
+    expect(config.commerceTools.paymentCustomTypeKey).toBe('custom_payment_type_key');
+  });
+
+  test('should return custom payment type key from environment variable', () => {
+    process.env.CTP_PAYMENT_CUSTOM_TYPE_KEY = 'my-custom-payment-type';
+    expect(getPaymentCustomTypeKey()).toBe('my-custom-payment-type');
+    delete process.env.CTP_PAYMENT_CUSTOM_TYPE_KEY;
+  });
+
+  test('should return default payment type key when environment variable is not set', () => {
+    delete process.env.CTP_PAYMENT_CUSTOM_TYPE_KEY;
+    expect(getPaymentCustomTypeKey()).toBe('sctm-payment-custom-type');
+  });
+
+  test('should return default payment type key when environment variable is empty', () => {
+    process.env.CTP_PAYMENT_CUSTOM_TYPE_KEY = '';
+    expect(getPaymentCustomTypeKey()).toBe('sctm-payment-custom-type');
+    delete process.env.CTP_PAYMENT_CUSTOM_TYPE_KEY;
+  });
+
+  test('should return custom interface interaction type key from environment variable', () => {
+    process.env.CTP_INTERFACE_INTERACTION_CUSTOM_TYPE_KEY = 'my-custom-interface-interaction-type';
+    expect(getInterfaceInteractionCustomTypeKey()).toBe('my-custom-interface-interaction-type');
+    delete process.env.CTP_INTERFACE_INTERACTION_CUSTOM_TYPE_KEY;
+  });
+
+  test('should return default interface interaction type key when environment variable is not set', () => {
+    delete process.env.CTP_INTERFACE_INTERACTION_CUSTOM_TYPE_KEY;
+    expect(getInterfaceInteractionCustomTypeKey()).toBe('sctm_interface_interaction_type');
+  });
+
+  test('should return default interface interaction type key when environment variable is empty', () => {
+    process.env.CTP_INTERFACE_INTERACTION_CUSTOM_TYPE_KEY = '';
+    expect(getInterfaceInteractionCustomTypeKey()).toBe('sctm_interface_interaction_type');
+    delete process.env.CTP_INTERFACE_INTERACTION_CUSTOM_TYPE_KEY;
   });
 });

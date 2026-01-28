@@ -1,115 +1,217 @@
 import { CustomFields } from '../utils/constant.utils';
 import { createApiRoot } from '../client/create.client';
-import { FieldDefinition, TypeUpdateAction } from '@commercetools/platform-sdk';
-const PAYMENT_TYPE_KEY = 'sctm-payment-custom-type';
+import { FieldDefinition, Type, TypeUpdateAction } from '@commercetools/platform-sdk';
+import {
+  getPaymentCustomTypeKey,
+  getTransactionCustomTypeKey,
+  getInterfaceInteractionCustomTypeKey,
+} from '../utils/config.utils';
 
-export async function createCustomPaymentType(): Promise<void> {
+const paymentFieldDefinitions: FieldDefinition[] = [
+  {
+    name: CustomFields.payment.profileId,
+    label: {
+      en: 'Profile ID',
+      de: 'Profil-ID',
+    },
+    required: false,
+    type: {
+      name: 'String',
+    },
+    inputHint: 'MultiLine',
+  },
+  {
+    name: CustomFields.payment.request,
+    label: {
+      en: 'The request object for listing payment methods',
+      de: 'Das Anforderungsobjekt für die Auflistung der Zahlwege',
+    },
+    required: false,
+    type: {
+      name: 'String',
+    },
+    inputHint: 'MultiLine',
+  },
+  {
+    name: CustomFields.payment.response,
+    label: {
+      en: 'List of available payment methods',
+      de: 'Liste der verfügbaren Zahlungsarten',
+    },
+    required: false,
+    type: {
+      name: 'String',
+    },
+    inputHint: 'MultiLine',
+  },
+  {
+    name: CustomFields.createPayment.request,
+    label: {
+      en: 'The request object for create Mollie payment',
+      de: 'Das Anforderungsobjekt zum Erstellen der Mollie-Zahlung',
+    },
+    required: false,
+    type: {
+      name: 'String',
+    },
+    inputHint: 'MultiLine',
+  },
+  {
+    name: CustomFields.applePay.session.request,
+    label: {
+      en: 'The request object for inquiring the Apple Pay payment session',
+      de: 'Das Anfrageobjekt für die Abfrage der Apple Pay-Zahlungssitzung',
+    },
+    required: false,
+    type: {
+      name: 'String',
+    },
+    inputHint: 'MultiLine',
+  },
+  {
+    name: CustomFields.applePay.session.response,
+    label: {
+      en: 'The response object holding the Apple Pay payment session',
+      de: 'Das Antwortobjekt zur Speicherung der Apple Pay-Zahlungssitzung',
+    },
+    required: false,
+    type: {
+      name: 'String',
+    },
+    inputHint: 'MultiLine',
+  },
+];
+
+export async function checkIfCustomTypeExistsByKey(typeKey: string): Promise<Type | null> {
   const apiRoot = createApiRoot();
 
-  const {
-    body: { results: types },
-  } = await createApiRoot()
-    .types()
-    .get({
-      queryArgs: {
-        where: `key = "${PAYMENT_TYPE_KEY}"`,
-      },
-    })
-    .execute();
-
-  if (types.length <= 0) {
-    await apiRoot
-      .types()
-      .post({
-        body: {
-          key: PAYMENT_TYPE_KEY,
-          name: {
-            en: 'SCTM - Payment method custom fields',
-            de: 'SCTM - Benutzerdefinierte Felder der Zahlungsmethode',
-          },
-          resourceTypeIds: ['payment'],
-          fieldDefinitions: [
-            {
-              name: CustomFields.payment.profileId,
-              label: {
-                en: 'Profile ID',
-                de: 'Profil-ID',
-              },
-              required: false,
-              type: {
-                name: 'String',
-              },
-              inputHint: 'MultiLine',
-            },
-            {
-              name: CustomFields.payment.request,
-              label: {
-                en: 'The request object for listing payment methods',
-                de: 'Das Anforderungsobjekt für die Auflistung der Zahlwege',
-              },
-              required: false,
-              type: {
-                name: 'String',
-              },
-              inputHint: 'MultiLine',
-            },
-            {
-              name: CustomFields.payment.response,
-              label: {
-                en: 'List of available payment methods',
-                de: 'Liste der verfügbaren Zahlungsarten',
-              },
-              required: false,
-              type: {
-                name: 'String',
-              },
-              inputHint: 'MultiLine',
-            },
-            {
-              name: CustomFields.createPayment.request,
-              label: {
-                en: 'The request object for create Mollie payment',
-                de: 'Das Anforderungsobjekt zum Erstellen der Mollie-Zahlung',
-              },
-              required: false,
-              type: {
-                name: 'String',
-              },
-              inputHint: 'MultiLine',
-            },
-            {
-              name: CustomFields.applePay.session.request,
-              label: {
-                en: 'The request object for inquiring the Apple Pay payment session',
-                de: 'Das Anfrageobjekt für die Abfrage der Apple Pay-Zahlungssitzung',
-              },
-              required: false,
-              type: {
-                name: 'String',
-              },
-              inputHint: 'MultiLine',
-            },
-            {
-              name: CustomFields.applePay.session.response,
-              label: {
-                en: 'The response object holding the Apple Pay payment session',
-                de: 'Das Antwortobjekt zur Speicherung der Apple Pay-Zahlungssitzung',
-              },
-              required: false,
-              type: {
-                name: 'String',
-              },
-              inputHint: 'MultiLine',
-            },
-          ],
-        },
-      })
-      .execute();
+  try {
+    const result = await apiRoot.types().withKey({ key: typeKey }).get().execute();
+    return result.body;
+  } catch (error: any) {
+    if (error?.code === 404 || error?.statusCode === 404) {
+      return null;
+    }
+    throw error;
   }
 }
 
-export async function createCustomPaymentInterfaceInteractionType(): Promise<void> {
+export async function createType(
+  typeKey: string,
+  name: { en: string; de: string },
+  resourceTypeIds: string[],
+  fieldDefinitions: FieldDefinition[],
+): Promise<void> {
   const apiRoot = createApiRoot();
+
+  await apiRoot
+    .types()
+    .post({
+      body: {
+        key: typeKey,
+        name,
+        resourceTypeIds,
+        fieldDefinitions,
+      },
+    })
+    .execute();
+}
+
+function buildAddFieldActions(
+  existingFieldNames: string[],
+  newFieldDefinitions: FieldDefinition[],
+): TypeUpdateAction[] {
+  const missingFields = newFieldDefinitions.filter((field) => !existingFieldNames.includes(field.name));
+
+  return missingFields.map((field) => ({
+    action: 'addFieldDefinition' as const,
+    fieldDefinition: field,
+  }));
+}
+
+function buildReplaceFieldActions(
+  existingFields: FieldDefinition[],
+  newFieldDefinitions: FieldDefinition[],
+): TypeUpdateAction[] {
+  const actions: TypeUpdateAction[] = [];
+
+  // Remove all existing fields
+  existingFields.forEach((definition) => {
+    actions.push({
+      action: 'removeFieldDefinition' as const,
+      fieldName: definition.name,
+    });
+  });
+
+  // Add all new fields
+  newFieldDefinitions.forEach((field) => {
+    actions.push({
+      action: 'addFieldDefinition' as const,
+      fieldDefinition: field,
+    });
+  });
+
+  return actions;
+}
+
+export async function updateType(
+  existingType: Type,
+  fieldDefinitions: FieldDefinition[],
+  options?: { replaceAllFields?: boolean },
+): Promise<void> {
+  const apiRoot = createApiRoot();
+  const typeKey = existingType.key;
+  const existingFieldNames = existingType.fieldDefinitions.map((field) => field.name);
+
+  const actions = options?.replaceAllFields
+    ? buildReplaceFieldActions(existingType.fieldDefinitions, fieldDefinitions)
+    : buildAddFieldActions(existingFieldNames, fieldDefinitions);
+
+  // Early return if no actions needed
+  if (actions.length === 0) {
+    return;
+  }
+
+  await apiRoot
+    .types()
+    .withKey({ key: typeKey })
+    .post({
+      body: {
+        version: existingType.version,
+        actions,
+      },
+    })
+    .execute();
+}
+
+// ============================================================================
+// EXPORTED FUNCTIONS
+// ============================================================================
+
+export async function createCustomPaymentType(): Promise<void> {
+  const paymentCustomTypeKey = getPaymentCustomTypeKey();
+
+  const existingType = await checkIfCustomTypeExistsByKey(paymentCustomTypeKey);
+
+  if (!existingType) {
+    await createType(
+      paymentCustomTypeKey,
+      {
+        en: 'SCTM - Payment method custom fields',
+        de: 'SCTM - Benutzerdefinierte Felder der Zahlungsmethode',
+      },
+      ['payment'],
+      paymentFieldDefinitions,
+    );
+    return;
+  }
+
+  await updateType(existingType, paymentFieldDefinitions);
+}
+
+export async function createCustomPaymentInterfaceInteractionType(): Promise<void> {
+  const interfaceInteractionCustomTypeKey = getInterfaceInteractionCustomTypeKey();
+
   const interfaceInteractionFields: FieldDefinition[] = [
     {
       name: CustomFields.createPayment.interfaceInteraction.fields.id,
@@ -173,123 +275,41 @@ export async function createCustomPaymentInterfaceInteractionType(): Promise<voi
     },
   ];
 
-  const {
-    body: { results: types },
-  } = await apiRoot
-    .types()
-    .get({
-      queryArgs: {
-        where: `key = "${CustomFields.createPayment.interfaceInteraction.key}"`,
+  const existingType = await checkIfCustomTypeExistsByKey(interfaceInteractionCustomTypeKey);
+
+  if (!existingType) {
+    await createType(
+      interfaceInteractionCustomTypeKey,
+      {
+        en: 'SCTM - Mollie Payment Interface',
+        de: 'SCTM - Benutzerdefinierte Felder im Warenkorb',
       },
-    })
-    .execute();
-
-  if (types.length <= 0) {
-    await apiRoot
-      .types()
-      .post({
-        body: {
-          key: CustomFields.createPayment.interfaceInteraction.key,
-          name: {
-            en: 'SCTM - Mollie Payment Interface',
-            de: 'SCTM - Benutzerdefinierte Felder im Warenkorb',
-          },
-          resourceTypeIds: ['payment-interface-interaction'],
-          fieldDefinitions: interfaceInteractionFields,
-        },
-      })
-      .execute();
-
+      ['payment-interface-interaction'],
+      interfaceInteractionFields,
+    );
     return;
   }
 
-  const type = types[0];
-  const definitions = type.fieldDefinitions;
-
-  if (definitions.length > 0) {
-    const actions: TypeUpdateAction[] = [];
-    definitions.forEach((definition) => {
-      actions.push({
-        action: 'removeFieldDefinition',
-        fieldName: definition.name,
-      });
-    });
-    interfaceInteractionFields.forEach((field) => {
-      actions.push({
-        action: 'addFieldDefinition',
-        fieldDefinition: field,
-      });
-    });
-
-    await apiRoot
-      .types()
-      .withKey({ key: CustomFields.createPayment.interfaceInteraction.key })
-      .post({
-        body: {
-          version: type.version,
-          actions,
-        },
-      })
-      .execute();
-
-    return;
-  }
+  await updateType(existingType, interfaceInteractionFields, { replaceAllFields: true });
 }
 
 export async function createCustomTransactionType(): Promise<void> {
-  const transactionCustomTypeKey =
-    process.env?.CTP_TRANSACTION_CUSTOM_TYPE_KEY && process.env.CTP_TRANSACTION_CUSTOM_TYPE_KEY?.length > 0
-      ? process.env.CTP_TRANSACTION_CUSTOM_TYPE_KEY
-      : CustomFields.transactions.defaultCustomTypeKey;
+  const transactionCustomTypeKey = getTransactionCustomTypeKey();
 
-  const apiRoot = createApiRoot();
-  const {
-    body: { results: types },
-  } = await apiRoot
-    .types()
-    .get({
-      queryArgs: {
-        where: `key = "${transactionCustomTypeKey}"`,
+  const existingType = await checkIfCustomTypeExistsByKey(transactionCustomTypeKey);
+
+  if (!existingType) {
+    await createType(
+      transactionCustomTypeKey,
+      {
+        en: CustomFields.transactions.name.en,
+        de: CustomFields.transactions.name.de,
       },
-    })
-    .execute();
-
-  if (types.length <= 0) {
-    await apiRoot
-      .types()
-      .post({
-        body: {
-          key: transactionCustomTypeKey,
-          name: {
-            en: CustomFields.transactions.name.en,
-            de: CustomFields.transactions.name.de,
-          },
-          resourceTypeIds: [CustomFields.transactions.resourceTypeId],
-          fieldDefinitions: Object.values(CustomFields.transactions.fields) as FieldDefinition[],
-        },
-      })
-      .execute();
+      [CustomFields.transactions.resourceTypeId],
+      Object.values(CustomFields.transactions.fields) as FieldDefinition[],
+    );
+    return;
   }
 
-  const type = types[0];
-  const existingDefinitions = type.fieldDefinitions.map((field) => field.name);
-  const fieldDefinitions = Object.values(CustomFields.transactions.fields).filter(
-    (field) => !existingDefinitions.includes(field.name),
-  ) as FieldDefinition[];
-
-  if (fieldDefinitions.length > 0) {
-    await apiRoot
-      .types()
-      .withKey({ key: transactionCustomTypeKey })
-      .post({
-        body: {
-          version: type.version,
-          actions: fieldDefinitions.map((field) => ({
-            action: 'addFieldDefinition',
-            fieldDefinition: field,
-          })),
-        },
-      })
-      .execute();
-  }
+  await updateType(existingType, Object.values(CustomFields.transactions.fields) as FieldDefinition[]);
 }

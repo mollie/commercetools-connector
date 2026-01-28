@@ -13,6 +13,7 @@ export const MOLLIE_VERSION_STRINGS = [VERSION_STRING, MOLLIE_AGENT_INFO];
 
 export const CustomFields = {
   payment: {
+    defaultCustomTypeKey: 'sctm-payment-custom-type',
     error: 'sctm_payment_methods_error',
     request: 'sctm_payment_methods_request',
     response: 'sctm_payment_methods_response',

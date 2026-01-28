@@ -30,6 +30,12 @@ deployAs:
         - key: CTP_TRANSACTION_CUSTOM_TYPE_KEY
           description: Custom type key for transactions in commercetools
           required: false
+        - key: CTP_PAYMENT_CUSTOM_TYPE_KEY
+          description: Custom type key for payments in commercetools
+          required: false
+        - key: CTP_INTERFACE_INTERACTION_CUSTOM_TYPE_KEY
+          description: Custom type key for payment interface interactions in commercetools
+          required: false
       securedConfiguration:
         - key: MOLLIE_API_TEST_KEY
           description: Mollie PSP test API key
