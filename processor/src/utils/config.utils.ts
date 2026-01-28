@@ -22,6 +22,7 @@ export const readConfiguration = () => {
       sessionAudience: (process.env.CTP_SESSION_AUDIENCE as string) || 'https://mc.europe-west1.gcp.commercetools.com',
       sessionIssuer: (process.env.CTP_SESSION_ISSUER as string) || 'gcp-eu',
       transactionCustomTypeKey: process.env.CTP_TRANSACTION_CUSTOM_TYPE_KEY as string,
+      paymentCustomTypeKey: process.env.CTP_PAYMENT_CUSTOM_TYPE_KEY as string,
     },
     mollie: {
       testApiKey: process.env.MOLLIE_API_TEST_KEY as string,
@@ -52,9 +53,25 @@ export const getApiKey = (): string => {
 };
 
 export const getTransactionCustomTypeKey = (): string => {
-  if (process.env.CTP_TRANSACTION_CUSTOM_TYPE_KEY) {
+  if (process.env?.CTP_TRANSACTION_CUSTOM_TYPE_KEY) {
     return process.env.CTP_TRANSACTION_CUSTOM_TYPE_KEY;
   }
 
   return CustomFields.transactions.defaultCustomTypeKey;
+};
+
+export const getPaymentCustomTypeKey = (): string => {
+  if (process.env?.CTP_PAYMENT_CUSTOM_TYPE_KEY) {
+    return process.env.CTP_PAYMENT_CUSTOM_TYPE_KEY;
+  }
+
+  return CustomFields.payment.defaultCustomTypeKey;
+};
+
+export const getInterfaceInteractionCustomTypeKey = (): string => {
+  if (process.env?.CTP_INTERFACE_INTERACTION_CUSTOM_TYPE_KEY) {
+    return process.env.CTP_INTERFACE_INTERACTION_CUSTOM_TYPE_KEY;
+  }
+
+  return CustomFields.createPayment.interfaceInteraction.key;
 };
