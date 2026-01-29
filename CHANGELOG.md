@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## v1.4.5
+
+Added
+
+- Support for shared payment custom type (MOL-895)
+
+Changed
+
+- Reduced code complexity for surcharge logic
+
 ## v1.4.4
 
 Fixed
