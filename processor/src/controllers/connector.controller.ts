@@ -29,7 +29,7 @@ export const mollieStatus = async (request: Request, response: Response) => {
     });
   } catch (error) {
     logger.error('SCTM - healthCheck - Unexpected error occurred when processing request', error);
-    return response.status(400).json(error).send();
+    return apiError(response, formatErrorResponse(error).errors);
   }
 };
 
