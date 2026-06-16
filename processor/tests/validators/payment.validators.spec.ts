@@ -212,6 +212,7 @@ describe('hasValidPaymentMethod', () => {
   it('should return true if the payment method is defined and is supported by Mollie', () => {
     expect(hasValidPaymentMethod('applepay')).toBe(true);
     expect(hasValidPaymentMethod('paypal')).toBe(true);
+    expect(hasValidPaymentMethod('wero')).toBe(true);
   });
 
   it('should return false if the payment method is defined and is not supported by Mollie', () => {
