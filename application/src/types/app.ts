@@ -79,6 +79,7 @@ export enum SupportedPaymentMethods {
   payconiq = 'payconiq',
   riverty = 'riverty',
   swish = 'swish',
+  wero = 'wero',
 }
 
 export const PaymentsWithResitrctedSurcharge = ['klarna', 'in3', 'alma'];

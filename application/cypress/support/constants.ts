@@ -23,4 +23,5 @@ export const PAYMENT_METHODS = [
   'twint',
   'paybybank',
   'eps',
+  'wero',
 ];
