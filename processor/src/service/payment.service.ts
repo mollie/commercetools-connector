@@ -33,6 +33,7 @@ import {
   DoCapturePaymentFromMollie,
 } from '../types/commercetools.types';
 import {
+  getMollieFailureDetails,
   makeCTMoney,
   makeMollieAmount,
   shouldPaymentStatusUpdate,
@@ -357,6 +358,60 @@ export const handlePaymentWebhook = async (paymentId: string): Promise<boolean> 
   return true;
 };
 
+/**
+ * Builds the update actions that persist the final Mollie status and the failure details
+ * on the transaction, so the shop can tell the customer why the payment did not succeed.
+ *
+ * `setTransactionCustomType` replaces all custom fields of a transaction, so it is only used
+ * when the transaction has no custom type yet. Otherwise the fields are set one by one
+ * to keep the existing values (e.g. the surcharge or capture fields).
+ *
+ * @param {Transaction} transaction - The CommerceTools transaction matching the Mollie payment.
+ * @param {MPayment} molliePayment - The Mollie payment.
+ * @return {UpdateAction[]} The update actions persisting the failure details.
+ */
+const getFailureDetailsActions = (transaction: Transaction, molliePayment: MPayment): UpdateAction[] => {
+  const { status, reason, message } = getMollieFailureDetails(molliePayment);
+  const { mollieStatus, failureReason, failureMessage } = CustomFields.transactions.fields;
+
+  const fields: Record<string, string> = { [mollieStatus.name]: status };
+  if (reason) {
+    fields[failureReason.name] = reason;
+  }
+  if (message) {
+    fields[failureMessage.name] = message;
+  }
+
+  if (!transaction.custom) {
+    return [setTransactionCustomType(transaction.id, getTransactionCustomTypeKey(), fields)];
+  }
+
+  return Object.entries(fields).map(([name, value]) => setTransactionCustomField(name, value, transaction.id));
+};
+
+/**
+ * Builds the update actions for the transaction matching the Mollie payment when its status has changed.
+ * For failure states the Mollie failure details are persisted next to the state change.
+ *
+ * @param {Transaction} transaction - The CommerceTools transaction matching the Mollie payment.
+ * @param {MPayment} molliePayment - The Mollie payment.
+ * @return {UpdateAction[]} The update actions, empty when the transaction is already up to date.
+ */
+const getTransactionStatusUpdateActions = (transaction: Transaction, molliePayment: MPayment): UpdateAction[] => {
+  if (!shouldPaymentStatusUpdate(molliePayment.status, transaction.state as CTTransactionState)) {
+    return [];
+  }
+
+  const newState = molliePaymentToCTStatusMap[molliePayment.status];
+  const updateActions: UpdateAction[] = [changeTransactionState(transaction.id, newState)];
+
+  if (newState === CTTransactionState.Failure) {
+    updateActions.push(...getFailureDetailsActions(transaction, molliePayment));
+  }
+
+  return updateActions;
+};
+
 export const getPaymentStatusUpdateAction = (
   ctTransactions: Transaction[],
   molliePayment: MPayment,
@@ -389,6 +444,7 @@ export const getPaymentStatusUpdateAction = (
     return getPaymentCancelActions(
       pendingChargeTransaction as Transaction,
       initialCancelAuthorizationTransaction as Transaction,
+      molliePaymentStatus,
     );
   }
 
@@ -422,15 +478,7 @@ export const getPaymentStatusUpdateAction = (
   }
 
   // Corresponding transaction, update it
-  const shouldUpdate = shouldPaymentStatusUpdate(molliePaymentStatus, matchingTransaction.state as CTTransactionState);
-  if (shouldUpdate) {
-    updateActions.push(
-      changeTransactionState(
-        matchingTransaction.id as string,
-        molliePaymentToCTStatusMap[molliePaymentStatus],
-      ) as ChangeTransactionState,
-    );
-  }
+  updateActions.push(...getTransactionStatusUpdateActions(matchingTransaction, molliePayment));
 
   if (doCaptureInMollie.answer) {
     logger.debug(
@@ -779,13 +827,19 @@ export const handlePaymentCancelRefund = async (ctPayment: Payment): Promise<Con
  * @throws {CustomError} If the JSON string from the custom field cannot be parsed.
  * @param targetTransaction
  * @param triggerTransaction
+ * @param mollieStatus The final Mollie payment status, only passed when the cancellation is reported by the Mollie webhook
  */
-export const getPaymentCancelActions = (targetTransaction: Transaction, triggerTransaction: Transaction) => {
+export const getPaymentCancelActions = (
+  targetTransaction: Transaction,
+  triggerTransaction: Transaction,
+  mollieStatus?: string,
+) => {
   const transactionCustomFieldName = CustomFields?.transactions?.fields?.cancelPaymentReasonText.name;
 
   const newTransactionCustomFieldValue = {
     [CustomFields.transactions.fields.cancelPaymentReasonText.name]: triggerTransaction?.custom?.fields?.reasonText,
     [CustomFields.transactions.fields.cancelPaymentStatusText.name]: CancelStatusText,
+    ...(mollieStatus ? { [CustomFields.transactions.fields.mollieStatus.name]: mollieStatus } : {}),
   };
 
   // Update transaction state to failure

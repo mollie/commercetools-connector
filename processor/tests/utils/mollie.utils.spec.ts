@@ -1,5 +1,5 @@
 import { CentPrecisionMoney } from '@commercetools/platform-sdk';
-import { PaymentStatus, RefundStatus } from '@mollie/api-client';
+import { Payment, PaymentStatus, RefundStatus } from '@mollie/api-client';
 import { CTMoney, CTTransactionState } from '../../src/types/commercetools.types';
 import {
   makeMollieAmount,
@@ -8,6 +8,7 @@ import {
   shouldPaymentStatusUpdate,
   shouldRefundStatusUpdate,
   calculateDueDate,
+  getMollieFailureDetails,
 } from '../../src/utils/mollie.utils';
 import { expect, describe, it, test, jest } from '@jest/globals';
 import { logger } from '../../src/utils/logger.utils';
@@ -197,6 +198,86 @@ describe('Test mollie.utils.ts', () => {
 
     test('returns false for unknown mollieRefundStatus', () => {
       expect(shouldRefundStatusUpdate('unknown' as RefundStatus, CTTransactionState.Pending)).toBe(false);
+    });
+  });
+
+  describe('getMollieFailureDetails', () => {
+    it('should return the status together with the failure reason and message of a credit card payment', () => {
+      const molliePayment = {
+        status: PaymentStatus.failed,
+        method: 'creditcard',
+        details: {
+          cardNumber: '6787',
+          failureReason: 'insufficient_funds',
+          failureMessage: 'The card has insufficient funds.',
+        },
+      } as unknown as Payment;
+
+      expect(getMollieFailureDetails(molliePayment)).toStrictEqual({
+        status: 'failed',
+        reason: 'insufficient_funds',
+        message: 'The card has insufficient funds.',
+      });
+    });
+
+    it('should return the status together with the failure reason of a bancontact payment', () => {
+      const molliePayment = {
+        status: PaymentStatus.failed,
+        method: 'bancontact',
+        details: {
+          cardNumber: '1234',
+          failureReason: 'card_declined',
+        },
+      } as unknown as Payment;
+
+      expect(getMollieFailureDetails(molliePayment)).toStrictEqual({
+        status: 'failed',
+        reason: 'card_declined',
+      });
+    });
+
+    it('should prefer the status reason of a point-of-sale payment over the payment details', () => {
+      const molliePayment = {
+        status: PaymentStatus.failed,
+        method: 'pointofsale',
+        statusReason: {
+          code: 'failed_transaction_declined',
+          message: 'The transaction was declined by the terminal.',
+        },
+        details: {
+          terminalId: 'term_7MgL4wea46qkRcoTZjWEH',
+          failureReason: 'card_declined',
+          failureMessage: 'The card was declined.',
+        },
+      } as unknown as Payment;
+
+      expect(getMollieFailureDetails(molliePayment)).toStrictEqual({
+        status: 'failed',
+        reason: 'failed_transaction_declined',
+        message: 'The transaction was declined by the terminal.',
+      });
+    });
+
+    it('should only return the status when the payment details do not contain failure details', () => {
+      const molliePayment = {
+        status: PaymentStatus.expired,
+        method: 'ideal',
+        details: {
+          consumerName: 'T. TEST',
+          consumerAccount: 'NL02ABNA0123456789',
+        },
+      } as unknown as Payment;
+
+      expect(getMollieFailureDetails(molliePayment)).toStrictEqual({ status: 'expired' });
+    });
+
+    it('should only return the status when the payment has no details at all', () => {
+      const molliePayment = {
+        status: PaymentStatus.canceled,
+        method: 'paypal',
+      } as unknown as Payment;
+
+      expect(getMollieFailureDetails(molliePayment)).toStrictEqual({ status: 'canceled' });
     });
   });
 

@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## v1.5.0
+
+Added
+
+- Persist the final Mollie payment status and the failure details on the commercetools transaction when a payment fails, expires or is canceled (new transaction custom fields `sctm_mollie_status`, `sctm_failure_reason` and `sctm_failure_message`), so a storefront can tell the customer why the payment did not succeed. See [Payment failure details](docs/PaymentFailureDetails.md)
+
 ## v1.4.5
 
 Added

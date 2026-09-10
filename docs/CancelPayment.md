@@ -168,4 +168,6 @@ When payment is successfully cancelled on Mollie, the webhook will be notified a
 | -------------------------------- | -------------------------------------------------------------------------- |
 | `changeTransactionState`         | `transactionId: <PendingChargeTransactionId>, state: 'Failure'`     |
 | `changeTransactionState`         | `transactionId: <InitialCancelAuthorizationTransactionId>, state: 'Success'`     |
-| `setTransactionCustomField`      | `transactionId: <PendingChargeTransactionId>, type.key:sctm_payment_cancel_reason, fields: {reasonText: "cancellation reason", statusText: "cancelled from shop side"`                                   |
+| `setTransactionCustomType`       | `transactionId: <PendingChargeTransactionId>, type.key: sctm_transactions_custom_type, fields: {reasonText: "cancellation reason", statusText: "Cancelled from shop side", sctm_mollie_status: "canceled"}`                                   |
+
+See [Payment failure details](./PaymentFailureDetails.md) for the `sctm_mollie_status` field, which is also written for `failed` and `expired` payments.
