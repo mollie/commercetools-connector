@@ -47,6 +47,9 @@ describe('Test constant.utils.ts', () => {
     expect(CustomFields?.transactions.fields.shouldCapturePayment.name).toBeDefined();
     expect(CustomFields?.transactions.fields.capturePaymentDescription.name).toBeDefined();
     expect(CustomFields?.transactions.fields.capturePaymentErrors.name).toBeDefined();
+    expect(CustomFields?.transactions.fields.mollieStatus.name).toBeDefined();
+    expect(CustomFields?.transactions.fields.failureReason.name).toBeDefined();
+    expect(CustomFields?.transactions.fields.failureMessage.name).toBeDefined();
 
     expect(CustomFields?.applePay?.session?.request).toBeDefined();
     expect(CustomFields?.applePay?.session?.response).toBeDefined();

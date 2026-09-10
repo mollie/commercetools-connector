@@ -129,6 +129,42 @@ export const CustomFields = {
         },
         inputHint: 'MultiLine',
       },
+      mollieStatus: {
+        name: 'sctm_mollie_status',
+        label: {
+          en: 'The final Mollie payment status (failed, expired or canceled)',
+          de: 'Der endgültige Mollie-Zahlungsstatus (failed, expired oder canceled)',
+        },
+        required: false,
+        type: {
+          name: 'String',
+        },
+        inputHint: 'MultiLine',
+      },
+      failureReason: {
+        name: 'sctm_failure_reason',
+        label: {
+          en: 'Machine-readable reason why the Mollie payment failed',
+          de: 'Maschinenlesbarer Grund, warum die Mollie-Zahlung fehlgeschlagen ist',
+        },
+        required: false,
+        type: {
+          name: 'String',
+        },
+        inputHint: 'MultiLine',
+      },
+      failureMessage: {
+        name: 'sctm_failure_message',
+        label: {
+          en: 'Customer-facing message explaining why the Mollie payment failed',
+          de: 'Kundenfreundliche Meldung, warum die Mollie-Zahlung fehlgeschlagen ist',
+        },
+        required: false,
+        type: {
+          name: 'String',
+        },
+        inputHint: 'MultiLine',
+      },
     },
   },
 };

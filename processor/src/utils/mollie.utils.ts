@@ -1,6 +1,6 @@
 import { CentPrecisionMoney } from '@commercetools/platform-sdk';
 import { CTMoney, CTTransactionState } from '../types/commercetools.types';
-import { PaymentStatus, RefundStatus } from '@mollie/api-client';
+import { Payment, PaymentStatus, RefundStatus } from '@mollie/api-client';
 import { DEFAULT_DUE_DATE, DUE_DATE_PATTERN } from './constant.utils';
 import { logger } from './logger.utils';
 import CustomError from '../errors/custom.error';
@@ -63,6 +63,36 @@ export const shouldPaymentStatusUpdate = (
       break;
   }
   return shouldUpdate;
+};
+
+export type MollieFailureDetails = {
+  status: string;
+  reason?: string;
+  message?: string;
+};
+
+/**
+ * Extracts what Mollie tells us about why a payment ended up in a failure state.
+ *
+ * - `statusReason` is only available for point-of-sale payments
+ * - `details.failureReason` and `details.failureMessage` are only available for credit card
+ *   (and `failureReason` for Bancontact) payments, `failureMessage` is already localized for the payment locale
+ * - all other methods (iDEAL, PayPal, Klarna, bank transfer, ...) only expose the status itself
+ *
+ * Only defined values are returned, so the result can be written to custom fields as is.
+ *
+ * @param molliePayment
+ */
+export const getMollieFailureDetails = (molliePayment: Payment): MollieFailureDetails => {
+  const details = molliePayment.details as { failureReason?: string; failureMessage?: string } | undefined;
+  const reason = molliePayment.statusReason?.code ?? details?.failureReason;
+  const message = molliePayment.statusReason?.message ?? details?.failureMessage;
+
+  return {
+    status: molliePayment.status,
+    ...(reason ? { reason } : {}),
+    ...(message ? { message } : {}),
+  };
 };
 
 /**

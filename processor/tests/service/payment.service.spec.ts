@@ -1862,6 +1862,57 @@ describe('Test getPaymentCancelActions', () => {
       },
     });
   });
+
+  test('should also store the Mollie status when it is passed', async () => {
+    const pendingChargeTransaction = {
+      id: '5c8b0375-305a-4f19-ae8e-07806b101999',
+      type: 'Charge',
+      amount: {
+        type: 'centPrecision',
+        currencyCode: 'EUR',
+        centAmount: 1000,
+        fractionDigits: 2,
+      },
+      state: 'Pending',
+    } as Payment['transactions'][number];
+
+    (getPaymentCancelActions as jest.Mock).mockImplementationOnce(() => {
+      const paymentService = jest.requireActual(
+        '../../src/service/payment.service.ts',
+      ) as typeof import('../../src/service/payment.service.ts');
+      return paymentService.getPaymentCancelActions(
+        pendingChargeTransaction,
+        undefined as unknown as Payment['transactions'][number],
+        PaymentStatus.canceled,
+      );
+    });
+
+    (changeTransactionState as jest.Mock).mockReturnValueOnce({
+      action: 'changeTransactionState',
+      state: 'Failure',
+      transactionId: pendingChargeTransaction.id,
+    });
+
+    const actual = getPaymentCancelActions(
+      pendingChargeTransaction,
+      undefined as unknown as Payment['transactions'][number],
+      PaymentStatus.canceled,
+    );
+    expect(actual).toHaveLength(2);
+
+    expect(actual[1]).toEqual({
+      action: 'setTransactionCustomType',
+      type: {
+        key: CustomFieldName.transactions.defaultCustomTypeKey,
+      },
+      transactionId: pendingChargeTransaction.id,
+      fields: {
+        reasonText: undefined,
+        statusText: CancelStatusText,
+        sctm_mollie_status: 'canceled',
+      },
+    });
+  });
 });
 
 describe('Test handlePaymentCancelRefund', () => {
@@ -2469,6 +2520,7 @@ describe('Test handlePaymentWebhook', () => {
         fields: {
           reasonText: ctPayment.transactions[1].custom?.fields.reasonText,
           statusText: CancelStatusText,
+          sctm_mollie_status: 'canceled',
         },
         transactionId: ctPayment.transactions[0].id,
       },
@@ -2587,6 +2639,279 @@ describe('Test handlePaymentWebhook', () => {
         state: 'Success',
       },
     ]);
+  });
+
+  it('should persist the Mollie status and the card failure details when the payment failed', async () => {
+    const fakePaymentId = 'tr_XXXX';
+    (getPaymentById as jest.Mock).mockReturnValue({
+      id: fakePaymentId,
+      status: 'failed',
+      method: 'creditcard',
+      amount: {
+        currency: 'EUR',
+        value: '10.00',
+      },
+      details: {
+        cardNumber: '6787',
+        failureReason: 'insufficient_funds',
+        failureMessage: 'The card has insufficient funds.',
+      },
+    });
+    const ctPayment = {
+      transactions: [
+        {
+          id: 'test',
+          type: 'Charge',
+          interactionId: fakePaymentId,
+          state: 'Pending',
+        },
+      ],
+    };
+    (getPaymentByMolliePaymentId as jest.Mock).mockReturnValue(ctPayment);
+    (changeTransactionState as jest.Mock).mockReturnValueOnce({
+      action: 'changeTransactionState',
+      transactionId: 'test',
+      state: 'Failure',
+    });
+
+    await handlePaymentWebhook(fakePaymentId);
+
+    expect(changeTransactionState).toBeCalledTimes(1);
+    expect(changeTransactionState).toBeCalledWith('test', CTTransactionState.Failure);
+    expect(updatePayment as jest.Mock).toBeCalledTimes(1);
+    expect(updatePayment as jest.Mock).toBeCalledWith(ctPayment, [
+      {
+        action: 'changeTransactionState',
+        transactionId: 'test',
+        state: 'Failure',
+      },
+      {
+        action: 'setTransactionCustomType',
+        type: {
+          key: CustomFieldName.transactions.defaultCustomTypeKey,
+        },
+        fields: {
+          sctm_mollie_status: 'failed',
+          sctm_failure_reason: 'insufficient_funds',
+          sctm_failure_message: 'The card has insufficient funds.',
+        },
+        transactionId: 'test',
+      },
+    ]);
+  });
+
+  it('should only persist the Mollie status when an iDEAL payment expired', async () => {
+    const fakePaymentId = 'tr_XXXX';
+    (getPaymentById as jest.Mock).mockReturnValue({
+      id: fakePaymentId,
+      status: 'expired',
+      method: 'ideal',
+      amount: {
+        currency: 'EUR',
+        value: '10.00',
+      },
+      details: {
+        consumerName: 'T. TEST',
+        consumerAccount: 'NL02ABNA0123456789',
+      },
+    });
+    const ctPayment = {
+      transactions: [
+        {
+          id: 'test',
+          type: 'Charge',
+          interactionId: fakePaymentId,
+          state: 'Pending',
+        },
+      ],
+    };
+    (getPaymentByMolliePaymentId as jest.Mock).mockReturnValue(ctPayment);
+    (changeTransactionState as jest.Mock).mockReturnValueOnce({
+      action: 'changeTransactionState',
+      transactionId: 'test',
+      state: 'Failure',
+    });
+
+    await handlePaymentWebhook(fakePaymentId);
+
+    expect(updatePayment as jest.Mock).toBeCalledTimes(1);
+    expect(updatePayment as jest.Mock).toBeCalledWith(ctPayment, [
+      {
+        action: 'changeTransactionState',
+        transactionId: 'test',
+        state: 'Failure',
+      },
+      {
+        action: 'setTransactionCustomType',
+        type: {
+          key: CustomFieldName.transactions.defaultCustomTypeKey,
+        },
+        fields: {
+          sctm_mollie_status: 'expired',
+        },
+        transactionId: 'test',
+      },
+    ]);
+  });
+
+  it('should persist the status reason when a point-of-sale payment failed', async () => {
+    const fakePaymentId = 'tr_XXXX';
+    (getPaymentById as jest.Mock).mockReturnValue({
+      id: fakePaymentId,
+      status: 'failed',
+      method: 'pointofsale',
+      amount: {
+        currency: 'EUR',
+        value: '10.00',
+      },
+      statusReason: {
+        code: 'failed_transaction_declined',
+        message: 'The transaction was declined by the terminal.',
+      },
+      details: {
+        terminalId: 'term_7MgL4wea46qkRcoTZjWEH',
+      },
+    });
+    const ctPayment = {
+      transactions: [
+        {
+          id: 'test',
+          type: 'Charge',
+          interactionId: fakePaymentId,
+          state: 'Pending',
+        },
+      ],
+    };
+    (getPaymentByMolliePaymentId as jest.Mock).mockReturnValue(ctPayment);
+    (changeTransactionState as jest.Mock).mockReturnValueOnce({
+      action: 'changeTransactionState',
+      transactionId: 'test',
+      state: 'Failure',
+    });
+
+    await handlePaymentWebhook(fakePaymentId);
+
+    expect(updatePayment as jest.Mock).toBeCalledTimes(1);
+    expect(updatePayment as jest.Mock).toBeCalledWith(ctPayment, [
+      {
+        action: 'changeTransactionState',
+        transactionId: 'test',
+        state: 'Failure',
+      },
+      {
+        action: 'setTransactionCustomType',
+        type: {
+          key: CustomFieldName.transactions.defaultCustomTypeKey,
+        },
+        fields: {
+          sctm_mollie_status: 'failed',
+          sctm_failure_reason: 'failed_transaction_declined',
+          sctm_failure_message: 'The transaction was declined by the terminal.',
+        },
+        transactionId: 'test',
+      },
+    ]);
+  });
+
+  it('should set the failure details field by field when the transaction already has custom fields', async () => {
+    const fakePaymentId = 'tr_XXXX';
+    (getPaymentById as jest.Mock).mockReturnValue({
+      id: fakePaymentId,
+      status: 'failed',
+      method: 'creditcard',
+      amount: {
+        currency: 'EUR',
+        value: '10.00',
+      },
+      details: {
+        cardNumber: '6787',
+        failureReason: 'card_expired',
+        failureMessage: 'The card has expired.',
+      },
+    });
+    const ctPayment = {
+      transactions: [
+        {
+          id: 'test',
+          type: 'Charge',
+          interactionId: fakePaymentId,
+          state: 'Pending',
+          custom: {
+            type: {
+              typeId: 'type',
+              id: 'sctm_transactions_custom_type',
+            },
+            fields: {
+              surchargeAmountInCent: 100,
+            },
+          },
+        },
+      ],
+    };
+    (getPaymentByMolliePaymentId as jest.Mock).mockReturnValue(ctPayment);
+    (changeTransactionState as jest.Mock).mockReturnValueOnce({
+      action: 'changeTransactionState',
+      transactionId: 'test',
+      state: 'Failure',
+    });
+
+    await handlePaymentWebhook(fakePaymentId);
+
+    expect(updatePayment as jest.Mock).toBeCalledTimes(1);
+    expect(updatePayment as jest.Mock).toBeCalledWith(ctPayment, [
+      {
+        action: 'changeTransactionState',
+        transactionId: 'test',
+        state: 'Failure',
+      },
+      {
+        action: 'setTransactionCustomField',
+        name: 'sctm_mollie_status',
+        value: 'failed',
+        transactionId: 'test',
+      },
+      {
+        action: 'setTransactionCustomField',
+        name: 'sctm_failure_reason',
+        value: 'card_expired',
+        transactionId: 'test',
+      },
+      {
+        action: 'setTransactionCustomField',
+        name: 'sctm_failure_message',
+        value: 'The card has expired.',
+        transactionId: 'test',
+      },
+    ]);
+  });
+
+  it('should not persist failure details when the transaction is already in the Failure state', async () => {
+    const fakePaymentId = 'tr_XXXX';
+    (getPaymentById as jest.Mock).mockReturnValue({
+      id: fakePaymentId,
+      status: 'expired',
+      method: 'ideal',
+      amount: {
+        currency: 'EUR',
+        value: '10.00',
+      },
+    });
+    (getPaymentByMolliePaymentId as jest.Mock).mockReturnValue({
+      transactions: [
+        {
+          id: 'test',
+          type: 'Charge',
+          interactionId: fakePaymentId,
+          state: 'Failure',
+        },
+      ],
+    });
+
+    await handlePaymentWebhook(fakePaymentId);
+
+    expect(changeTransactionState).toBeCalledTimes(0);
+    expect(updatePayment as jest.Mock).toBeCalledTimes(0);
+    expect(logger.debug).toBeCalledWith(`handlePaymentWebhook - No actions needed`);
   });
 });
 
