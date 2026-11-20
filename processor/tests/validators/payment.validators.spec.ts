@@ -457,7 +457,7 @@ describe('checkPaymentMethodInput', () => {
       expect(logger.error).toBeCalledWith(
         'SCTM - validateBanktransfer - email is required for payment method banktransfer. Please make sure you have sent it in billingAddress.email of the custom field.',
         {
-          commerceToolsPayment: CTPayment,
+          commerceToolsPaymentId: CTPayment.id,
         },
       );
     }
@@ -526,7 +526,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
       expect(logger.error).toBeCalledWith(
         `SCTM - validateCardToken - cardToken is required for payment method creditcard.`,
         {
-          commerceToolsPayment: CTPayment,
+          commerceToolsPaymentId: CTPayment.id,
         },
       );
     }
@@ -601,7 +601,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
       expect(logger.error).toBeCalledWith(
         `SCTM - validateCardToken - cardToken must be a string and not empty for payment method creditcard.`,
         {
-          commerceToolsPayment: CTPayment,
+          commerceToolsPaymentId: CTPayment.id,
         },
       );
     }
@@ -817,7 +817,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
       expect(logger.error).toBeCalledWith(
         `SCTM - validateBanktransfer - email is required for payment method banktransfer. Please make sure you have sent it in billingAddress.email of the custom field.`,
         {
-          commerceToolsPayment: CTPayment,
+          commerceToolsPaymentId: CTPayment.id,
         },
       );
     }
@@ -902,7 +902,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
       expect(logger.error).toBeCalledWith(
         `SCTM - validateBanktransfer - email is required for payment method banktransfer. Please make sure you have sent it in billingAddress.email of the custom field.`,
         {
-          commerceToolsPayment: CTPayment,
+          commerceToolsPaymentId: CTPayment.id,
         },
       );
     }
@@ -984,7 +984,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
       expect((error as CustomError).message).toBe('SCTM - validateBanktransfer - email must be a valid email address.');
       expect(logger.error).toBeCalledTimes(1);
       expect(logger.error).toBeCalledWith(`SCTM - validateBanktransfer - email must be a valid email address.`, {
-        commerceToolsPayment: CTPayment,
+        commerceToolsPaymentId: CTPayment.id,
       });
     }
   });
@@ -1135,7 +1135,7 @@ describe('checkPaymentMethodSpecificParameters', () => {
       );
       expect(logger.error).toBeCalledTimes(1);
       expect(logger.error).toBeCalledWith(`SCTM - validateBlik - Currency Code must be PLN for payment method BLIK.`, {
-        commerceToolsPayment: CTPayment,
+        commerceToolsPaymentId: CTPayment.id,
       });
     }
   });
@@ -1232,7 +1232,7 @@ describe('checkAmountPlanned', () => {
       expect(logger.error).toBeCalledWith(
         `SCTM - checkAmountPlanned - Payment {amountPlanned} not found, commerceToolsPaymentId: ${CTPayment.id}.`,
         {
-          commerceToolsPayment: CTPayment,
+          commerceToolsPaymentId: CTPayment.id,
         },
       );
     }
@@ -1703,7 +1703,7 @@ describe('validateCommerceToolsPaymentPayload', () => {
       expect(logger.error).toBeCalledWith(
         `SCTM - checkValidSuccessAuthorizationTransaction - Cannot get the Mollie payment ID from CommerceTools transaction, CommerceTools Transaction ID: 5c8b0375-305a-4f19-ae8e-07806b101999.`,
         {
-          commerceToolsPayment: {},
+          commerceToolsPaymentId: undefined,
         },
       );
       expect(error).toBeInstanceOf(CustomError);
@@ -1778,5 +1778,29 @@ describe('paymentMethodRequiredExtraParameters', () => {
     },
   ])('should return $result for method $method', ({ method, result }) => {
     expect(paymentMethodRequiredExtraParameters(method)).toBe(result);
+  });
+});
+
+describe('validateBanktransfer logging', () => {
+  it('does not log the payment object, card token or email on validation failure', () => {
+    const ctPayment = {
+      id: 'ct-payment-id',
+      custom: {
+        fields: {
+          sctm_create_payment_request: JSON.stringify({
+            cardToken: 'tkn_must_not_be_logged',
+            shippingAddress: { email: 'customer@example.com' },
+          }),
+        },
+      },
+    } as unknown as Payment;
+
+    expect(() => validateBanktransfer({ billingAddress: {} }, ctPayment)).toThrow(CustomError);
+
+    const loggedPayloads = JSON.stringify((logger.error as jest.Mock).mock.calls);
+    expect(loggedPayloads).not.toContain('tkn_must_not_be_logged');
+    expect(loggedPayloads).not.toContain('customer@example.com');
+    expect(loggedPayloads).not.toContain('sctm_create_payment_request');
+    expect(logger.error).toHaveBeenCalledWith(expect.any(String), { commerceToolsPaymentId: 'ct-payment-id' });
   });
 });

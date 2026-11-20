@@ -2,6 +2,7 @@ import CustomError from '../errors/custom.error';
 import { handlePaymentWebhook } from '../service/payment.service';
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '../utils/logger.utils';
+import { toErrorLog } from '../utils/error.utils';
 import { isPayment } from '../utils/mollie.utils';
 import { WebhookRequest } from '../types/commercetools.types';
 
@@ -37,7 +38,7 @@ export const post = async (request: Request, response: Response, next: NextFunct
       logger.warn(`Webhook with id ${id} is handled unsuccessfully, retry will be take place automatically.`);
     }
   } catch (error: any) {
-    logger.error(`Error processing webhook event`, error);
+    logger.error(`Error processing webhook event`, toErrorLog(error));
 
     next(new CustomError(400, error.message));
   }

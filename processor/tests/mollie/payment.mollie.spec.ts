@@ -84,7 +84,7 @@ describe('createMolliePayment', () => {
       expect(mockPaymentsCreate).toHaveBeenCalledWith(paymentParams);
       expect(logger.error).toHaveBeenCalledTimes(1);
       expect(logger.error).toHaveBeenCalledWith(`SCTM - createMolliePayment - error: Bad request, field: Test`, {
-        error: new MollieApiError('Bad request', { statusCode: 400, field: 'Test' }),
+        error: { message: 'Bad request', statusCode: 400, field: 'Test' },
       });
     }
   });
@@ -112,7 +112,7 @@ describe('createMolliePayment', () => {
       expect(logger.error).toHaveBeenCalledWith(
         'SCTM - createMolliePayment - Failed to create payment with unknown errors',
         {
-          error: new Error('Unknown error'),
+          error: { message: 'Unknown error' },
         },
       );
     }
@@ -214,12 +214,7 @@ describe('createPaymentWithCustomMethod', () => {
       });
 
       expect(logger.error).toHaveBeenCalledTimes(1);
-      expect(logger.error).toHaveBeenCalledWith(errorMessage, {
-        response: {
-          detail: 'Something went wrong',
-          field: 'amount',
-        },
-      });
+      expect(logger.error).toHaveBeenCalledWith(errorMessage, { field: 'amount' });
 
       expect(error).toBeInstanceOf(CustomError);
       expect((error as CustomError).statusCode).toBe(400);
@@ -275,7 +270,8 @@ describe('createPaymentWithCustomMethod', () => {
       });
 
       expect(logger.error).toHaveBeenCalledTimes(1);
-      expect(logger.error).toHaveBeenCalledWith(errorMessage, { response: response });
+      expect(logger.error).toHaveBeenCalledWith(errorMessage, { title: 'mollie', field: 'amount' });
+      expect(JSON.stringify((logger.error as jest.Mock).mock.calls)).not.toContain(response.extra);
 
       expect(error).toBeInstanceOf(CustomError);
       expect((error as CustomError).statusCode).toBe(400);
@@ -318,7 +314,7 @@ describe('createPaymentWithCustomMethod', () => {
       });
 
       expect(logger.error).toHaveBeenCalledTimes(1);
-      expect(logger.error).toHaveBeenCalledWith(errorMessage, { error: generalError });
+      expect(logger.error).toHaveBeenCalledWith(errorMessage, { error: { message: generalError.message } });
 
       expect(error).toBeInstanceOf(CustomError);
       expect((error as CustomError).statusCode).toBe(400);
@@ -381,7 +377,7 @@ describe('listPaymentMethods', () => {
       expect(mockPaymentsList).toHaveBeenCalledWith(mockOption);
       expect(logger.error).toHaveBeenCalledTimes(1);
       expect(logger.error).toHaveBeenCalledWith('SCTM - listPaymentMethods - error: Bad request, field: Test', {
-        error: new MollieApiError('Bad request', { statusCode: 400, field: 'Test' }),
+        error: { message: 'Bad request', statusCode: 400, field: 'Test' },
       });
     }
   });
@@ -410,7 +406,7 @@ describe('listPaymentMethods', () => {
       expect(logger.error).toHaveBeenCalledWith(
         'SCTM - listPaymentMethods - Failed to list payments with unknown errors',
         {
-          error: new Error('Unknown error'),
+          error: { message: 'Unknown error' },
         },
       );
     }
@@ -443,7 +439,7 @@ describe('cancelPayment', () => {
       expect(error).toBeInstanceOf(CustomError);
       expect(logger.error).toBeCalledTimes(1);
       expect(logger.error).toBeCalledWith(`SCTM - cancelPayment - error: ${errorMessage}, field: paymentId`, {
-        error: mollieApiError,
+        error: { message: errorMessage, field: 'paymentId' },
       });
     }
   });
@@ -461,7 +457,7 @@ describe('cancelPayment', () => {
       expect(error).toBeInstanceOf(CustomError);
       expect(logger.error).toBeCalledTimes(1);
       expect(logger.error).toBeCalledWith('SCTM - cancelPayment - Failed to cancel payments with unknown errors', {
-        error: unexpectedError,
+        error: { message: unexpectedError.message, statusCode: 400 },
       });
     }
   });
@@ -515,7 +511,7 @@ describe('getApplePaySession', () => {
       expect(error).toBeInstanceOf(CustomError);
       expect(logger.error).toBeCalledTimes(1);
       expect(logger.error).toBeCalledWith(`SCTM - getApplePaySession - error: ${errorMessage}, field: validationUrl`, {
-        error: mollieApiError,
+        error: { message: errorMessage, field: 'validationUrl' },
       });
     }
   });
@@ -538,7 +534,7 @@ describe('getApplePaySession', () => {
       expect(logger.error).toBeCalledWith(
         'SCTM - getApplePaySession - Failed to get ApplePay session with unknown errors',
         {
-          error: unexpectedError,
+          error: { message: unexpectedError.message, statusCode: 400 },
         },
       );
     }
@@ -610,10 +606,7 @@ describe('releaseAuthorizationPayment', () => {
 
       expect(logger.error).toHaveBeenCalledTimes(1);
       expect(logger.error).toHaveBeenCalledWith(errorMessage, {
-        error: new MollieApiError('The pre-authorized payment has already been reversed', {
-          field: '',
-          statusCode: 400,
-        }),
+        error: { message: 'The pre-authorized payment has already been reversed', field: '', statusCode: 400 },
       });
 
       expect(error).toBeInstanceOf(CustomError);
@@ -651,7 +644,7 @@ describe('releaseAuthorizationPayment', () => {
       });
 
       expect(logger.error).toHaveBeenCalledTimes(1);
-      expect(logger.error).toHaveBeenCalledWith(errorMessage, { error: generalError });
+      expect(logger.error).toHaveBeenCalledWith(errorMessage, { error: { message: generalError.message } });
 
       expect(error).toBeInstanceOf(CustomError);
       expect((error as CustomError).statusCode).toBe(400);

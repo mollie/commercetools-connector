@@ -149,13 +149,10 @@ describe('Test processor.controller.ts', () => {
       throw new Error('Dummy error');
     });
 
-    try {
-      await post(request, res as Response);
-    } catch (error: unknown) {
-      expect(error).not.toBeInstanceOf(SkipError);
-      expect(error).not.toBeInstanceOf(CustomError);
-      expect(logger.debug).toBeCalledTimes(1);
-      expect(logger.debug).toBeCalledWith('Unexpected error occurred when processing request', error);
-    }
+    await post(request, res as Response);
+
+    expect(logger.debug).toBeCalledWith('SCTM - Processor - Unexpected error occurred when processing request', {
+      message: 'Dummy error',
+    });
   });
 });

@@ -1,4 +1,5 @@
 import { logger } from '../utils/logger.utils';
+import { toErrorLog } from '../utils/error.utils';
 import { Request, Response } from 'express';
 import CustomError from '../errors/custom.error';
 import { apiError } from '../api/error.api';
@@ -11,7 +12,7 @@ export const healthCheck = async (request: Request, response: Response) => {
     logger.debug('SCTM - healthCheck - The connector is running healthily.');
     return response.status(200).json('The connector is running healthily.');
   } catch (error) {
-    logger.error('SCTM - healthCheck - Unexpected error occurred when processing request', error);
+    logger.error('SCTM - healthCheck - Unexpected error occurred when processing request', toErrorLog(error));
     return apiError(response, formatErrorResponse(error).errors);
   }
 };
@@ -28,7 +29,7 @@ export const mollieStatus = async (request: Request, response: Response) => {
       status: profile.status,
     });
   } catch (error) {
-    logger.error('SCTM - healthCheck - Unexpected error occurred when processing request', error);
+    logger.error('SCTM - healthCheck - Unexpected error occurred when processing request', toErrorLog(error));
     return response.status(400).json(error).send();
   }
 };
@@ -51,7 +52,7 @@ export const install = async (request: Request, response: Response) => {
       .status(200)
       .json('The connector was installed successfully with required extensions and custom fields.');
   } catch (error) {
-    logger.error('SCTM - install - Unexpected error occurred when processing request', error);
+    logger.error('SCTM - install - Unexpected error occurred when processing request', toErrorLog(error));
     return apiError(response, formatErrorResponse(error).errors);
   }
 };
@@ -62,7 +63,7 @@ export const uninstall = async (request: Request, response: Response) => {
     logger.debug('SCTM - uninstall - The connector was uninstalled successfully.');
     return response.status(200).json('The connector was uninstalled successfully.');
   } catch (error) {
-    logger.error('SCTM - uninstallation - Unexpected error occurred when processing request', error);
+    logger.error('SCTM - uninstallation - Unexpected error occurred when processing request', toErrorLog(error));
     return apiError(response, formatErrorResponse(error).errors);
   }
 };

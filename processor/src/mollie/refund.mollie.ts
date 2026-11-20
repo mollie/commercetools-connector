@@ -1,6 +1,7 @@
 import { initMollieClient } from '../client/mollie.client';
 import { MollieApiError, Refund } from '@mollie/api-client';
 import { logger } from '../utils/logger.utils';
+import { toErrorLog } from '../utils/error.utils';
 import CustomError from '../errors/custom.error';
 import {
   CancelParameters,
@@ -22,7 +23,7 @@ export const createPaymentRefund = async (params: CreateParameters): Promise<Ref
 
     logger.error(errorMessage, {
       molliePaymentId: params.paymentId,
-      error,
+      error: toErrorLog(error),
     });
 
     throw new CustomError(400, errorMessage);
@@ -52,7 +53,7 @@ export const getPaymentRefund = async (refundId: string, params: GetParameters) 
     logger.error(errorMessage, {
       molliePaymentId: params.paymentId,
       mollieRefundId: refundId,
-      error,
+      error: toErrorLog(error),
     });
 
     throw new CustomError(400, errorMessage);
@@ -82,7 +83,7 @@ export const cancelPaymentRefund = async (refundId: string, params: CancelParame
     logger.error(errorMessage, {
       mollieRefundId: refundId,
       molliePaymentId: params.paymentId,
-      error,
+      error: toErrorLog(error),
     });
 
     throw new CustomError(400, errorMessage);

@@ -1,6 +1,7 @@
 import { initMollieClient } from '../client/mollie.client';
 import { MollieApiError, Profile } from '@mollie/api-client';
 import { logger } from '../utils/logger.utils';
+import { toErrorLog } from '../utils/error.utils';
 import CustomError from '../errors/custom.error';
 
 export const getProfile = async (): Promise<Profile> => {
@@ -15,7 +16,7 @@ export const getProfile = async (): Promise<Profile> => {
     }
 
     logger.error(errorMessage, {
-      error,
+      error: toErrorLog(error),
     });
     throw new CustomError(400, errorMessage);
   }

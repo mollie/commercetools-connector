@@ -5,6 +5,7 @@ import {
   MOLLIE_SURCHARGE_LINE_DESCRIPTION,
 } from './constant.utils';
 import { logger } from './logger.utils';
+import { toErrorLog } from './error.utils';
 import { calculateDueDate, makeMollieAmount } from './mollie.utils';
 import { CustomPaymentMethod, ParsedMethodsRequestType } from '../types/mollie.types';
 import { Cart, CartUpdateAction, Payment, TaxCategoryResourceIdentifier } from '@commercetools/platform-sdk';
@@ -69,7 +70,7 @@ export const mapCommercetoolsPaymentCustomFieldsToMollieListParams = async (
       `SCTM - PARSING ERROR - field {custom.fields.sctm_payment_methods_request}, CommerceTools Payment ID: ${ctPayment.id}`,
       {
         commerceToolsPaymentId: ctPayment.id,
-        error,
+        error: toErrorLog(error),
       },
     );
     throw new CustomError(400, 'SCTM - PARSING ERROR - field {custom.fields.sctm_payment_methods_request}');

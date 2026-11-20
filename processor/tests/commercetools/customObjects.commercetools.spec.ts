@@ -66,15 +66,13 @@ describe('Test getMethodConfigObjects', () => {
       }),
     });
 
-    try {
-      await getMethodConfigObjects();
-    } catch (error: any) {
-      expect(logger.error).toHaveBeenCalledTimes(1);
-      expect(logger.error).toBeCalledWith(
-        'getMethodConfigObjects - Error while getting custom objects holding payment methods validation info.',
-        error,
-      );
-    }
+    await getMethodConfigObjects();
+
+    expect(logger.error).toHaveBeenCalledTimes(1);
+    expect(logger.error).toBeCalledWith(
+      'getMethodConfigObjects - Error while getting custom objects holding payment methods validation info.',
+      { message: error.message },
+    );
   });
 });
 
@@ -134,7 +132,7 @@ describe('Test getSingleMethodConfigObject', () => {
       expect(logger.error).toHaveBeenCalledTimes(1);
       expect(logger.error).toBeCalledWith(
         'getMethodConfigObjects - Error while getting custom object for payment method: ' + key,
-        mockError,
+        { message: mockError.message },
       );
 
       expect(error).toBeInstanceOf(CustomError);

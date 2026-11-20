@@ -1,5 +1,6 @@
 import { Payment } from '@commercetools/platform-sdk';
 import { logger } from '../utils/logger.utils';
+import { toErrorLog } from '../utils/error.utils';
 import CustomError from '../errors/custom.error';
 import { createApiRoot } from '../client/create.client';
 import { PaymentUpdateAction } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/payment';
@@ -41,7 +42,7 @@ export async function updatePayment(payment: Payment, updateActions: PaymentUpda
 
     return paymentObject;
   } catch (error: any) {
-    logger.error('Error in updatePayment', error);
+    logger.error('Error in updatePayment', toErrorLog(error));
 
     throw new CustomError(error.status, error.message);
   }

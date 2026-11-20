@@ -12,7 +12,7 @@ import { getSingleMethodConfigObject } from '../commercetools/customObjects.comm
 
 const throwError = (process: string, errorMessage: string, ctPayment?: CTPayment): void => {
   logger.error(`SCTM - ${process} - ${errorMessage}`, {
-    commerceToolsPayment: ctPayment ?? {},
+    commerceToolsPaymentId: ctPayment?.id,
   });
 
   throw new CustomError(400, `SCTM - ${process} - ${errorMessage}`);

@@ -2474,7 +2474,9 @@ describe('Test handlePaymentWebhook', () => {
       },
     ];
 
-    expect(logger.info).toBeCalledWith(`handlePaymentWebhook - actions:${JSON.stringify(actions)}`);
+    expect(logger.info).toBeCalledWith(
+      'handlePaymentWebhook - CommerceTools Payment ID: payment-id - actions: changeTransactionState, changeTransactionState, setTransactionCustomType',
+    );
 
     expect(updatePayment).toBeCalledTimes(1);
     expect(updatePayment).toBeCalledWith(ctPayment, actions);

@@ -10,6 +10,7 @@ import {
 import { initMollieClient, initMollieClientForApplePaySession } from '../client/mollie.client';
 import CustomError from '../errors/custom.error';
 import { logger } from '../utils/logger.utils';
+import { toErrorLog } from '../utils/error.utils';
 import { ApplePaySessionRequest, CustomPayment } from '../types/mollie.types';
 import { getApiKey } from '../utils/config.utils';
 import { MOLLIE_VERSION_STRINGS } from '../utils/constant.utils';
@@ -42,7 +43,7 @@ export const createMolliePayment = async (paymentParams: PaymentCreateParams): P
     }
 
     logger.error(errorMessage, {
-      error,
+      error: toErrorLog(error),
     });
 
     throw new CustomError(400, errorMessage);
@@ -77,7 +78,7 @@ export const listPaymentMethods = async (options: MethodsListParams): Promise<Me
     }
 
     logger.error(errorMessage, {
-      error,
+      error: toErrorLog(error),
     });
 
     throw new CustomError(400, errorMessage);
@@ -104,7 +105,7 @@ export const cancelPayment = async (paymentId: string): Promise<void> => {
     }
 
     logger.error(errorMessage, {
-      error,
+      error: toErrorLog(error),
     });
 
     throw new CustomError(400, errorMessage);
@@ -131,7 +132,9 @@ export const createPaymentWithCustomMethod = async (paymentParams: PaymentCreate
       }
 
       logger.error(errorMessage, {
-        response: data,
+        status: data?.status,
+        title: data?.title,
+        field: data?.field,
       });
 
       throw new CustomError(400, errorMessage);
@@ -142,7 +145,7 @@ export const createPaymentWithCustomMethod = async (paymentParams: PaymentCreate
     if (!errorMessage) {
       errorMessage = 'SCTM - createPaymentWithCustomMethod - Failed to create a payment with unknown errors';
       logger.error(errorMessage, {
-        error,
+        error: toErrorLog(error),
       });
     }
 
@@ -168,7 +171,7 @@ export const getAllPaymentMethods = async (options: MethodsListParams): Promise<
     if (!errorMessage) {
       errorMessage = 'SCTM - getAllPaymentMethods - Failed to get all payment methods with unknown errors';
       logger.error(errorMessage, {
-        error,
+        error: toErrorLog(error),
       });
     }
 
@@ -188,7 +191,7 @@ export const getApplePaySession = async (options: ApplePaySessionRequest): Promi
     }
 
     logger.error(errorMessage, {
-      error,
+      error: toErrorLog(error),
     });
     throw new CustomError(400, errorMessage);
   }
@@ -206,7 +209,7 @@ export const createCapturePayment = async (options: CreateParameters): Promise<C
     }
 
     logger.error(errorMessage, {
-      error,
+      error: toErrorLog(error),
     });
     return new CustomError(400, errorMessage);
   }
@@ -235,7 +238,7 @@ export const releaseAuthorizationPayment = async (molliePaymentId: string): Prom
     }
 
     logger.error(errorMessage, {
-      error,
+      error: toErrorLog(error),
     });
     throw new CustomError(400, errorMessage);
   }

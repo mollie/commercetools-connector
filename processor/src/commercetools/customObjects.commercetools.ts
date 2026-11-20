@@ -2,6 +2,7 @@ import { createApiRoot } from '../client/create.client';
 import { CustomObject } from '@commercetools/platform-sdk';
 import { CUSTOM_OBJECT_CONTAINER_NAME } from '../utils/constant.utils';
 import { logger } from '../utils/logger.utils';
+import { toErrorLog } from '../utils/error.utils';
 import CustomError from '../errors/custom.error';
 
 export const getMethodConfigObjects = async (): Promise<CustomObject[]> => {
@@ -26,7 +27,7 @@ export const getMethodConfigObjects = async (): Promise<CustomObject[]> => {
   } catch (error: unknown) {
     logger.error(
       'getMethodConfigObjects - Error while getting custom objects holding payment methods validation info.',
-      error,
+      toErrorLog(error),
     );
   }
 
@@ -48,7 +49,10 @@ export const getSingleMethodConfigObject = async (key: string): Promise<CustomOb
 
     return methodObjects;
   } catch (error: unknown) {
-    logger.error('getMethodConfigObjects - Error while getting custom object for payment method: ' + key, error);
+    logger.error(
+      'getMethodConfigObjects - Error while getting custom object for payment method: ' + key,
+      toErrorLog(error),
+    );
 
     throw new CustomError(400, 'getMethodConfigObjects - Error while getting custom object for payment method: ' + key);
   }

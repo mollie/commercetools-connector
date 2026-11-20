@@ -66,7 +66,7 @@ describe('createPaymentRefund', () => {
       expect(logger.error).toBeCalledTimes(1);
       expect(logger.error).toBeCalledWith(`SCTM - createPaymentRefund - Calling Mollie API - error: ${errorMessage}`, {
         molliePaymentId: paymentCreateRefund.paymentId,
-        error: mollieApiError,
+        error: { message: errorMessage },
       });
     }
   });
@@ -93,7 +93,7 @@ describe('createPaymentRefund', () => {
         `SCTM - createPaymentRefund - Calling Mollie API - Failed to create refund with unknown errors`,
         {
           molliePaymentId: paymentCreateRefund.paymentId,
-          error: new Error('Unknown error'),
+          error: { message: 'Unknown error' },
         },
       );
     }
@@ -130,7 +130,7 @@ describe('getPaymentRefund', () => {
       expect(error).toBeInstanceOf(CustomError);
       expect(logger.error).toBeCalledTimes(1);
       expect(logger.error).toBeCalledWith(`SCTM - getPaymentRefund - Calling Mollie API - error: ${errorMessage}`, {
-        error: mollieApiError,
+        error: { message: errorMessage },
         molliePaymentId: 'tr_12345',
         mollieRefundId: 'refund_id_1',
       });
@@ -158,7 +158,7 @@ describe('getPaymentRefund', () => {
         {
           molliePaymentId: 'tr_12345',
           mollieRefundId: 'refund_id_1',
-          error: unexpectedError,
+          error: { message: unexpectedError.message, statusCode: unexpectedError.statusCode },
         },
       );
     }
@@ -201,7 +201,7 @@ describe('cancelPaymentRefund', () => {
       expect(logger.error).toBeCalledWith(`SCTM - cancelPaymentRefund - Calling Mollie API - error: ${errorMessage}`, {
         molliePaymentId: paymentCancelRefund.paymentId,
         mollieRefundId: 'refund_id_1',
-        error: mollieApiError,
+        error: { message: errorMessage },
       });
     }
   });
@@ -227,7 +227,7 @@ describe('cancelPaymentRefund', () => {
         {
           molliePaymentId: paymentCancelRefund.paymentId,
           mollieRefundId: 'refund_id_1',
-          error: new Error('Unknown error'),
+          error: { message: unexpectedError.message, statusCode: unexpectedError.statusCode },
         },
       );
     }

@@ -195,7 +195,7 @@ describe('Test payment.commercetools', () => {
       expect(error).toBeInstanceOf(CustomError);
       expect(error.message).toBe('Error');
       expect(logger.error).toHaveBeenCalledTimes(1);
-      expect(logger.error).toHaveBeenCalledWith('Error in updatePayment', new Error('Error'));
+      expect(logger.error).toHaveBeenCalledWith('Error in updatePayment', { message: 'Error' });
     }
   });
 });

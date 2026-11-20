@@ -2,6 +2,7 @@ import { apiSuccess } from '../api/success.api';
 import { ControllerResponseType } from '../types/controller.types';
 import { ExtensionInput } from '@commercetools/platform-sdk/dist/declarations/src/generated/models/extension';
 import { logger } from '../utils/logger.utils';
+import { toErrorLog } from '../utils/error.utils';
 import { Request, Response } from 'express';
 import { paymentController } from './payment.controller';
 import CustomError from '../errors/custom.error';
@@ -45,12 +46,12 @@ export const post = async (request: Request, response: Response) => {
       return apiSuccess(200, response, []);
     }
     if (error instanceof CustomError) {
-      logger.debug('SCTM - Processor - Error occurred when processing request', error);
+      logger.debug('SCTM - Processor - Error occurred when processing request', toErrorLog(error));
 
       return apiError(response, error.errors);
     }
 
-    logger.debug('SCTM - Processor - Unexpected error occurred when processing request', error);
+    logger.debug('SCTM - Processor - Unexpected error occurred when processing request', toErrorLog(error));
 
     return apiError(response, formatErrorResponse(error).errors);
   }

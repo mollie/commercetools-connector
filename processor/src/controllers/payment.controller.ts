@@ -27,7 +27,10 @@ export const paymentController = async (
   resource: PaymentReference,
 ): Promise<ControllerResponseType> => {
   const ctPayment: Payment = JSON.parse(JSON.stringify(resource)).obj;
-  logger.debug('SCTM - payment processing - paymentController - ctPayment', ctPayment);
+  logger.debug('SCTM - payment processing - paymentController - ctPayment', {
+    commerceToolsPaymentId: ctPayment?.id,
+    version: ctPayment?.version,
+  });
 
   const paymentAction = determinePaymentAction(ctPayment);
 

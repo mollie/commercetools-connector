@@ -72,6 +72,7 @@ import { CancelParameters, CreateParameters } from '@mollie/api-client/dist/type
 import ApplePaySession from '@mollie/api-client/dist/types/data/applePaySession/ApplePaySession';
 import { CreateParameters as CreateCaptureParameters } from '@mollie/api-client/dist/types/binders/payments/captures/parameters';
 import { logger } from '../utils/logger.utils';
+import { toErrorLog } from '../utils/error.utils';
 
 /**
  * Validates and sorts the payment methods.
@@ -287,7 +288,7 @@ export const handleListPaymentMethodsByPayment = async (ctPayment: Payment): Pro
       `SCTM - listPaymentMethodsByPayment - Failed to list payment methods with CommerceTools Payment ID: ${ctPayment.id}`,
       {
         commerceToolsPaymentId: ctPayment.id,
-        error: error,
+        error: toErrorLog(error),
       },
     );
     if (error instanceof CustomError) {
@@ -346,7 +347,9 @@ export const handlePaymentWebhook = async (paymentId: string): Promise<boolean> 
     return true;
   }
 
-  logger.info(`handlePaymentWebhook - actions:${JSON.stringify(action)}`);
+  logger.info(
+    `handlePaymentWebhook - CommerceTools Payment ID: ${ctPayment.id} - actions: ${action.map((updateAction) => updateAction.action).join(', ')}`,
+  );
 
   await updatePayment(ctPayment, action as PaymentUpdateAction[]);
 

@@ -93,14 +93,11 @@ describe('Test webhook.controller.ts', () => {
       throw new Error('error');
     });
 
-    try {
-      await post(req as Request, res as Response, next);
-    } catch (error: any) {
-      expect(logger.error).toHaveBeenCalledTimes(1);
-      expect(logger.error).toHaveBeenCalledWith('Error processing webhook event', new Error('error'));
-      expect(error).toBeInstanceOf(Error);
-      expect(error.message).toBe('error');
-    }
+    await post(req as Request, res as Response, next);
+
+    expect(logger.error).toHaveBeenCalledTimes(1);
+    expect(logger.error).toHaveBeenCalledWith('Error processing webhook event', { message: 'error' });
+    expect((next as jest.Mock).mock.calls[0][0]).toMatchObject({ message: 'error' });
   });
 
   it('should catch other exception', async () => {
@@ -111,16 +108,16 @@ describe('Test webhook.controller.ts', () => {
     };
 
     (handlePaymentWebhook as jest.Mock).mockImplementation(() => {
-      throw { message: 'An error occurred', code: 500 };
+      throw { message: 'An error occurred', code: 500, request: { body: { email: 'customer@example.com' } } };
     });
 
-    try {
-      await post(req as Request, res as Response, next);
-    } catch (error: any) {
-      expect(logger.error).toHaveBeenCalledTimes(1);
-      expect(logger.error).toHaveBeenCalledWith('Error processing webhook event', new Error('error'));
-      expect(error).toBeInstanceOf(Error);
-      expect(error.message).toBe('An error occurred');
-    }
+    await post(req as Request, res as Response, next);
+
+    expect(logger.error).toHaveBeenCalledTimes(1);
+    expect(logger.error).toHaveBeenCalledWith('Error processing webhook event', {
+      message: 'An error occurred',
+      code: 500,
+    });
+    expect((next as jest.Mock).mock.calls[0][0]).toMatchObject({ message: 'An error occurred' });
   });
 });

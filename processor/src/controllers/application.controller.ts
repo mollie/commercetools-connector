@@ -4,6 +4,7 @@ import { formatErrorResponse } from '../errors/mollie.error';
 import { getAllPaymentMethods } from '../mollie/payment.mollie';
 import { Locale, Method, MethodInclude } from '@mollie/api-client';
 import { logger } from '../utils/logger.utils';
+import { toErrorLog } from '../utils/error.utils';
 
 export const getMethods = async (request: Request, response: Response) => {
   try {
@@ -17,7 +18,7 @@ export const getMethods = async (request: Request, response: Response) => {
   } catch (error) {
     logger.error(
       `getMethods - Unexpected error occurred when preparing payment methods for the custom application`,
-      error,
+      toErrorLog(error),
     );
     return apiError(response, formatErrorResponse(error).errors);
   }
